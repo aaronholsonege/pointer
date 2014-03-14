@@ -1,6 +1,13 @@
 define(function() {
     'use strict';
 
+    /**
+     * Pointer event namespace.
+     * This is prepended to the pointer events
+     *
+     * @type {string}
+     * @final
+     */
     var NAMESPACE = 'pointer';
 
     /**
@@ -8,6 +15,7 @@ define(function() {
      *
      * @class Pointer.Events
      * @static
+     * @final
      */
     var Events = {
 

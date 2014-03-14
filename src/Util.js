@@ -28,6 +28,8 @@ define(function(require) {
             } else {
                 target.attachEvent('on' + event, callback);
             }
+
+            return this;
         },
 
         /**
@@ -49,6 +51,8 @@ define(function(require) {
             } else {
                 target.detachEvent('on' + event, callback);
             }
+
+            return this;
         }
 
     };

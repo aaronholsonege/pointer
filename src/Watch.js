@@ -58,9 +58,10 @@ define(function(require) {
 
         if (event.type.indexOf('touch') === 0) {
             _isTrackingTouchEvents = true;
-            Util.on('touchmove', _onEvent);
-            Util.on('touchcancel', _onCancel);
-            Util.on('touchend', _onUp);
+            Util
+                .on('touchmove', _onEvent)
+                .on('touchcancel', _onCancel)
+                .on('touchend', _onUp);
         } else {
             Util.on('mouseup', _onUp);
         }
@@ -95,10 +96,11 @@ define(function(require) {
         _isTracking = false;
         _isTrackingTouchEvents = false;
 
-        Util.off('touchmove', _onEvent);
-        Util.off('touchcancel', _onCancel);
-        Util.off('touchend', _onUp);
-        Util.off('mouseup', _onUp);
+        Util
+            .off('touchmove', _onEvent)
+            .off('touchcancel', _onCancel)
+            .off('touchend', _onUp)
+            .off('mouseup', _onUp);
     };
 
     /**
@@ -122,11 +124,12 @@ define(function(require) {
 
             _isEnabled = true;
 
-            Util.on('touchstart', _onDown);
-            Util.on('mouseover', _onEvent);
-            Util.on('mousedown', _onDown);
-            Util.on('mousemove', _onEvent);
-            Util.on('mouseout', _onEvent);
+            Util
+                .on('touchstart', _onDown)
+                .on('mouseover', _onEvent)
+                .on('mousedown', _onDown)
+                .on('mousemove', _onEvent)
+                .on('mouseout', _onEvent);
 
             return this;
         },
@@ -146,11 +149,12 @@ define(function(require) {
 
             _onCancel();
 
-            Util.off('touchstart', _onDown);
-            Util.off('mouseover', _onEvent);
-            Util.off('mousedown', _onDown);
-            Util.off('mousemove', _onEvent);
-            Util.off('mouseout', _onEvent);
+            Util
+                .off('touchstart', _onDown)
+                .off('mouseover', _onEvent)
+                .off('mousedown', _onDown)
+                .off('mousemove', _onEvent)
+                .off('mouseout', _onEvent);
 
             return this;
         }
@@ -172,14 +176,8 @@ define(function(require) {
     };
 
     // Bind all method to the context of Watch
-    var prop;
-    for (prop in Watch) {
-        if (!Watch.hasOwnProperty(prop) || typeof Watch[prop] !== 'function') {
-            continue;
-        }
-
-        Watch[prop] = _bind(Watch[prop], Watch);
-    }
+    Watch.enable = _bind(Watch.enable, Watch);
+    Watch.disable = _bind(Watch.disable, Watch);
 
     return Watch;
 

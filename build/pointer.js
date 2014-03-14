@@ -84,16 +84,18 @@
             on: function(event, callback, target) {
                 target || (target = document.body);
                 target.addEventListener ? target.addEventListener(event, callback, false) : target.attachEvent("on" + event, callback);
+                return this;
             },
             off: function(event, callback, target) {
                 target || (target = document.body);
                 target.removeEventListener ? target.removeEventListener(event, callback, false) : target.detachEvent("on" + event, callback);
+                return this;
             }
         };
         return Util;
     }();
     Pointer.f = function() {
-        var prop, PointerEvent = Pointer.d, Util = Pointer.e, _isEnabled = false, _isTracking = false, _isTrackingTouchEvents = false, _trigger = function(event) {
+        var PointerEvent = Pointer.d, Util = Pointer.e, _isEnabled = false, _isTracking = false, _isTrackingTouchEvents = false, _trigger = function(event) {
             return _isTrackingTouchEvents && 0 !== event.type.indeOf("touch") ? null : PointerEvent.trigger(event);
         }, _onDown = function(event) {
             if (!_isTracking) {
@@ -101,9 +103,7 @@
                 var pointerEvent = _trigger(event);
                 if (!(pointerEvent.defaultPrevented || pointerEvent.isDefaultPrevented && pointerEvent.isDefaultPrevented())) if (0 === event.type.indexOf("touch")) {
                     _isTrackingTouchEvents = true;
-                    Util.on("touchmove", _onEvent);
-                    Util.on("touchcancel", _onCancel);
-                    Util.on("touchend", _onUp);
+                    Util.on("touchmove", _onEvent).on("touchcancel", _onCancel).on("touchend", _onUp);
                 } else Util.on("mouseup", _onUp);
             }
         }, _onEvent = function(event) {
@@ -115,30 +115,19 @@
             _trigger(event);
             _isTracking = false;
             _isTrackingTouchEvents = false;
-            Util.off("touchmove", _onEvent);
-            Util.off("touchcancel", _onCancel);
-            Util.off("touchend", _onUp);
-            Util.off("mouseup", _onUp);
+            Util.off("touchmove", _onEvent).off("touchcancel", _onCancel).off("touchend", _onUp).off("mouseup", _onUp);
         }, Watch = {
             enable: function() {
                 if (_isEnabled) return this;
                 _isEnabled = true;
-                Util.on("touchstart", _onDown);
-                Util.on("mouseover", _onEvent);
-                Util.on("mousedown", _onDown);
-                Util.on("mousemove", _onEvent);
-                Util.on("mouseout", _onEvent);
+                Util.on("touchstart", _onDown).on("mouseover", _onEvent).on("mousedown", _onDown).on("mousemove", _onEvent).on("mouseout", _onEvent);
                 return this;
             },
             disable: function() {
                 if (!_isEnabled) return this;
                 _isEnabled = false;
                 _onCancel();
-                Util.off("touchstart", _onDown);
-                Util.off("mouseover", _onEvent);
-                Util.off("mousedown", _onDown);
-                Util.off("mousemove", _onEvent);
-                Util.off("mouseout", _onEvent);
+                Util.off("touchstart", _onDown).off("mouseover", _onEvent).off("mousedown", _onDown).off("mousemove", _onEvent).off("mouseout", _onEvent);
                 return this;
             }
         }, _bind = function(method, context) {
@@ -146,16 +135,13 @@
                 return method.apply(context, arguments);
             };
         };
-        for (prop in Watch) Watch.hasOwnProperty(prop) && "function" == typeof Watch[prop] && (Watch[prop] = _bind(Watch[prop], Watch));
+        Watch.enable = _bind(Watch.enable, Watch);
+        Watch.disable = _bind(Watch.disable, Watch);
         return Watch;
     }();
     var Watch = Pointer.f, Util = Pointer.e, _onReady = function() {
-        Util.off("DOMContentLoaded", _onReady, document);
-        Util.off("load", _onReady, window);
+        Util.off("DOMContentLoaded", _onReady, document).off("load", _onReady, window);
         Watch.enable();
     };
-    if ("complete" === document.readyState) setTimeout(Watch.enable); else {
-        Util.on("DOMContentLoaded", _onReady, document);
-        Util.on("load", _onReady, window);
-    }
+    "complete" === document.readyState ? setTimeout(Watch.enable) : Util.on("DOMContentLoaded", _onReady, document).on("load", _onReady, window);
 }();

@@ -5,6 +5,9 @@ define(function(require) {
 
     /**
      * Map of mouse/touch event to their respective pointer event(s)
+     * When these events (keys) are captured, the defined pointer event(s) are fired.
+     *
+     * Values can be either a single event name, or an array of event names.
      *
      * @class Pointer.EventMap
      * @static
