@@ -1,4 +1,4 @@
-jquery.pointer
+Pointer Events
 ==============
 
 jQuery touch/mouse event normalizer

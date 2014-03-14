@@ -1,0 +1,14 @@
+{
+  "name": "pointer",
+  "version": "0.9.0",
+  "private": true,
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-requirejs": "~0.4.1",
+    "grunt-contrib-uglify": "latest",
+    "grunt-contrib-watch": "~0.4.4",
+    "load-grunt-tasks": "~0.2.0",
+    "time-grunt": "~0.2.3",
+    "grunt-plato": "~0.2.1"
+  }
+}
