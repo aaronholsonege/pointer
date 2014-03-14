@@ -31,6 +31,37 @@ define(function(require) {
     var PROPS = 'screenX screenY pageX pageY offsetX offsetY'.split(' ');
 
     /**
+     * Cached array
+     *
+     * @type Array
+     * @static
+     */
+    var CACHED_ARRAY = [];
+
+    /**
+     * Determine if `child` is a descendant of `target`
+     *
+     * @param {HTMLElement} target
+     * @param {HTMLElement} child
+     * @return {Boolean}
+     * @private
+     */
+    var _contains = function(target, child) {
+        if (target.contains) {
+            return target.contains(child);
+        } else {
+            CACHED_ARRAY.length = 0;
+            var current = child;
+
+            while(current = current.parentNode) {
+                CACHED_ARRAY.push(current);
+            }
+
+            return CACHED_ARRAY.indexOf(target) !== -1;
+        }
+    };
+
+    /**
      * Determine if we have moused over a new target
      *
      * @param {MouseEvent} event
@@ -41,7 +72,7 @@ define(function(require) {
         var related = event.relatedTarget;
         var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
 
-        if (!related || (related !== target && !target.contains(related))) {
+        if (!related || (related !== target && !_contains(target, related))) {
             PointerEvent.trigger(event, eventName);
         }
     };

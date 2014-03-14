@@ -86,7 +86,13 @@ define(function(require) {
          * @chainable
          */
         on: function(event, callback) {
-            document.body.addEventListener(event, callback, false);
+            var body = document.body;
+
+            if (body.addEventListener) {
+                body.addEventListener(event, callback, false);
+            } else {
+                body.attachEvent('on' + event, callback);
+            }
 
             return this;
         },
@@ -100,7 +106,13 @@ define(function(require) {
          * @chainable
          */
         off: function(event, callback) {
-            document.body.removeEventListener(event, callback, false);
+            var body = document.body;
+
+            if (body.removeEventListener) {
+                body.removeEventListener(event, callback, false);
+            } else {
+                body.detachEvent('on' + event, callback);
+            }
 
             return this;
         },

@@ -225,6 +225,37 @@ Pointer.PointerEvent = (function() {
     var PROPS = 'screenX screenY pageX pageY offsetX offsetY'.split(' ');
 
     /**
+     * Cached array
+     *
+     * @type Array
+     * @static
+     */
+    var CACHED_ARRAY = [];
+
+    /**
+     * Determine if `child` is a descendant of `target`
+     *
+     * @param {HTMLElement} target
+     * @param {HTMLElement} child
+     * @return {Boolean}
+     * @private
+     */
+    var _contains = function(target, child) {
+        if (target.contains) {
+            return target.contains(child);
+        } else {
+            CACHED_ARRAY.length = 0;
+            var current = child;
+
+            while(current = current.parentNode) {
+                CACHED_ARRAY.push(current);
+            }
+
+            return CACHED_ARRAY.indexOf(target) !== -1;
+        }
+    };
+
+    /**
      * Determine if we have moused over a new target
      *
      * @param {MouseEvent} event
@@ -235,7 +266,7 @@ Pointer.PointerEvent = (function() {
         var related = event.relatedTarget;
         var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
 
-        if (!related || (related !== target && !target.contains(related))) {
+        if (!related || (related !== target && !_contains(target, related))) {
             PointerEvent.trigger(event, eventName);
         }
     };
@@ -411,7 +442,13 @@ Pointer.Watch = (function() {
          * @chainable
          */
         on: function(event, callback) {
-            document.body.addEventListener(event, callback, false);
+            var body = document.body;
+
+            if (body.addEventListener) {
+                body.addEventListener(event, callback, false);
+            } else {
+                body.attachEvent('on' + event, callback);
+            }
 
             return this;
         },
@@ -425,7 +462,13 @@ Pointer.Watch = (function() {
          * @chainable
          */
         off: function(event, callback) {
-            document.body.removeEventListener(event, callback, false);
+            var body = document.body;
+
+            if (body.removeEventListener) {
+                body.removeEventListener(event, callback, false);
+            } else {
+                body.detachEvent('on' + event, callback);
+            }
 
             return this;
         },
