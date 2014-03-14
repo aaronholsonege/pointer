@@ -2,6 +2,7 @@ define(function(require) {
     'use strict';
 
     var PointerEvent = require('PointerEvent');
+    var Util = require('Util');
 
     /**
      * @type Boolean
@@ -20,6 +21,85 @@ define(function(require) {
      * @static
      */
     var _isTrackingTouchEvents = false;
+
+    /**
+     * Trigger pointer event from a mouse/touch event
+     *
+     * @param {MouseEvent|TouchEvent} event
+     * @return {*|null}
+     * @privvate
+     */
+    var _trigger = function(event) {
+        if (_isTrackingTouchEvents && event.type.indeOf('touch') !== 0) {
+            return null;
+        }
+
+        return PointerEvent.trigger(event);
+    };
+
+    /**
+     * Start tracking touch/mouse movements after down
+     *
+     * @param {MouseEvent|TouchEvent} event
+     * @private
+     */
+    var _onDown = function(event) {
+        if (_isTracking) {
+            return;
+        }
+
+        _isTracking = true;
+
+        var pointerEvent = _trigger(event);
+
+        if (pointerEvent.defaultPrevented || (pointerEvent.isDefaultPrevented && pointerEvent.isDefaultPrevented())) {
+            return;
+        }
+
+        if (event.type.indexOf('touch') === 0) {
+            _isTrackingTouchEvents = true;
+            Util.on('touchmove', _onEvent);
+            Util.on('touchcancel', _onCancel);
+            Util.on('touchend', _onUp);
+        } else {
+            Util.on('mouseup', _onUp);
+        }
+    };
+
+    /**
+     * @param {MouseEvent|TouchEvent} event
+     * @private
+     */
+    var _onEvent = function(event) {
+        _trigger(event);
+    };
+
+    /**
+     * @param {MouseEvent|TouchEvent} event
+     * @private
+     */
+    var _onUp = function(event) {
+        _onCancel();
+
+        _trigger(event);
+    };
+
+    /**
+     * Remove event listeners for active touch/mouse
+     * @param {TouchEvent} [event]
+     * @private
+     */
+    var _onCancel = function(event) {
+        _trigger(event);
+
+        _isTracking = false;
+        _isTrackingTouchEvents = false;
+
+        Util.off('touchmove', _onEvent);
+        Util.off('touchcancel', _onCancel);
+        Util.off('touchend', _onUp);
+        Util.off('mouseup', _onUp);
+    };
 
     /**
      * Bind mouse/touch events to convert to pointer events
@@ -42,12 +122,11 @@ define(function(require) {
 
             _isEnabled = true;
 
-            this
-                .on('touchstart', this.onDown)
-                .on('mouseover', this.onEvent)
-                .on('mousedown', this.onDown)
-                .on('mousemove', this.onEvent)
-                .on('mouseout', this.onEvent);
+            Util.on('touchstart', _onDown);
+            Util.on('mouseover', _onEvent);
+            Util.on('mousedown', _onDown);
+            Util.on('mousemove', _onEvent);
+            Util.on('mouseout', _onEvent);
 
             return this;
         },
@@ -65,134 +144,15 @@ define(function(require) {
 
             _isEnabled = false;
 
-            this.onCancel();
+            _onCancel();
 
-            this
-                .off('touchstart', this.onDown)
-                .off('mouseover', this.onEvent)
-                .off('mousedown', this.onDown)
-                .off('mousemove', this.onEvent)
-                .off('mouseout', this.onEvent);
-
-            return this;
-        },
-
-        /**
-         * Add event listener to body
-         *
-         * @method on
-         * @param {String} event
-         * @param {Function} callback
-         * @chainable
-         */
-        on: function(event, callback) {
-            var body = document.body;
-
-            if (body.addEventListener) {
-                body.addEventListener(event, callback, false);
-            } else {
-                body.attachEvent('on' + event, callback);
-            }
+            Util.off('touchstart', _onDown);
+            Util.off('mouseover', _onEvent);
+            Util.off('mousedown', _onDown);
+            Util.off('mousemove', _onEvent);
+            Util.off('mouseout', _onEvent);
 
             return this;
-        },
-
-        /**
-         * Remove event listener to body
-         *
-         * @method off
-         * @param {String} event
-         * @param {Function} callback
-         * @chainable
-         */
-        off: function(event, callback) {
-            var body = document.body;
-
-            if (body.removeEventListener) {
-                body.removeEventListener(event, callback, false);
-            } else {
-                body.detachEvent('on' + event, callback);
-            }
-
-            return this;
-        },
-
-        /**
-         * Trigger pointer event from a mouse/touch event
-         *
-         * @method trigger
-         * @param {MouseEvent|TouchEvent} event
-         * @return {*|null}
-         */
-        trigger: function(event) {
-            if (_isTrackingTouchEvents && event.type.indeOf('touch') !== 0) {
-                return null;
-            }
-
-            return PointerEvent.trigger(event);
-        },
-
-        /**
-         * @method onDown
-         * @param {MouseEvent|TouchEvent} event
-         */
-        onDown: function(event) {
-            if (_isTracking) {
-                return;
-            }
-
-            _isTracking = true;
-
-            var pointerEvent = this.trigger(event);
-
-            if (pointerEvent.defaultPrevented || (pointerEvent.isDefaultPrevented && pointerEvent.isDefaultPrevented())) {
-                return;
-            }
-
-            if (event.type.indexOf('touch') === 0) {
-                _isTrackingTouchEvents = true;
-                this
-                    .on('touchmove', this.onEvent)
-                    .on('touchcancel', this.onCancel)
-                    .on('touchend', this.onUp);
-            } else {
-                this.on('mouseup', this.onUp);
-            }
-        },
-
-        /**
-         * @method onEvent
-         * @param {MouseEvent|TouchEvent} event
-         */
-        onEvent: function(event) {
-            this.trigger(event);
-        },
-
-        /**
-         * @method onUp
-         * @param {MouseEvent|TouchEvent} event
-         */
-        onUp: function(event) {
-            this.onCancel();
-
-            this.trigger(event);
-        },
-
-        /**
-         * @method onCancel
-         * @param {TouchEvent} [event]
-         */
-        onCancel: function(event) {
-            this.trigger(event);
-
-            _isTracking = false;
-            _isTrackingTouchEvents = false;
-
-            this
-                .on('touchmove', this.onEvent)
-                .on('touchcancel', this.onCancel)
-                .on('touchend', this.onUp)
-                .on('mouseup', this.onUp);
         }
 
     };
@@ -221,9 +181,6 @@ define(function(require) {
         Watch[prop] = _bind(Watch[prop], Watch);
     }
 
-    return {
-        enable: Watch.enable,
-        disable: Watch.disable
-    };
+    return Watch;
 
 });

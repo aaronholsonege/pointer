@@ -1,6 +1,8 @@
 define(function() {
     'use strict';
 
+    var NAMESPACE = 'pointer';
+
     /**
      * Pointer event names
      *
@@ -13,43 +15,43 @@ define(function() {
          * @property MOVE
          * @type string
          */
-        MOVE: 'pointermove',
+        MOVE: NAMESPACE + 'move',
 
         /**
          * @property ENTER
          * @type string
          */
-        ENTER: 'pointerenter',
+        ENTER: NAMESPACE + 'enter',
 
         /**
          * @property OVER
          * @type string
          */
-        OVER: 'pointerover',
+        OVER: NAMESPACE + 'over',
 
         /**
          * @property DOWN
          * @type string
          */
-        DOWN: 'pointerdown',
+        DOWN: NAMESPACE + 'down',
 
         /**
          * @property UP
          * @type string
          */
-        UP: 'pointerup',
+        UP: NAMESPACE + 'up',
 
         /**
          * @property OUT
          * @type string
          */
-        OUT: 'pointerout',
+        OUT: NAMESPACE + 'out',
 
         /**
          * @property LEAVE
          * @type string
          */
-        LEAVE: 'pointerleave'
+        LEAVE: NAMESPACE + 'leave'
 
     };
 

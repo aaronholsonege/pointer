@@ -120,7 +120,7 @@ define(function(require) {
          *
          * @method trigger
          * @param {MouseEvent|TouchEvent} originalEvent
-         * @param {String} [overrideType]
+         * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
          * @return {*} Event created from adapter
          */
         trigger: function(originalEvent, overrideType) {

@@ -1,7 +1,7 @@
 define(function(require) {
     'use strict';
 
-    var jQuery = window.jQuery;
+    var $ = window.jQuery;
 
     /**
      * @class Pointer.Adapter.jQueryAdapter
@@ -14,10 +14,10 @@ define(function(require) {
          * @param {String} type
          * @param {MouseEvent|TouchEvent} originalEvent
          * @param {Object} properties
-         * @return {jQuery.Event}
+         * @return {$.Event}
          */
         create: function(type, originalEvent, properties) {
-            var event = jQuery.Event(originalEvent, properties);
+            var event = $.Event(originalEvent, properties);
             event.type = type;
 
             return event;
@@ -25,12 +25,12 @@ define(function(require) {
 
         /**
          * @method trigger
-         * @param {jQuery.Event} event
+         * @param {$.Event} event
          * @param {Boolean} [event.noBubble=false]
          * @param {HTMLElement} target
          */
         trigger: function(event, target) {
-            jQuery.event.trigger(event, null, target, !!event.noBubble);
+            $.event.trigger(event, null, target, !!event.noBubble);
         }
 
     };
