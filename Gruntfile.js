@@ -9,7 +9,10 @@ module.exports = function (grunt) {
 
         browserify: {
             options: {
-                entry: 'src/Pointer.js'
+                entry: 'src/Pointer.js',
+                postBundleCB: function(err, src, done) {
+                    done(err, '(function() {\nvar ' + src + '\n}());');
+                }
             },
             native: {
                 files: {
