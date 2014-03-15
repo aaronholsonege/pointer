@@ -1,68 +1,63 @@
-define(function() {
-    'use strict';
+/**
+ * Pointer event namespace.
+ * This is prepended to the pointer events
+ *
+ * @type {string}
+ * @final
+ */
+var NAMESPACE = 'pointer';
+
+/**
+ * Pointer event names
+ *
+ * @class Pointer.Events
+ * @static
+ * @final
+ */
+var Events = {
 
     /**
-     * Pointer event namespace.
-     * This is prepended to the pointer events
-     *
-     * @type {string}
-     * @final
+     * @property MOVE
+     * @type string
      */
-    var NAMESPACE = 'pointer';
+    MOVE: NAMESPACE + 'move',
 
     /**
-     * Pointer event names
-     *
-     * @class Pointer.Events
-     * @static
-     * @final
+     * @property ENTER
+     * @type string
      */
-    var Events = {
+    ENTER: NAMESPACE + 'enter',
 
-        /**
-         * @property MOVE
-         * @type string
-         */
-        MOVE: NAMESPACE + 'move',
+    /**
+     * @property OVER
+     * @type string
+     */
+    OVER: NAMESPACE + 'over',
 
-        /**
-         * @property ENTER
-         * @type string
-         */
-        ENTER: NAMESPACE + 'enter',
+    /**
+     * @property DOWN
+     * @type string
+     */
+    DOWN: NAMESPACE + 'down',
 
-        /**
-         * @property OVER
-         * @type string
-         */
-        OVER: NAMESPACE + 'over',
+    /**
+     * @property UP
+     * @type string
+     */
+    UP: NAMESPACE + 'up',
 
-        /**
-         * @property DOWN
-         * @type string
-         */
-        DOWN: NAMESPACE + 'down',
+    /**
+     * @property OUT
+     * @type string
+     */
+    OUT: NAMESPACE + 'out',
 
-        /**
-         * @property UP
-         * @type string
-         */
-        UP: NAMESPACE + 'up',
+    /**
+     * @property LEAVE
+     * @type string
+     */
+    LEAVE: NAMESPACE + 'leave'
 
-        /**
-         * @property OUT
-         * @type string
-         */
-        OUT: NAMESPACE + 'out',
+};
 
-        /**
-         * @property LEAVE
-         * @type string
-         */
-        LEAVE: NAMESPACE + 'leave'
-
-    };
-
-    return Events;
-
-});
+module.exports = Events;
