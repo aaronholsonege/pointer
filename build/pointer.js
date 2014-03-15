@@ -308,7 +308,9 @@ var PointerEvent = {
 
         for (; i < length; i++) {
             event = this.create(type[i], originalEvent);
-            Adapter.trigger(event, originalEvent.target);
+            if (event) {
+                Adapter.trigger(event, originalEvent.target);
+            }
         }
 
         return event;
@@ -430,7 +432,7 @@ var _isTrackingTouchEvents = false;
  * @privvate
  */
 var _trigger = function(event) {
-    if (_isTrackingTouchEvents && event.type.indeOf('touch') !== 0) {
+    if (_isTrackingTouchEvents && event.type.indexOf('touch') !== 0) {
         return null;
     }
 
@@ -450,9 +452,9 @@ var _onDown = function(event) {
 
     _isTracking = true;
 
-    var pointerEvent = _trigger(event);
+    _trigger(event);
 
-    if (pointerEvent.defaultPrevented || (pointerEvent.isDefaultPrevented && pointerEvent.isDefaultPrevented())) {
+    if (event.defaultPrevented) {
         return;
     }
 
@@ -491,7 +493,9 @@ var _onUp = function(event) {
  * @private
  */
 var _onCancel = function(event) {
-    _trigger(event);
+    if (event) {
+        _trigger(event);
+    }
 
     _isTracking = false;
     _isTrackingTouchEvents = false;
@@ -626,6 +630,16 @@ var Native = {
                 }
             });
         }
+
+        event.preventDefault = function() {
+            originalEvent.preventDefault();
+        };
+
+        var stopPropegation = event.stopPropegation;
+        event.stopPropegation = function() {
+            originalEvent.stopPropegation();
+            stopPropegation.call(this);
+        };
 
         return event;
     },

@@ -44,6 +44,16 @@ var Native = {
             });
         }
 
+        event.preventDefault = function() {
+            originalEvent.preventDefault();
+        };
+
+        var stopPropegation = event.stopPropegation;
+        event.stopPropegation = function() {
+            originalEvent.stopPropegation();
+            stopPropegation.call(this);
+        };
+
         return event;
     },
 

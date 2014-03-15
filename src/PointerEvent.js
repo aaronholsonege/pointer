@@ -146,7 +146,9 @@ var PointerEvent = {
 
         for (; i < length; i++) {
             event = this.create(type[i], originalEvent);
-            Adapter.trigger(event, originalEvent.target);
+            if (event) {
+                Adapter.trigger(event, originalEvent.target);
+            }
         }
 
         return event;
