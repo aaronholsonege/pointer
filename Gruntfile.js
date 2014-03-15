@@ -22,7 +22,6 @@ module.exports = function (grunt) {
 
     // strip out amd stuffs from build
     function convert( name, path, contents ) {
-
         if (name === 'Pointer') {
             contents = contents
                 .replace(/define\('(.[^']+)'[^{]*?{/, '')

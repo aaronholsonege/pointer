@@ -32,6 +32,18 @@
             create: function(type, originalEvent, properties) {
                 var event = document.createEvent("MouseEvents");
                 event.initMouseEvent(type, !properties.noBubble, true, window, 1, properties.screenX || originalEvent.screenX, properties.screenY || originalEvent.screenY, properties.clientX || originalEvent.clientX, properties.clientY || originalEvent.clientY, originalEvent.ctrlKey, originalEvent.altKey, originalEvent.shiftKey, originalEvent.metaKey, originalEvent.button, properties.relatedTarget || originalEvent.relatedTarget || null);
+                if (!event.pageX !== originalEvent.pageX) {
+                    Object.defineProperty(event, "pageX", {
+                        get: function() {
+                            return originalEvent.pageX;
+                        }
+                    });
+                    Object.defineProperty(event, "pageY", {
+                        get: function() {
+                            return originalEvent.pageY;
+                        }
+                    });
+                }
                 return event;
             },
             trigger: function(event, target) {
@@ -41,21 +53,41 @@
         return Native;
     }();
     Pointer.d = function() {
-        var Events = Pointer.a, EventMap = Pointer.b, Adapter = Pointer.c, NO_BUBBLE_EVENTS = [ Events.ENTER, Events.LEAVE ], ENTER_LEAVE_EVENT_MAP = {
+        var Util = {
+            on: function(event, callback, target) {
+                target || (target = document.body);
+                target.addEventListener ? target.addEventListener(event, callback, false) : target.attachEvent("on" + event, callback);
+                return this;
+            },
+            off: function(event, callback, target) {
+                target || (target = document.body);
+                target.removeEventListener ? target.removeEventListener(event, callback, false) : target.detachEvent("on" + event, callback);
+                return this;
+            },
+            indexOf: function(array, item) {
+                if (Array.prototype.indexOf) return array.indexOf(item);
+                for (var i = 0, length = array.length; length > i; i++) if (array[i] === item) return i;
+                return -1;
+            }
+        };
+        return Util;
+    }();
+    Pointer.e = function() {
+        var Events = Pointer.a, EventMap = Pointer.b, Adapter = Pointer.c, Util = Pointer.d, NO_BUBBLE_EVENTS = [ Events.ENTER, Events.LEAVE ], ENTER_LEAVE_EVENT_MAP = {
             mouseover: "mouseenter",
             mouseout: "mouseleave"
         }, PROPS = "screenX screenY pageX pageY offsetX offsetY".split(" "), CACHED_ARRAY = [], _contains = function(target, child) {
             if (target.contains) return target.contains(child);
             CACHED_ARRAY.length = 0;
             for (var current = child; current = current.parentNode; ) CACHED_ARRAY.push(current);
-            return -1 !== CACHED_ARRAY.indexOf(target);
+            return -1 !== Util.indexOf(CACHED_ARRAY, target);
         }, _detectMouseEnterOrLeave = function(event) {
             var target = event.target, related = event.relatedTarget, eventName = ENTER_LEAVE_EVENT_MAP[event.type];
             (!related || related !== target && !_contains(target, related)) && PointerEvent.trigger(event, eventName);
         }, PointerEvent = {
             create: function(type, originalEvent) {
                 var properties = {
-                    noBubble: -1 !== NO_BUBBLE_EVENTS.indexOf(type)
+                    noBubble: -1 !== Util.indexOf(NO_BUBBLE_EVENTS, type)
                 }, source = originalEvent;
                 if (0 === originalEvent.type.indexOf("touch")) {
                     properties.touches = originalEvent.changedTouches;
@@ -79,23 +111,8 @@
         };
         return PointerEvent;
     }();
-    Pointer.e = function() {
-        var Util = {
-            on: function(event, callback, target) {
-                target || (target = document.body);
-                target.addEventListener ? target.addEventListener(event, callback, false) : target.attachEvent("on" + event, callback);
-                return this;
-            },
-            off: function(event, callback, target) {
-                target || (target = document.body);
-                target.removeEventListener ? target.removeEventListener(event, callback, false) : target.detachEvent("on" + event, callback);
-                return this;
-            }
-        };
-        return Util;
-    }();
     Pointer.f = function() {
-        var PointerEvent = Pointer.d, Util = Pointer.e, _isEnabled = false, _isTracking = false, _isTrackingTouchEvents = false, _trigger = function(event) {
+        var PointerEvent = Pointer.e, Util = Pointer.d, _isEnabled = false, _isTracking = false, _isTrackingTouchEvents = false, _trigger = function(event) {
             return _isTrackingTouchEvents && 0 !== event.type.indeOf("touch") ? null : PointerEvent.trigger(event);
         }, _onDown = function(event) {
             if (!_isTracking) {
@@ -139,7 +156,7 @@
         Watch.disable = _bind(Watch.disable, Watch);
         return Watch;
     }();
-    var Watch = Pointer.f, Util = Pointer.e, _onReady = function() {
+    var Watch = Pointer.f, Util = Pointer.d, _onReady = function() {
         Util.off("DOMContentLoaded", _onReady, document).off("load", _onReady, window);
         Watch.enable();
     };

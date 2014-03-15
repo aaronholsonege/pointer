@@ -53,6 +53,31 @@ define(function(require) {
             }
 
             return this;
+        },
+
+        /**
+         * Perform indexOf on array
+         *
+         * @method indexOf
+         * @param {Array} array
+         * @param {*} item
+         * @return {Number}
+         */
+        indexOf: function(array, item) {
+            if (Array.prototype.indexOf) {
+                return array.indexOf(item);
+            } else {
+                var i = 0;
+                var length = array.length;
+
+                for (; i < length; i++) {
+                    if (array[i] === item) {
+                        return i;
+                    }
+                }
+
+                return -1;
+            }
         }
 
     };

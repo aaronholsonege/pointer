@@ -4,6 +4,7 @@ define(function(require) {
     var Events = require('Events');
     var EventMap = require('EventMap');
     var Adapter = require('Adapter');
+    var Util = require('Util');
 
     /**
      * Pointer events that should not bubble
@@ -57,7 +58,7 @@ define(function(require) {
                 CACHED_ARRAY.push(current);
             }
 
-            return CACHED_ARRAY.indexOf(target) !== -1;
+            return Util.indexOf(CACHED_ARRAY, target) !== -1;
         }
     };
 
@@ -95,7 +96,7 @@ define(function(require) {
          */
         create: function(type, originalEvent) {
             var properties = {
-                noBubble: NO_BUBBLE_EVENTS.indexOf(type) !== -1
+                noBubble: Util.indexOf(NO_BUBBLE_EVENTS, type) !== -1
             };
 
             var source = originalEvent;

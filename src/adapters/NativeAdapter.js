@@ -34,6 +34,19 @@ define(function(require) {
                 properties.relatedTarget || originalEvent.relatedTarget || null
             );
 
+            if (!event.pageX !== originalEvent.pageX) {
+                Object.defineProperty(event, 'pageX', {
+                    get: function() {
+                        return originalEvent.pageX;
+                    }
+                });
+                Object.defineProperty(event, 'pageY', {
+                    get: function() {
+                        return originalEvent.pageY;
+                    }
+                });
+            }
+
             return event;
         },
 
