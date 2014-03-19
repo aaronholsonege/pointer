@@ -21,9 +21,9 @@ var EventMap = {
 
     /**
      * @property touchmove
-     * @type String
+     * @type String[]
      */
-    touchmove: Events.MOVE,
+    touchmove: [Events.MOVE],
 
     /**
      * @property touchend
@@ -33,50 +33,144 @@ var EventMap = {
 
     /**
      * @property mouseenter
-     * @type String
+     * @type String[]
      */
-    mouseenter: Events.ENTER,
+    mouseenter: [Events.ENTER],
 
     /**
      * @property mouseover
-     * @type String
+     * @type String[]
      */
-    mouseover: Events.OVER,
+    mouseover: [Events.OVER],
 
     /**
      * @property mousedown
-     * @type String
+     * @type String[]
      */
-    mousedown: Events.DOWN,
+    mousedown: [Events.DOWN],
 
     /**
      * @property mousemove
-     * @type String
+     * @type String[]
      */
-    mousemove: Events.MOVE,
+    mousemove: [Events.MOVE],
 
     /**
      * @property mouseup
-     * @type String
+     * @type String[]
      */
-    mouseup: Events.UP,
+    mouseup: [Events.UP],
 
     /**
      * @property mouseout
-     * @type String
+     * @type String[]
      */
-    mouseout: Events.OUT,
+    mouseout: [Events.OUT],
 
     /**
      * @property mouseleave
-     * @type String
+     * @type String[]
      */
-    mouseleave: Events.LEAVE
+    mouseleave: [Events.LEAVE]
 
 };
 
 module.exports = EventMap;
-},{"./Events":2}],2:[function(require,module,exports){
+},{"./Events":3}],2:[function(require,module,exports){
+/**
+ * Mouse > touch map
+ *
+ * @type Object
+ * @static
+ */
+var MAP = {
+    mousedown: 'touchstart',
+    mouseover: 'touchstart',
+    mouseout: 'touchend',
+    mouseup: 'touchend'
+};
+
+/**
+ * The last triggered touch events to compare mouse
+ * events to to determine if they are emulated.
+ *
+ * @type Object
+ * @static
+ */
+var LAST_EVENTS = {
+    touchstart: null,
+    touchend: null
+};
+
+/**
+ * Max time between touch and simulated mouse event
+ *
+ * @type Number
+ * @static
+ */
+var DELTA_TIME = 300;
+
+/**
+ * Max x/y distance between touch and simulated mouse event
+ *
+ * @type Number
+ * @static
+ */
+var DELTA_POSITION = 5;
+
+/**
+ * @class Pointer.EventTracker
+ * @static
+ */
+var EventTracker = {
+
+    /**
+     * Register a touch event used to determine if mouse events are emulated
+     *
+     * @method register
+     * @param {MouseEvent|TouchEvent} event
+     * @chainable
+     */
+    register: function(event) {
+        if (LAST_EVENTS.hasOwnProperty(event.type)) {
+            LAST_EVENTS[event.type] = event;
+        }
+
+        return this;
+    },
+
+    /**
+     * Determine if a mouse event has been emulated
+     *
+     * @method isEmulated
+     * @param {MouseEvent|TouchEvent} event
+     * @returns {Boolean}
+     */
+    isEmulated: function(event) {
+        if (!MAP.hasOwnProperty(event.type)) {
+            return false;
+        }
+
+        var eventName = MAP[event.type];
+        var last = LAST_EVENTS[eventName];
+
+        if (!last) {
+            return false;
+        }
+
+        var touch = last.changedTouches[0];
+
+        var dx = Math.abs(touch.clientX - event.clientX);
+        var dy = Math.abs(touch.clientY - event.clientY);
+        var dt = Math.abs(last.timeStamp - event.timeStamp);
+
+        return (dx <= DELTA_POSITION && dy <= DELTA_POSITION && dt <= DELTA_TIME);
+    }
+
+};
+
+module.exports = EventTracker;
+},{}],3:[function(require,module,exports){
 /**
  * Pointer event namespace.
  * This is prepended to the pointer events
@@ -140,7 +234,7 @@ var Events = {
 };
 
 module.exports = Events;
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var Watch = require('./Watch');
 var Util = require('./Util');
 
@@ -159,7 +253,7 @@ if (document.readyState === 'complete') {
         .on('DOMContentLoaded', _onReady, document)
         .on('load', _onReady, window);
 }
-},{"./Util":5,"./Watch":6}],4:[function(require,module,exports){
+},{"./Util":6,"./Watch":7}],5:[function(require,module,exports){
 var Events = require('./Events');
 var EventMap = require('./EventMap');
 var Adapter = require('Adapter');
@@ -171,6 +265,20 @@ var Util = require('./Util');
  * @static
  */
 var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
+
+/**
+ * Event to detect mouseenter events with
+ * @type String
+ * @static
+ */
+var ENTER_EVENT = 'mouseover';
+
+/**
+ * Event to detect mouseleave events with
+ * @type String
+ * @static
+ */
+var LEAVE_EVENT = 'mouseout';
 
 /**
  * Mouse enter/leave event map
@@ -261,15 +369,18 @@ var PointerEvent = {
         var source = originalEvent;
 
         if (originalEvent.type.indexOf('touch') === 0) {
-            properties.touches = originalEvent.changedTouches;
-            source = properties.touches[0];
+            properties.changedTouches = originalEvent.changedTouches;
+            properties.touches = originalEvent.touches;
+            source = properties.changedTouches[0];
         }
 
         var i = 0;
         var length = PROPS.length;
 
         for (; i < length; i++) {
-            properties[PROPS[i]] = source[PROPS[i]];
+            if (source.hasOwnProperty(PROPS[i])) {
+                properties[PROPS[i]] = source[PROPS[i]];
+            }
         }
 
         return Adapter.create(type, originalEvent, properties);
@@ -281,45 +392,44 @@ var PointerEvent = {
      * @method trigger
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
-     * @return {*} Event created from adapter
      */
     trigger: function(originalEvent, overrideType) {
         if (!originalEvent || !EventMap.hasOwnProperty(originalEvent.type)) {
-            return null;
+            return;
         }
 
         var _type = overrideType || originalEvent.type;
 
-        // trigger pointerenter/pointerleave events if applicable
+        // trigger pointerenter event if applicable
         // browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
-        if (ENTER_LEAVE_EVENT_MAP.hasOwnProperty(_type)) {
+        if (ENTER_EVENT === _type) {
             _detectMouseEnterOrLeave(originalEvent);
         }
 
-        var type = EventMap[_type];
-
-        if (!(type instanceof Array)) {
-            type = EventMap[_type] = [type];
-        }
+        var types = EventMap[_type];
 
         var i = 0;
-        var length = type.length;
+        var length = types.length;
         var event;
 
         for (; i < length; i++) {
-            event = this.create(type[i], originalEvent);
+            event = PointerEvent.create(types[i], originalEvent);
             if (event) {
                 Adapter.trigger(event, originalEvent.target);
             }
         }
 
-        return event;
+        // trigger pointerleave event if applicable
+        // browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
+        if (LEAVE_EVENT === _type) {
+            _detectMouseEnterOrLeave(originalEvent);
+        }
     }
 
 };
 
 module.exports = PointerEvent;
-},{"./EventMap":1,"./Events":2,"./Util":5,"Adapter":"ivQJWr"}],5:[function(require,module,exports){
+},{"./EventMap":1,"./Events":3,"./Util":6,"Adapter":"ivQJWr"}],6:[function(require,module,exports){
 /**
  * Utility functions
  *
@@ -332,7 +442,7 @@ var Util = {
      * Add event listener to target
      *
      * @method on
-     * @param {String} event
+     * @param {String|String[]} event
      * @param {Function} callback
      * @param {HTMLElement} [target=document.body]
      * @chainable
@@ -342,10 +452,16 @@ var Util = {
             target = document.body;
         }
 
-        if (target.addEventListener) {
-            target.addEventListener(event, callback, false);
-        } else {
-            target.attachEvent('on' + event, callback);
+        var i = 0;
+        var events = (event instanceof Array) ? event : event.split(' ');
+        var length = events.length;
+
+        for (; i < length; i++) {
+            if (target.addEventListener) {
+                target.addEventListener(events[i], callback, false);
+            } else {
+                target.attachEvent('on' + events[i], callback);
+            }
         }
 
         return this;
@@ -355,7 +471,7 @@ var Util = {
      * Remove event listener from target
      *
      * @method on
-     * @param {String} event
+     * @param {String|String[]} event
      * @param {Function} callback
      * @param {HTMLElement} [target=document.body]
      * @chainable
@@ -365,10 +481,16 @@ var Util = {
             target = document.body;
         }
 
-        if (target.removeEventListener) {
-            target.removeEventListener(event, callback, false);
-        } else {
-            target.detachEvent('on' + event, callback);
+        var i = 0;
+        var events = (event instanceof Array) ? event : event.split(' ');
+        var length = events.length;
+
+        for (; i < length; i++) {
+            if (target.removeEventListener) {
+                target.removeEventListener(events[i], callback, false);
+            } else {
+                target.detachEvent('on' + events[i], callback);
+            }
         }
 
         return this;
@@ -402,110 +524,15 @@ var Util = {
 };
 
 module.exports = Util;
-},{}],6:[function(require,module,exports){
-var PointerEvent = require('./PointerEvent');
-var Util = require('./Util');
+},{}],7:[function(require,module,exports){
+var MouseCapture = require('./capture/Mouse');
+var TouchCapture = require('./capture/Touch');
 
 /**
  * @type Boolean
  * @static
  */
 var _isEnabled = false;
-
-/**
- * @type Boolean
- * @static
- */
-var _isTracking = false;
-
-/**
- * @type Boolean
- * @static
- */
-var _isTrackingTouchEvents = false;
-
-/**
- * Trigger pointer event from a mouse/touch event
- *
- * @param {MouseEvent|TouchEvent} event
- * @return {*|null}
- * @privvate
- */
-var _trigger = function(event) {
-    if (_isTrackingTouchEvents && event.type.indexOf('touch') !== 0) {
-        return null;
-    }
-
-    return PointerEvent.trigger(event);
-};
-
-/**
- * Start tracking touch/mouse movements after down
- *
- * @param {MouseEvent|TouchEvent} event
- * @private
- */
-var _onDown = function(event) {
-    if (_isTracking) {
-        return;
-    }
-
-    _isTracking = true;
-
-    _trigger(event);
-
-    if (event.defaultPrevented) {
-        return;
-    }
-
-    if (event.type.indexOf('touch') === 0) {
-        _isTrackingTouchEvents = true;
-        Util
-            .on('touchmove', _onEvent)
-            .on('touchcancel', _onCancel)
-            .on('touchend', _onUp);
-    } else {
-        Util.on('mouseup', _onUp);
-    }
-};
-
-/**
- * @param {MouseEvent|TouchEvent} event
- * @private
- */
-var _onEvent = function(event) {
-    _trigger(event);
-};
-
-/**
- * @param {MouseEvent|TouchEvent} event
- * @private
- */
-var _onUp = function(event) {
-    _onCancel();
-
-    _trigger(event);
-};
-
-/**
- * Remove event listeners for active touch/mouse
- * @param {TouchEvent} [event]
- * @private
- */
-var _onCancel = function(event) {
-    if (event) {
-        _trigger(event);
-    }
-
-    _isTracking = false;
-    _isTrackingTouchEvents = false;
-
-    Util
-        .off('touchmove', _onEvent)
-        .off('touchcancel', _onCancel)
-        .off('touchend', _onUp)
-        .off('mouseup', _onUp);
-};
 
 /**
  * Bind mouse/touch events to convert to pointer events
@@ -519,72 +546,91 @@ var Watch = {
      * Enable tracking of touch/mouse events
      *
      * @method enable
-     * @chainable
      */
     enable: function() {
         if (_isEnabled) {
-            return this;
+            return;
         }
 
         _isEnabled = true;
 
-        Util
-            .on('touchstart', _onDown)
-            .on('mouseover', _onEvent)
-            .on('mousedown', _onDown)
-            .on('mousemove', _onEvent)
-            .on('mouseout', _onEvent);
-
-        return this;
+        TouchCapture.enable();
+        MouseCapture.enable();
     },
 
     /**
      * Disable tracking of touch/mouse events
      *
      * @method disable
-     * @chainable
      */
     disable: function() {
         if (!_isEnabled) {
-            return this;
+            return;
         }
 
         _isEnabled = false;
 
-        _onCancel();
-
-        Util
-            .off('touchstart', _onDown)
-            .off('mouseover', _onEvent)
-            .off('mousedown', _onDown)
-            .off('mousemove', _onEvent)
-            .off('mouseout', _onEvent);
-
-        return this;
+        TouchCapture.disable();
+        MouseCapture.disable();
     }
 
 };
 
+module.exports = Watch;
+},{"./capture/Mouse":10,"./capture/Touch":11}],"Adapter":[function(require,module,exports){
+module.exports=require('ivQJWr');
+},{}],"ivQJWr":[function(require,module,exports){
 /**
- * Bind `method` to `context`
+ * Default properties to apply to newly created events
  *
- * @param {Function} method
- * @param {*} context
- * @return {Function}
+ * These values are only used in values do not exists in the
+ * `properties` or `originalEvent` object called with `create` method
+ *
+ * @type Object
+ * @static
+ */
+var PROPS = {
+    view: null,
+    detail: null,
+    pageX: 0,
+    pageY: 0,
+    screenX: 0,
+    screenY: 0,
+    clientX: 0,
+    clientY: 0,
+    ctrlKey: false,
+    altKey: false,
+    shiftKey: false,
+    metaKey: false,
+    button: 0,
+    relatedTarget: null
+};
+
+/**
+ * Method names to override in event
+ *
+ * @type String[]
+ * @static
+ */
+var OVERRIDE_METHODS = ['preventDefault', 'stopPropagation', 'stopImmediatePropagation'];
+
+
+/**
+ * Override original method in `event` to also call same method in `originalEvent`
+ *
+ * @param {Event} event
+ * @param {MouseEvent|TouchEvent} originalEvent
+ * @param {String} method
  * @private
  */
-var _bind = function(method, context) {
-    return function() {
-        return method.apply(context, arguments);
+var _overrideMethod = function(event, originalEvent, method) {
+    var originalMethod = event[method];
+    event[method] = function() {
+        originalEvent[method]();
+        originalMethod.call(this);
     };
 };
 
-// Bind all method to the context of Watch
-Watch.enable = _bind(Watch.enable, Watch);
-Watch.disable = _bind(Watch.disable, Watch);
-
-module.exports = Watch;
-},{"./PointerEvent":4,"./Util":5}],"ivQJWr":[function(require,module,exports){
 /**
  * @class Pointer.Adapter.Native
  * @static
@@ -596,57 +642,43 @@ var Native = {
      * @param {String} type
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {Object} properties
-     * @return {jQuery.Event}
+     * @return {Event}
      */
     create: function(type, originalEvent, properties) {
-        var event = document.createEvent('MouseEvents');
-        event.initMouseEvent(
+        var event = document.createEvent('Event');
+        event.initEvent(
             type,
             !properties.noBubble, // can bubble
-            true, // cancelable
-            window,
-            1,
-            properties.screenX || originalEvent.screenX,
-            properties.screenY || originalEvent.screenY,
-            properties.clientX || originalEvent.clientX,
-            properties.clientY || originalEvent.clientY,
-            originalEvent.ctrlKey,
-            originalEvent.altKey,
-            originalEvent.shiftKey,
-            originalEvent.metaKey,
-            originalEvent.button,
-            properties.relatedTarget || originalEvent.relatedTarget || null
+            true // cancelable
         );
 
-        if (!event.pageX !== originalEvent.pageX) {
-            Object.defineProperty(event, 'pageX', {
-                get: function() {
-                    return originalEvent.pageX;
-                }
-            });
-            Object.defineProperty(event, 'pageY', {
-                get: function() {
-                    return originalEvent.pageY;
-                }
-            });
+        var prop;
+
+        // Add event properties
+        for (prop in PROPS) {
+            if (PROPS.hasOwnProperty(prop)) {
+                event[prop] = properties[prop] || originalEvent[prop] || PROPS[prop];
+            }
         }
 
-        event.preventDefault = function() {
-            originalEvent.preventDefault();
-        };
+        // add x/y properties aliased to clientX/Y
+        event.x = event.clientX;
+        event.y = event.clientY;
 
-        var stopPropegation = event.stopPropegation;
-        event.stopPropegation = function() {
-            originalEvent.stopPropegation();
-            stopPropegation.call(this);
-        };
+        var i = 0;
+        var length = OVERRIDE_METHODS.length;
+
+        // Override event methods to also call `originalEvent` methods
+        for (; i < length; i++) {
+            _overrideMethod(event, originalEvent, OVERRIDE_METHODS[i]);
+        }
 
         return event;
     },
 
     /**
      * @method trigger
-     * @param {MouseEvent} event
+     * @param {Event} event
      * @param {HTMLElement} target
      */
     trigger: function(event, target) {
@@ -656,7 +688,114 @@ var Native = {
 };
 
 module.exports = Native;
-},{}],"Adapter":[function(require,module,exports){
-module.exports=require('ivQJWr');
-},{}]},{},[3])
+},{}],10:[function(require,module,exports){
+var Util = require('../Util');
+var PointerEvent = require('../PointerEvent');
+var EventTracker = require('../EventTracker');
+
+/**
+ * @class Pointer.Capture.Mouse
+ * @extends Pointer.Capture.Abstract
+ * @type Object
+ * @static
+ */
+var MouseCapture = {
+
+    /**
+     * Events to watch
+     *
+     * @property events
+     * @type String
+     */
+    events: ['mouseover', 'mousedown', 'mousemove', 'mouseup', 'mouseout'],
+
+    /**
+     * Enable event listeners
+     *
+     * @method enable
+     */
+    enable: function() {
+        Util.on(this.events, this.onEvent);
+    },
+
+    /**
+     * Disable event listeners
+     *
+     * @method disable
+     */
+    disable: function() {
+        Util.off(this.events, this.onEvent);
+    },
+
+    /**
+     * If event is not simulated, convert to pointer
+     *
+     * @method onEvent
+     * @param {MouseEvent} event
+     * @callback
+     */
+    onEvent: function(event) {
+        if (!EventTracker.isEmulated(event)) {
+            PointerEvent.trigger(event);
+        }
+    }
+
+};
+
+module.exports = MouseCapture;
+},{"../EventTracker":2,"../PointerEvent":5,"../Util":6}],11:[function(require,module,exports){
+var Util = require('../Util');
+var PointerEvent = require('../PointerEvent');
+var EventTracker = require('../EventTracker');
+
+/**
+ * @class Pointer.Capture.Touch
+ * @extends Pointer.Capture.Abstract
+ * @type Object
+ * @static
+ */
+var TouchCapture = {
+
+    /**
+     * Events to watch
+     *
+     * @property events
+     * @type String
+     */
+    events: ['touchstart' ,'touchmove', 'touchend', 'touchcancel'],
+
+    /**
+     * Enable event listeners
+     *
+     * @method enable
+     */
+    enable: function() {
+        Util.on(this.events, this.onEvent);
+    },
+
+    /**
+     * Disable event listeners
+     *
+     * @method disable
+     */
+    disable: function() {
+        Util.off(this.events, this.onEvent);
+    },
+
+    /**
+     * Register event (for mouse simulation detection) and convert to pointer
+     *
+     * @method onEvent
+     * @param {TouchEvent} event
+     * @callback
+     */
+    onEvent: function(event) {
+        EventTracker.register(event);
+        PointerEvent.trigger(event);
+    }
+
+};
+
+module.exports = TouchCapture;
+},{"../EventTracker":2,"../PointerEvent":5,"../Util":6}]},{},[4])
 }());

@@ -10,7 +10,7 @@ var Util = {
      * Add event listener to target
      *
      * @method on
-     * @param {String} event
+     * @param {String|String[]} event
      * @param {Function} callback
      * @param {HTMLElement} [target=document.body]
      * @chainable
@@ -20,10 +20,16 @@ var Util = {
             target = document.body;
         }
 
-        if (target.addEventListener) {
-            target.addEventListener(event, callback, false);
-        } else {
-            target.attachEvent('on' + event, callback);
+        var i = 0;
+        var events = (event instanceof Array) ? event : event.split(' ');
+        var length = events.length;
+
+        for (; i < length; i++) {
+            if (target.addEventListener) {
+                target.addEventListener(events[i], callback, false);
+            } else {
+                target.attachEvent('on' + events[i], callback);
+            }
         }
 
         return this;
@@ -33,7 +39,7 @@ var Util = {
      * Remove event listener from target
      *
      * @method on
-     * @param {String} event
+     * @param {String|String[]} event
      * @param {Function} callback
      * @param {HTMLElement} [target=document.body]
      * @chainable
@@ -43,10 +49,16 @@ var Util = {
             target = document.body;
         }
 
-        if (target.removeEventListener) {
-            target.removeEventListener(event, callback, false);
-        } else {
-            target.detachEvent('on' + event, callback);
+        var i = 0;
+        var events = (event instanceof Array) ? event : event.split(' ');
+        var length = events.length;
+
+        for (; i < length; i++) {
+            if (target.removeEventListener) {
+                target.removeEventListener(events[i], callback, false);
+            } else {
+                target.detachEvent('on' + events[i], callback);
+            }
         }
 
         return this;

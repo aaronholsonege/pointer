@@ -1,4 +1,4 @@
 Pointer Events
 ==============
 
-jQuery touch/mouse event normalizer
+WIP Polyfill for PointerEvents API

@@ -19,9 +19,9 @@ var EventMap = {
 
     /**
      * @property touchmove
-     * @type String
+     * @type String[]
      */
-    touchmove: Events.MOVE,
+    touchmove: [Events.MOVE],
 
     /**
      * @property touchend
@@ -31,45 +31,45 @@ var EventMap = {
 
     /**
      * @property mouseenter
-     * @type String
+     * @type String[]
      */
-    mouseenter: Events.ENTER,
+    mouseenter: [Events.ENTER],
 
     /**
      * @property mouseover
-     * @type String
+     * @type String[]
      */
-    mouseover: Events.OVER,
+    mouseover: [Events.OVER],
 
     /**
      * @property mousedown
-     * @type String
+     * @type String[]
      */
-    mousedown: Events.DOWN,
+    mousedown: [Events.DOWN],
 
     /**
      * @property mousemove
-     * @type String
+     * @type String[]
      */
-    mousemove: Events.MOVE,
+    mousemove: [Events.MOVE],
 
     /**
      * @property mouseup
-     * @type String
+     * @type String[]
      */
-    mouseup: Events.UP,
+    mouseup: [Events.UP],
 
     /**
      * @property mouseout
-     * @type String
+     * @type String[]
      */
-    mouseout: Events.OUT,
+    mouseout: [Events.OUT],
 
     /**
      * @property mouseleave
-     * @type String
+     * @type String[]
      */
-    mouseleave: Events.LEAVE
+    mouseleave: [Events.LEAVE]
 
 };
 

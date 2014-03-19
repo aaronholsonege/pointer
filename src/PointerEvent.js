@@ -11,6 +11,20 @@ var Util = require('./Util');
 var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
 
 /**
+ * Event to detect mouseenter events with
+ * @type String
+ * @static
+ */
+var ENTER_EVENT = 'mouseover';
+
+/**
+ * Event to detect mouseleave events with
+ * @type String
+ * @static
+ */
+var LEAVE_EVENT = 'mouseout';
+
+/**
  * Mouse enter/leave event map
  * @type Object
  * @static
@@ -99,15 +113,18 @@ var PointerEvent = {
         var source = originalEvent;
 
         if (originalEvent.type.indexOf('touch') === 0) {
-            properties.touches = originalEvent.changedTouches;
-            source = properties.touches[0];
+            properties.changedTouches = originalEvent.changedTouches;
+            properties.touches = originalEvent.touches;
+            source = properties.changedTouches[0];
         }
 
         var i = 0;
         var length = PROPS.length;
 
         for (; i < length; i++) {
-            properties[PROPS[i]] = source[PROPS[i]];
+            if (source.hasOwnProperty(PROPS[i])) {
+                properties[PROPS[i]] = source[PROPS[i]];
+            }
         }
 
         return Adapter.create(type, originalEvent, properties);
@@ -119,39 +136,38 @@ var PointerEvent = {
      * @method trigger
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
-     * @return {*} Event created from adapter
      */
     trigger: function(originalEvent, overrideType) {
         if (!originalEvent || !EventMap.hasOwnProperty(originalEvent.type)) {
-            return null;
+            return;
         }
 
         var _type = overrideType || originalEvent.type;
 
-        // trigger pointerenter/pointerleave events if applicable
+        // trigger pointerenter event if applicable
         // browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
-        if (ENTER_LEAVE_EVENT_MAP.hasOwnProperty(_type)) {
+        if (ENTER_EVENT === _type) {
             _detectMouseEnterOrLeave(originalEvent);
         }
 
-        var type = EventMap[_type];
-
-        if (!(type instanceof Array)) {
-            type = EventMap[_type] = [type];
-        }
+        var types = EventMap[_type];
 
         var i = 0;
-        var length = type.length;
+        var length = types.length;
         var event;
 
         for (; i < length; i++) {
-            event = this.create(type[i], originalEvent);
+            event = PointerEvent.create(types[i], originalEvent);
             if (event) {
                 Adapter.trigger(event, originalEvent.target);
             }
         }
 
-        return event;
+        // trigger pointerleave event if applicable
+        // browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
+        if (LEAVE_EVENT === _type) {
+            _detectMouseEnterOrLeave(originalEvent);
+        }
     }
 
 };
