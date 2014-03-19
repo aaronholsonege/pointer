@@ -1,5 +1,5 @@
-var Events = require('./Events');
-var EventMap = require('./EventMap');
+var Events = require('./event/Events');
+var EventMap = require('./event/Map');
 var Adapter = require('Adapter');
 var Util = require('./Util');
 
@@ -11,83 +11,12 @@ var Util = require('./Util');
 var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
 
 /**
- * Event to detect mouseenter events with
- * @type String
- * @static
- */
-var ENTER_EVENT = 'mouseover';
-
-/**
- * Event to detect mouseleave events with
- * @type String
- * @static
- */
-var LEAVE_EVENT = 'mouseout';
-
-/**
- * Mouse enter/leave event map
- * @type Object
- * @static
- */
-var ENTER_LEAVE_EVENT_MAP = {
-    mouseover: 'mouseenter',
-    mouseout: 'mouseleave'
-};
-
-/**
  * Properties to copy from original event to new event
  *
  * @type String[]
  * @static
  */
 var PROPS = 'screenX screenY pageX pageY offsetX offsetY'.split(' ');
-
-/**
- * Cached array
- *
- * @type Array
- * @static
- */
-var CACHED_ARRAY = [];
-
-/**
- * Determine if `child` is a descendant of `target`
- *
- * @param {HTMLElement} target
- * @param {HTMLElement} child
- * @return {Boolean}
- * @private
- */
-var _contains = function(target, child) {
-    if (target.contains) {
-        return target.contains(child);
-    } else {
-        CACHED_ARRAY.length = 0;
-        var current = child;
-
-        while(current = current.parentNode) {
-            CACHED_ARRAY.push(current);
-        }
-
-        return Util.indexOf(CACHED_ARRAY, target) !== -1;
-    }
-};
-
-/**
- * Determine if we have moused over a new target
- *
- * @param {MouseEvent} event
- * @private
- */
-var _detectMouseEnterOrLeave = function(event) {
-    var target = event.target;
-    var related = event.relatedTarget;
-    var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
-
-    if (!related || (related !== target && !_contains(target, related))) {
-        PointerEvent.trigger(event, eventName);
-    }
-};
 
 /**
  * Create and trigger pointer events
@@ -142,15 +71,8 @@ var PointerEvent = {
             return;
         }
 
-        var _type = overrideType || originalEvent.type;
-
-        // trigger pointerenter event if applicable
-        // browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
-        if (ENTER_EVENT === _type) {
-            _detectMouseEnterOrLeave(originalEvent);
-        }
-
-        var types = EventMap[_type];
+        var eventName = overrideType || originalEvent.type;
+        var types = EventMap[eventName];
 
         var i = 0;
         var length = types.length;
@@ -161,12 +83,6 @@ var PointerEvent = {
             if (event) {
                 Adapter.trigger(event, originalEvent.target);
             }
-        }
-
-        // trigger pointerleave event if applicable
-        // browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
-        if (LEAVE_EVENT === _type) {
-            _detectMouseEnterOrLeave(originalEvent);
         }
     }
 

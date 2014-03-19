@@ -1,240 +1,5 @@
 (function() {
 var require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Events = require('./Events');
-
-/**
- * Map of mouse/touch event to their respective pointer event(s)
- * When these events (keys) are captured, the defined pointer event(s) are fired.
- *
- * Values can be either a single event name, or an array of event names.
- *
- * @class Pointer.EventMap
- * @static
- */
-var EventMap = {
-
-    /**
-     * @property touchstart
-     * @type String[]
-     */
-    touchstart: [Events.ENTER, Events.OVER, Events.DOWN],
-
-    /**
-     * @property touchmove
-     * @type String[]
-     */
-    touchmove: [Events.MOVE],
-
-    /**
-     * @property touchend
-     * @type String[]
-     */
-    touchend: [Events.UP, Events.OUT, Events.LEAVE],
-
-    /**
-     * @property mouseenter
-     * @type String[]
-     */
-    mouseenter: [Events.ENTER],
-
-    /**
-     * @property mouseover
-     * @type String[]
-     */
-    mouseover: [Events.OVER],
-
-    /**
-     * @property mousedown
-     * @type String[]
-     */
-    mousedown: [Events.DOWN],
-
-    /**
-     * @property mousemove
-     * @type String[]
-     */
-    mousemove: [Events.MOVE],
-
-    /**
-     * @property mouseup
-     * @type String[]
-     */
-    mouseup: [Events.UP],
-
-    /**
-     * @property mouseout
-     * @type String[]
-     */
-    mouseout: [Events.OUT],
-
-    /**
-     * @property mouseleave
-     * @type String[]
-     */
-    mouseleave: [Events.LEAVE]
-
-};
-
-module.exports = EventMap;
-},{"./Events":3}],2:[function(require,module,exports){
-/**
- * Mouse > touch map
- *
- * @type Object
- * @static
- */
-var MAP = {
-    mousedown: 'touchstart',
-    mouseover: 'touchstart',
-    mouseout: 'touchend',
-    mouseup: 'touchend'
-};
-
-/**
- * The last triggered touch events to compare mouse
- * events to to determine if they are emulated.
- *
- * @type Object
- * @static
- */
-var LAST_EVENTS = {
-    touchstart: null,
-    touchend: null
-};
-
-/**
- * Max time between touch and simulated mouse event
- *
- * @type Number
- * @static
- */
-var DELTA_TIME = 300;
-
-/**
- * Max x/y distance between touch and simulated mouse event
- *
- * @type Number
- * @static
- */
-var DELTA_POSITION = 5;
-
-/**
- * @class Pointer.EventTracker
- * @static
- */
-var EventTracker = {
-
-    /**
-     * Register a touch event used to determine if mouse events are emulated
-     *
-     * @method register
-     * @param {MouseEvent|TouchEvent} event
-     * @chainable
-     */
-    register: function(event) {
-        if (LAST_EVENTS.hasOwnProperty(event.type)) {
-            LAST_EVENTS[event.type] = event;
-        }
-
-        return this;
-    },
-
-    /**
-     * Determine if a mouse event has been emulated
-     *
-     * @method isEmulated
-     * @param {MouseEvent|TouchEvent} event
-     * @returns {Boolean}
-     */
-    isEmulated: function(event) {
-        if (!MAP.hasOwnProperty(event.type)) {
-            return false;
-        }
-
-        var eventName = MAP[event.type];
-        var last = LAST_EVENTS[eventName];
-
-        if (!last) {
-            return false;
-        }
-
-        var touch = last.changedTouches[0];
-
-        var dx = Math.abs(touch.clientX - event.clientX);
-        var dy = Math.abs(touch.clientY - event.clientY);
-        var dt = Math.abs(last.timeStamp - event.timeStamp);
-
-        return (dx <= DELTA_POSITION && dy <= DELTA_POSITION && dt <= DELTA_TIME);
-    }
-
-};
-
-module.exports = EventTracker;
-},{}],3:[function(require,module,exports){
-/**
- * Pointer event namespace.
- * This is prepended to the pointer events
- *
- * @type {string}
- * @final
- */
-var NAMESPACE = 'pointer';
-
-/**
- * Pointer event names
- *
- * @class Pointer.Events
- * @static
- * @final
- */
-var Events = {
-
-    /**
-     * @property MOVE
-     * @type string
-     */
-    MOVE: NAMESPACE + 'move',
-
-    /**
-     * @property ENTER
-     * @type string
-     */
-    ENTER: NAMESPACE + 'enter',
-
-    /**
-     * @property OVER
-     * @type string
-     */
-    OVER: NAMESPACE + 'over',
-
-    /**
-     * @property DOWN
-     * @type string
-     */
-    DOWN: NAMESPACE + 'down',
-
-    /**
-     * @property UP
-     * @type string
-     */
-    UP: NAMESPACE + 'up',
-
-    /**
-     * @property OUT
-     * @type string
-     */
-    OUT: NAMESPACE + 'out',
-
-    /**
-     * @property LEAVE
-     * @type string
-     */
-    LEAVE: NAMESPACE + 'leave'
-
-};
-
-module.exports = Events;
-},{}],4:[function(require,module,exports){
 var Watch = require('./Watch');
 var Util = require('./Util');
 
@@ -253,9 +18,9 @@ if (document.readyState === 'complete') {
         .on('DOMContentLoaded', _onReady, document)
         .on('load', _onReady, window);
 }
-},{"./Util":6,"./Watch":7}],5:[function(require,module,exports){
-var Events = require('./Events');
-var EventMap = require('./EventMap');
+},{"./Util":3,"./Watch":4}],2:[function(require,module,exports){
+var Events = require('./event/Events');
+var EventMap = require('./event/Map');
 var Adapter = require('Adapter');
 var Util = require('./Util');
 
@@ -267,83 +32,12 @@ var Util = require('./Util');
 var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
 
 /**
- * Event to detect mouseenter events with
- * @type String
- * @static
- */
-var ENTER_EVENT = 'mouseover';
-
-/**
- * Event to detect mouseleave events with
- * @type String
- * @static
- */
-var LEAVE_EVENT = 'mouseout';
-
-/**
- * Mouse enter/leave event map
- * @type Object
- * @static
- */
-var ENTER_LEAVE_EVENT_MAP = {
-    mouseover: 'mouseenter',
-    mouseout: 'mouseleave'
-};
-
-/**
  * Properties to copy from original event to new event
  *
  * @type String[]
  * @static
  */
 var PROPS = 'screenX screenY pageX pageY offsetX offsetY'.split(' ');
-
-/**
- * Cached array
- *
- * @type Array
- * @static
- */
-var CACHED_ARRAY = [];
-
-/**
- * Determine if `child` is a descendant of `target`
- *
- * @param {HTMLElement} target
- * @param {HTMLElement} child
- * @return {Boolean}
- * @private
- */
-var _contains = function(target, child) {
-    if (target.contains) {
-        return target.contains(child);
-    } else {
-        CACHED_ARRAY.length = 0;
-        var current = child;
-
-        while(current = current.parentNode) {
-            CACHED_ARRAY.push(current);
-        }
-
-        return Util.indexOf(CACHED_ARRAY, target) !== -1;
-    }
-};
-
-/**
- * Determine if we have moused over a new target
- *
- * @param {MouseEvent} event
- * @private
- */
-var _detectMouseEnterOrLeave = function(event) {
-    var target = event.target;
-    var related = event.relatedTarget;
-    var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
-
-    if (!related || (related !== target && !_contains(target, related))) {
-        PointerEvent.trigger(event, eventName);
-    }
-};
 
 /**
  * Create and trigger pointer events
@@ -398,15 +92,8 @@ var PointerEvent = {
             return;
         }
 
-        var _type = overrideType || originalEvent.type;
-
-        // trigger pointerenter event if applicable
-        // browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
-        if (ENTER_EVENT === _type) {
-            _detectMouseEnterOrLeave(originalEvent);
-        }
-
-        var types = EventMap[_type];
+        var eventName = overrideType || originalEvent.type;
+        var types = EventMap[eventName];
 
         var i = 0;
         var length = types.length;
@@ -418,18 +105,12 @@ var PointerEvent = {
                 Adapter.trigger(event, originalEvent.target);
             }
         }
-
-        // trigger pointerleave event if applicable
-        // browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
-        if (LEAVE_EVENT === _type) {
-            _detectMouseEnterOrLeave(originalEvent);
-        }
     }
 
 };
 
 module.exports = PointerEvent;
-},{"./EventMap":1,"./Events":3,"./Util":6,"Adapter":"ivQJWr"}],6:[function(require,module,exports){
+},{"./Util":3,"./event/Events":9,"./event/Map":10,"Adapter":"ivQJWr"}],3:[function(require,module,exports){
 /**
  * Utility functions
  *
@@ -524,7 +205,7 @@ var Util = {
 };
 
 module.exports = Util;
-},{}],7:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var MouseCapture = require('./capture/Mouse');
 var TouchCapture = require('./capture/Touch');
 
@@ -577,9 +258,7 @@ var Watch = {
 };
 
 module.exports = Watch;
-},{"./capture/Mouse":10,"./capture/Touch":11}],"Adapter":[function(require,module,exports){
-module.exports=require('ivQJWr');
-},{}],"ivQJWr":[function(require,module,exports){
+},{"./capture/Mouse":7,"./capture/Touch":8}],"ivQJWr":[function(require,module,exports){
 /**
  * Default properties to apply to newly created events
  *
@@ -688,14 +367,87 @@ var Native = {
 };
 
 module.exports = Native;
-},{}],10:[function(require,module,exports){
+},{}],"Adapter":[function(require,module,exports){
+module.exports=require('ivQJWr');
+},{}],7:[function(require,module,exports){
 var Util = require('../Util');
 var PointerEvent = require('../PointerEvent');
-var EventTracker = require('../EventTracker');
+var EventTracker = require('../event/Tracker');
+
+/**
+ * Event to detect mouseenter events with
+ * @type String
+ * @static
+ */
+var ENTER_EVENT = 'mouseover';
+
+/**
+ * Event to detect mouseleave events with
+ * @type String
+ * @static
+ */
+var EXIT_EVENT = 'mouseout';
+
+/**
+ * Mouse enter/leave event map
+ * @type Object
+ * @static
+ */
+var ENTER_LEAVE_EVENT_MAP = {
+    mouseover: 'mouseenter',
+    mouseout: 'mouseleave'
+};
+
+/**
+ * Cached array
+ *
+ * @type Array
+ * @static
+ */
+var CACHED_ARRAY = [];
+
+/**
+ * Determine if `child` is a descendant of `target`
+ *
+ * @param {Element} target
+ * @param {Element} child
+ * @return {Boolean}
+ * @private
+ */
+var _contains = function(target, child) {
+    if (target.contains) {
+        return target.contains(child);
+    } else {
+        CACHED_ARRAY.length = 0;
+        var current = child;
+
+        while(current = current.parentNode) {
+            CACHED_ARRAY.push(current);
+        }
+
+        return Util.indexOf(CACHED_ARRAY, target) !== -1;
+    }
+};
+
+/**
+ * Determine if we have moused over a new target.
+ * Browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
+ *
+ * @param {MouseEvent} event
+ * @private
+ */
+var _detectMouseEnterOrLeave = function(event) {
+    var target = event.target;
+    var related = event.relatedTarget;
+    var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
+
+    if (!related || (related !== target && !_contains(target, related))) {
+        PointerEvent.trigger(event, eventName);
+    }
+};
 
 /**
  * @class Pointer.Capture.Mouse
- * @extends Pointer.Capture.Abstract
  * @type Object
  * @static
  */
@@ -705,7 +457,7 @@ var MouseCapture = {
      * Events to watch
      *
      * @property events
-     * @type String
+     * @type String[]
      */
     events: ['mouseover', 'mousedown', 'mousemove', 'mouseup', 'mouseout'],
 
@@ -736,21 +488,30 @@ var MouseCapture = {
      */
     onEvent: function(event) {
         if (!EventTracker.isEmulated(event)) {
+            // trigger mouseenter event if applicable
+            if (ENTER_EVENT === event.type) {
+                _detectMouseEnterOrLeave(event);
+            }
+
             PointerEvent.trigger(event);
+
+            // trigger mouseleave event if applicable
+            if (EXIT_EVENT === event.type) {
+                _detectMouseEnterOrLeave(event);
+            }
         }
     }
 
 };
 
 module.exports = MouseCapture;
-},{"../EventTracker":2,"../PointerEvent":5,"../Util":6}],11:[function(require,module,exports){
+},{"../PointerEvent":2,"../Util":3,"../event/Tracker":11}],8:[function(require,module,exports){
 var Util = require('../Util');
 var PointerEvent = require('../PointerEvent');
-var EventTracker = require('../EventTracker');
+var EventTracker = require('../event/Tracker');
 
 /**
  * @class Pointer.Capture.Touch
- * @extends Pointer.Capture.Abstract
  * @type Object
  * @static
  */
@@ -760,7 +521,7 @@ var TouchCapture = {
      * Events to watch
      *
      * @property events
-     * @type String
+     * @type String[]
      */
     events: ['touchstart' ,'touchmove', 'touchend', 'touchcancel'],
 
@@ -797,5 +558,240 @@ var TouchCapture = {
 };
 
 module.exports = TouchCapture;
-},{"../EventTracker":2,"../PointerEvent":5,"../Util":6}]},{},[4])
+},{"../PointerEvent":2,"../Util":3,"../event/Tracker":11}],9:[function(require,module,exports){
+/**
+ * Pointer event namespace.
+ * This is prepended to the pointer events
+ *
+ * @type {string}
+ * @final
+ */
+var NAMESPACE = 'pointer';
+
+/**
+ * Pointer event names
+ *
+ * @class Pointer.Events
+ * @static
+ * @final
+ */
+var Events = {
+
+    /**
+     * @property MOVE
+     * @type string
+     */
+    MOVE: NAMESPACE + 'move',
+
+    /**
+     * @property ENTER
+     * @type string
+     */
+    ENTER: NAMESPACE + 'enter',
+
+    /**
+     * @property OVER
+     * @type string
+     */
+    OVER: NAMESPACE + 'over',
+
+    /**
+     * @property DOWN
+     * @type string
+     */
+    DOWN: NAMESPACE + 'down',
+
+    /**
+     * @property UP
+     * @type string
+     */
+    UP: NAMESPACE + 'up',
+
+    /**
+     * @property OUT
+     * @type string
+     */
+    OUT: NAMESPACE + 'out',
+
+    /**
+     * @property LEAVE
+     * @type string
+     */
+    LEAVE: NAMESPACE + 'leave'
+
+};
+
+module.exports = Events;
+},{}],10:[function(require,module,exports){
+var Events = require('./Events');
+
+/**
+ * Map of mouse/touch event to their respective pointer event(s)
+ * When these events (keys) are captured, the defined pointer event(s) are fired.
+ *
+ * Values can be either a single event name, or an array of event names.
+ *
+ * @class Pointer.EventMap
+ * @static
+ */
+var EventMap = {
+
+    /**
+     * @property touchstart
+     * @type String[]
+     */
+    touchstart: [Events.ENTER, Events.OVER, Events.DOWN],
+
+    /**
+     * @property touchmove
+     * @type String[]
+     */
+    touchmove: [Events.MOVE],
+
+    /**
+     * @property touchend
+     * @type String[]
+     */
+    touchend: [Events.UP, Events.OUT, Events.LEAVE],
+
+    /**
+     * @property mouseenter
+     * @type String[]
+     */
+    mouseenter: [Events.ENTER],
+
+    /**
+     * @property mouseover
+     * @type String[]
+     */
+    mouseover: [Events.OVER],
+
+    /**
+     * @property mousedown
+     * @type String[]
+     */
+    mousedown: [Events.DOWN],
+
+    /**
+     * @property mousemove
+     * @type String[]
+     */
+    mousemove: [Events.MOVE],
+
+    /**
+     * @property mouseup
+     * @type String[]
+     */
+    mouseup: [Events.UP],
+
+    /**
+     * @property mouseout
+     * @type String[]
+     */
+    mouseout: [Events.OUT],
+
+    /**
+     * @property mouseleave
+     * @type String[]
+     */
+    mouseleave: [Events.LEAVE]
+
+};
+
+module.exports = EventMap;
+},{"./Events":9}],11:[function(require,module,exports){
+/**
+ * Mouse > touch map
+ *
+ * @type Object
+ * @static
+ */
+var MAP = {
+    mousedown: 'touchstart',
+    mouseover: 'touchstart',
+    mouseout: 'touchend',
+    mouseup: 'touchend'
+};
+
+/**
+ * The last triggered touch events to compare mouse
+ * events to to determine if they are emulated.
+ *
+ * @type Object
+ * @static
+ */
+var LAST_EVENTS = {
+    touchstart: null,
+    touchend: null
+};
+
+/**
+ * Max time between touch and simulated mouse event
+ *
+ * @type Number
+ * @static
+ */
+var DELTA_TIME = 300;
+
+/**
+ * Max x/y distance between touch and simulated mouse event
+ *
+ * @type Number
+ * @static
+ */
+var DELTA_POSITION = 5;
+
+/**
+ * @class Pointer.EventTracker
+ * @static
+ */
+var EventTracker = {
+
+    /**
+     * Register a touch event used to determine if mouse events are emulated
+     *
+     * @method register
+     * @param {MouseEvent|TouchEvent} event
+     * @chainable
+     */
+    register: function(event) {
+        if (LAST_EVENTS.hasOwnProperty(event.type)) {
+            LAST_EVENTS[event.type] = event;
+        }
+
+        return this;
+    },
+
+    /**
+     * Determine if a mouse event has been emulated
+     *
+     * @method isEmulated
+     * @param {MouseEvent|TouchEvent} event
+     * @returns {Boolean}
+     */
+    isEmulated: function(event) {
+        if (!MAP.hasOwnProperty(event.type)) {
+            return false;
+        }
+
+        var eventName = MAP[event.type];
+        var last = LAST_EVENTS[eventName];
+
+        if (!last) {
+            return false;
+        }
+
+        var touch = last.changedTouches[0];
+
+        var dx = Math.abs(touch.clientX - event.clientX);
+        var dy = Math.abs(touch.clientY - event.clientY);
+        var dt = Math.abs(last.timeStamp - event.timeStamp);
+
+        return (dx <= DELTA_POSITION && dy <= DELTA_POSITION && dt <= DELTA_TIME);
+    }
+
+};
+
+module.exports = EventTracker;
+},{}]},{},[1])
 }());

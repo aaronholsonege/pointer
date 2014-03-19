@@ -1,10 +1,9 @@
 var Util = require('../Util');
 var PointerEvent = require('../PointerEvent');
-var EventTracker = require('../EventTracker');
+var EventTracker = require('../event/Tracker');
 
 /**
  * @class Pointer.Capture.Touch
- * @extends Pointer.Capture.Abstract
  * @type Object
  * @static
  */
@@ -14,7 +13,7 @@ var TouchCapture = {
      * Events to watch
      *
      * @property events
-     * @type String
+     * @type String[]
      */
     events: ['touchstart' ,'touchmove', 'touchend', 'touchcancel'],
 
