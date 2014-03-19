@@ -110,7 +110,7 @@ var PointerEvent = {
 };
 
 module.exports = PointerEvent;
-},{"./Util":3,"./event/Events":9,"./event/Map":10,"Adapter":"e//kyk"}],3:[function(require,module,exports){
+},{"./Util":3,"./event/Events":9,"./event/Map":10,"Adapter":"ccQ5QW"}],3:[function(require,module,exports){
 /**
  * Utility functions
  *
@@ -258,7 +258,7 @@ var Watch = {
 };
 
 module.exports = Watch;
-},{"./capture/Mouse":7,"./capture/Touch":8}],"e//kyk":[function(require,module,exports){
+},{"./capture/Mouse":7,"./capture/Touch":8}],"ccQ5QW":[function(require,module,exports){
 var $ = window.jQuery;
 
 /**
@@ -295,7 +295,7 @@ var jQueryAdapter = {
 
 module.exports = jQueryAdapter;
 },{}],"Adapter":[function(require,module,exports){
-module.exports=require('e//kyk');
+module.exports=require('ccQ5QW');
 },{}],7:[function(require,module,exports){
 var Util = require('../Util');
 var PointerEvent = require('../PointerEvent');

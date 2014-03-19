@@ -110,7 +110,7 @@ var PointerEvent = {
 };
 
 module.exports = PointerEvent;
-},{"./Util":3,"./event/Events":9,"./event/Map":10,"Adapter":"ivQJWr"}],3:[function(require,module,exports){
+},{"./Util":3,"./event/Events":9,"./event/Map":10,"Adapter":"OqFEuB"}],3:[function(require,module,exports){
 /**
  * Utility functions
  *
@@ -258,7 +258,7 @@ var Watch = {
 };
 
 module.exports = Watch;
-},{"./capture/Mouse":7,"./capture/Touch":8}],"ivQJWr":[function(require,module,exports){
+},{"./capture/Mouse":7,"./capture/Touch":8}],"OqFEuB":[function(require,module,exports){
 /**
  * Default properties to apply to newly created events
  *
@@ -368,7 +368,7 @@ var Native = {
 
 module.exports = Native;
 },{}],"Adapter":[function(require,module,exports){
-module.exports=require('ivQJWr');
+module.exports=require('OqFEuB');
 },{}],7:[function(require,module,exports){
 var Util = require('../Util');
 var PointerEvent = require('../PointerEvent');

@@ -19,7 +19,7 @@ module.exports = function (grunt) {
                     'build/pointer.js' : ['src/Pointer.js']
                 },
                 options: {
-                    alias: ['src/adapters/NativeAdapter.js:Adapter']
+                    alias: ['src/adapters/Native.js:Adapter']
                 }
             },
             jquery: {
@@ -27,7 +27,7 @@ module.exports = function (grunt) {
                     'build/jquery.pointer.js' : ['src/Pointer.js']
                 },
                 options: {
-                    alias: ['src/adapters/jQueryAdapter.js:Adapter']
+                    alias: ['src/adapters/jQuery.js:Adapter']
                 }
             }
         },
