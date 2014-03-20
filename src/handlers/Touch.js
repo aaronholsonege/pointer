@@ -11,7 +11,7 @@ var EventTracker = require('../event/Tracker');
 var ENTER_EVENT = 'touchstart';
 
 /**
- * Custome enter/over/out/leave touch events names
+ * Custom enter/over/out/leave touch events names
  *
  * @type Object
  * @static
@@ -26,7 +26,7 @@ var EVENTS = {
 /**
  * Determine if we have touched over a new target.
  *
- * @param {MouseEvent} event
+ * @param {TouchEvent} event
  * @param {Element} lastTarget
  * @private
  */
@@ -106,7 +106,6 @@ var TouchHandler = {
         }
 
         Controller.trigger(event);
-
         EventTracker.lastTarget = event.target;
     }
 

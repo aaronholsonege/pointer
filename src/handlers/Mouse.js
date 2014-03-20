@@ -35,7 +35,7 @@ var ENTER_LEAVE_EVENT_MAP = {
  */
 var _detectMouseEnterOrLeave = function(event) {
     var target = event.target;
-    var related = EventTracker.lastTarget;//event.relatedTarget;
+    var related = EventTracker.lastTarget;
     var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
 
     if (!related || !Util.contains(target, related)) {
@@ -85,12 +85,14 @@ var MouseHandler = {
      */
     onEvent: function(event) {
         if (!EventTracker.isEmulated(event)) {
+
             // trigger mouseenter event if applicable
             if (ENTER_EVENT === event.type) {
                 _detectMouseEnterOrLeave(event);
             }
 
             Controller.trigger(event);
+            EventTracker.lastTarget = event.target;
 
             // trigger mouseleave event if applicable
             if (EXIT_EVENT === event.type) {

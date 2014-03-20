@@ -5,6 +5,7 @@ var Util = require('./Util');
 
 /**
  * Pointer events that should not bubble
+ *
  * @type String[]
  * @static
  */
@@ -21,7 +22,7 @@ var PROPS = 'screenX screenY pageX pageY offsetX offsetY'.split(' ');
 /**
  * Create and trigger pointer events
  *
- * @class Pointer.PointerEvent
+ * @class Pointer.Controller
  * @static
  */
 var PointerEvent = {
@@ -30,7 +31,7 @@ var PointerEvent = {
      * Create a new pointer event
      *
      * @method create
-     * @param {String} type
+     * @param {String} type Pointer event name
      * @param {MouseEvent|TouchEvent} originalEvent
      * @return {*} Event created from adapter
      */
@@ -83,16 +84,11 @@ var PointerEvent = {
             return;
         }
 
-        var i = 0;
-        var types = EventMap[eventName];
-        var length = types.length;
-        var event;
+        var type = EventMap[eventName];
+        var event = PointerEvent.create(type, originalEvent);
 
-        for (; i < length; i++) {
-            event = PointerEvent.create(types[i], originalEvent);
-            if (event) {
-                Adapter.trigger(event, overrideTarget || originalEvent.target);
-            }
+        if (event) {
+            Adapter.trigger(event, overrideTarget || originalEvent.target);
         }
     }
 

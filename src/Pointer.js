@@ -1,5 +1,5 @@
-var MouseCapture = require('./capture/Mouse');
-var TouchCapture = require('./capture/Touch');
+var MouseHandler = require('./handlers/Mouse');
+var TouchHandler = require('./handlers/Touch');
 
 /**
  * @type Boolean
@@ -10,10 +10,10 @@ var _isEnabled = false;
 /**
  * Bind mouse/touch events to convert to pointer events
  *
- * @class Pointer.Watch
+ * @class Pointer
  * @static
  */
-var Watch = {
+var Pointer = {
 
     /**
      * Enable tracking of touch/mouse events
@@ -27,8 +27,8 @@ var Watch = {
 
         _isEnabled = true;
 
-        TouchCapture.enable();
-        MouseCapture.enable();
+        TouchHandler.enable();
+        MouseHandler.enable();
     },
 
     /**
@@ -43,10 +43,10 @@ var Watch = {
 
         _isEnabled = false;
 
-        TouchCapture.disable();
-        MouseCapture.disable();
+        TouchHandler.disable();
+        MouseHandler.disable();
     }
 
 };
 
-module.exports = Watch;
+module.exports = Pointer;

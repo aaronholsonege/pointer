@@ -1,7 +1,9 @@
 var $ = window.jQuery;
 
 /**
- * @class Pointer.Adapter.jQueryAdapter
+ * jQuery event creating and dispatching.
+ *
+ * @class Pointer.Adapter.jQuery
  * @static
  */
 var jQueryAdapter = {

@@ -13,87 +13,87 @@ var EventMap = {
 
     /**
      * @property touchenter
-     * @type String[]
+     * @type String
      */
-    touchenter: [Events.ENTER],
+    touchenter: Events.ENTER,
 
     /**
      * @property touchover
-     * @type String[]
+     * @type String
      */
-    touchover: [Events.OVER],
+    touchover: Events.OVER,
 
     /**
      * @property touchstart
-     * @type String[]
+     * @type String
      */
-    touchstart: [Events.DOWN],
+    touchstart: Events.DOWN,
 
     /**
      * @property touchmove
-     * @type String[]
+     * @type String
      */
-    touchmove: [Events.MOVE],
+    touchmove: Events.MOVE,
 
     /**
      * @property touchend
-     * @type String[]
+     * @type String
      */
-    touchend: [Events.UP],
+    touchend: Events.UP,
 
     /**
      * @property touchout
-     * @type String[]
+     * @type String
      */
-    touchout: [Events.OUT],
+    touchout: Events.OUT,
 
     /**
      * @property touchleave
-     * @type String[]
+     * @type String
      */
-    touchleave: [Events.LEAVE],
+    touchleave: Events.LEAVE,
 
     /**
      * @property mouseenter
-     * @type String[]
+     * @type String
      */
-    mouseenter: [Events.ENTER],
+    mouseenter: Events.ENTER,
 
     /**
      * @property mouseover
-     * @type String[]
+     * @type String
      */
-    mouseover: [Events.OVER],
+    mouseover: Events.OVER,
 
     /**
      * @property mousedown
-     * @type String[]
+     * @type String
      */
-    mousedown: [Events.DOWN],
+    mousedown: Events.DOWN,
 
     /**
      * @property mousemove
-     * @type String[]
+     * @type String
      */
-    mousemove: [Events.MOVE],
+    mousemove: Events.MOVE,
 
     /**
      * @property mouseup
-     * @type String[]
+     * @type String
      */
-    mouseup: [Events.UP],
+    mouseup: Events.UP,
 
     /**
      * @property mouseout
-     * @type String[]
+     * @type String
      */
-    mouseout: [Events.OUT],
+    mouseout: Events.OUT,
 
     /**
      * @property mouseleave
-     * @type String[]
+     * @type String
      */
-    mouseleave: [Events.LEAVE]
+    mouseleave: Events.LEAVE
 
 };
 

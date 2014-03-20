@@ -53,6 +53,9 @@ var _overrideMethod = function(event, originalEvent, method) {
 };
 
 /**
+ * Native pointer event creation and dispatching.
+ * Only IE9+ is supported
+ *
  * @class Pointer.Adapter.Native
  * @static
  */
