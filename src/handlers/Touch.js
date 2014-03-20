@@ -27,6 +27,7 @@ var EVENTS = {
  * Determine if we have touched over a new target.
  *
  * @param {TouchEvent} event
+ * @param {Element} event.target
  * @param {Element} lastTarget
  * @private
  */
@@ -96,6 +97,8 @@ var TouchHandler = {
      *
      * @method onEvent
      * @param {TouchEvent} event
+     * @param {String} event.type
+     * @param {Element} event.target
      * @callback
      */
     onEvent: function(event) {

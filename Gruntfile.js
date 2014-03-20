@@ -7,6 +7,17 @@ module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
+        watch: {
+            options: {
+                event: 'all',
+                livereload: true
+            },
+            scripts: {
+                files: ['src/**/*.js'],
+                tasks: ['build']
+            }
+        },
+
         browserify: {
             options: {
                 entry: 'src/Bootstrap.js',
@@ -44,17 +55,6 @@ module.exports = function (grunt) {
                     dest: 'build',
                     extDot: 'last'
                 }]
-            }
-        },
-
-        watch: {
-            options: {
-                event: 'all',
-                livereload: true
-            },
-            scripts: {
-                files: ['src/**/*.js'],
-                tasks: ['build']
             }
         }
     });

@@ -66,6 +66,7 @@ var Native = {
      * @param {String} type
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {Object} properties
+     * @param {Boolean} [properties.noBubble]
      * @return {Event}
      */
     create: function(type, originalEvent, properties) {

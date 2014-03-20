@@ -21,6 +21,8 @@ var Util = {
      * @param {String|String[]} event
      * @param {Function} callback
      * @param {HTMLElement} [target=document.body]
+     * @param {Function} [target.addEventListener]
+     * @param {Function} [target.attachEvent]
      * @chainable
      */
     on: function(event, callback, target) {
@@ -50,6 +52,8 @@ var Util = {
      * @param {String|String[]} event
      * @param {Function} callback
      * @param {HTMLElement} [target=document.body]
+     * @param {Function} [target.removeEventListener]
+     * @param {Function} [target.detachEvent]
      * @chainable
      */
     off: function(event, callback, target) {
@@ -77,6 +81,7 @@ var Util = {
      *
      * @method indexOf
      * @param {Array} array
+     * @param {Function} [array.indexOf]
      * @param {*} item
      * @return {Number}
      */
@@ -101,6 +106,7 @@ var Util = {
      *
      * @method contains
      * @param {Element} target
+     * @param {Function} [target.contains]
      * @param {Element} child
      * @return {Boolean}
      */

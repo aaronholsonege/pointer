@@ -56,6 +56,9 @@ var PointerEvent = {
      * @method create
      * @param {String} type Pointer event name
      * @param {MouseEvent|TouchEvent} originalEvent
+     * @param {String} originalEvent.type
+     * @param {TouchList} [originalEvent.touches]
+     * @param {TouchList} [originalEvent.changedTouches]
      * @return {*} Event created from adapter
      */
     create: function(type, originalEvent) {
@@ -97,6 +100,8 @@ var PointerEvent = {
      *
      * @method trigger
      * @param {MouseEvent|TouchEvent} originalEvent
+     * @param {String} originalEvent.type
+     * @param {Element} originalEvent.target
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
      * @param {Element} [overrideTarget] target to dispatch event from
      */
@@ -195,6 +200,8 @@ var Util = {
      * @param {String|String[]} event
      * @param {Function} callback
      * @param {HTMLElement} [target=document.body]
+     * @param {Function} [target.addEventListener]
+     * @param {Function} [target.attachEvent]
      * @chainable
      */
     on: function(event, callback, target) {
@@ -224,6 +231,8 @@ var Util = {
      * @param {String|String[]} event
      * @param {Function} callback
      * @param {HTMLElement} [target=document.body]
+     * @param {Function} [target.removeEventListener]
+     * @param {Function} [target.detachEvent]
      * @chainable
      */
     off: function(event, callback, target) {
@@ -251,6 +260,7 @@ var Util = {
      *
      * @method indexOf
      * @param {Array} array
+     * @param {Function} [array.indexOf]
      * @param {*} item
      * @return {Number}
      */
@@ -275,6 +285,7 @@ var Util = {
      *
      * @method contains
      * @param {Element} target
+     * @param {Function} [target.contains]
      * @param {Element} child
      * @return {Boolean}
      */
@@ -369,6 +380,7 @@ var Native = {
      * @param {String} type
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {Object} properties
+     * @param {Boolean} [properties.noBubble]
      * @return {Event}
      */
     create: function(type, originalEvent, properties) {
@@ -641,6 +653,7 @@ var EventTracker = {
      *
      * @method register
      * @param {MouseEvent|TouchEvent} event
+     * @param {String} event.type
      * @param {String} overrideEventName
      * @chainable
      */
@@ -658,7 +671,8 @@ var EventTracker = {
      * Determine if a mouse event has been emulated
      *
      * @method isEmulated
-     * @param {MouseEvent|TouchEvent} event
+     * @param {MouseEvent} event
+     * @param {String} event.type
      * @returns {Boolean}
      */
     isEmulated: function(event) {
@@ -725,11 +739,14 @@ var ENTER_LEAVE_EVENT_MAP = {
  * Browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
  *
  * @param {MouseEvent} event
+ * @param {String} event.type
+ * @param {Element} event.target
+ * @param {Element} relatedTarget
  * @private
  */
-var _detectMouseEnterOrLeave = function(event) {
+var _detectMouseEnterOrLeave = function(event, relatedTarget) {
     var target = event.target;
-    var related = EventTracker.lastTarget;
+    var related = relatedTarget || EventTracker.lastTarget;
     var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
 
     if (!related || !Util.contains(target, related)) {
@@ -775,6 +792,9 @@ var MouseHandler = {
      *
      * @method onEvent
      * @param {MouseEvent} event
+     * @param {String} event.type
+     * @param {Element} event.target
+     * @param {Element} event.relatedTarget
      * @callback
      */
     onEvent: function(event) {
@@ -790,8 +810,7 @@ var MouseHandler = {
 
             // trigger mouseleave event if applicable
             if (EXIT_EVENT === event.type) {
-                EventTracker.lastTarget = event.relatedTarget;
-                _detectMouseEnterOrLeave(event);
+                _detectMouseEnterOrLeave(event, event.relatedTarget);
             }
         }
     }
@@ -829,6 +848,7 @@ var EVENTS = {
  * Determine if we have touched over a new target.
  *
  * @param {TouchEvent} event
+ * @param {Element} event.target
  * @param {Element} lastTarget
  * @private
  */
@@ -898,6 +918,8 @@ var TouchHandler = {
      *
      * @method onEvent
      * @param {TouchEvent} event
+     * @param {String} event.type
+     * @param {Element} event.target
      * @callback
      */
     onEvent: function(event) {

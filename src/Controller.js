@@ -33,6 +33,9 @@ var PointerEvent = {
      * @method create
      * @param {String} type Pointer event name
      * @param {MouseEvent|TouchEvent} originalEvent
+     * @param {String} originalEvent.type
+     * @param {TouchList} [originalEvent.touches]
+     * @param {TouchList} [originalEvent.changedTouches]
      * @return {*} Event created from adapter
      */
     create: function(type, originalEvent) {
@@ -74,6 +77,8 @@ var PointerEvent = {
      *
      * @method trigger
      * @param {MouseEvent|TouchEvent} originalEvent
+     * @param {String} originalEvent.type
+     * @param {Element} originalEvent.target
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
      * @param {Element} [overrideTarget] target to dispatch event from
      */

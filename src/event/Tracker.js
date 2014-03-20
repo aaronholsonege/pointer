@@ -64,6 +64,7 @@ var EventTracker = {
      *
      * @method register
      * @param {MouseEvent|TouchEvent} event
+     * @param {String} event.type
      * @param {String} overrideEventName
      * @chainable
      */
@@ -81,7 +82,8 @@ var EventTracker = {
      * Determine if a mouse event has been emulated
      *
      * @method isEmulated
-     * @param {MouseEvent|TouchEvent} event
+     * @param {MouseEvent} event
+     * @param {String} event.type
      * @returns {Boolean}
      */
     isEmulated: function(event) {
