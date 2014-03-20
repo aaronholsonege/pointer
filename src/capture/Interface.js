@@ -3,7 +3,7 @@
  * @type Object
  * @static
  */
-var CaptureInteface = {
+var CaptureInterface = {
 
     /**
      * Enable event listeners
@@ -21,4 +21,4 @@ var CaptureInteface = {
 
 };
 
-module.exports = CaptureInteface;
+module.exports = CaptureInterface;

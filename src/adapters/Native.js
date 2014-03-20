@@ -32,7 +32,6 @@ var PROPS = {
  */
 var OVERRIDE_METHODS = ['preventDefault', 'stopPropagation', 'stopImmediatePropagation'];
 
-
 /**
  * Override original method in `event` to also call same method in `originalEvent`
  *
