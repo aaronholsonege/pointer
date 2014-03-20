@@ -10,6 +10,8 @@
 var PROPS = {
     view: null,
     detail: null,
+    x: 0,
+    y: 0,
     pageX: 0,
     pageY: 0,
     screenX: 0,
@@ -21,7 +23,9 @@ var PROPS = {
     shiftKey: false,
     metaKey: false,
     button: 0,
-    relatedTarget: null
+    relatedTarget: null,
+    pointerType: 'mouse',
+    pointerId: 0
 };
 
 /**
@@ -77,10 +81,6 @@ var Native = {
                 event[prop] = properties[prop] || originalEvent[prop] || PROPS[prop];
             }
         }
-
-        // add x/y properties aliased to clientX/Y
-        event.x = event.clientX;
-        event.y = event.clientY;
 
         var i = 0;
         var length = OVERRIDE_METHODS.length;

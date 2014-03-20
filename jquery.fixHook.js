@@ -4,7 +4,7 @@
     var events = ['pointerenter', 'pointerover', 'pointerdown', 'pointermove', 'pointerup', 'pointerout', 'pointerleave'];
 
     var fixHook = {
-        props: ['pageX', 'pageY', 'clientX', 'clientY', 'screenX', 'screenY', 'relatedTarget']
+        props: ['pageX', 'pageY', 'clientX', 'clientY', 'screenX', 'screenY', 'relatedTarget', 'pointerId', 'pointerType']
     };
 
     var i = 0;

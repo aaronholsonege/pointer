@@ -45,6 +45,11 @@ var PointerEvent = {
             properties.changedTouches = originalEvent.changedTouches;
             properties.touches = originalEvent.touches;
             source = properties.changedTouches[0];
+            properties.pointerType = 'touch';
+            properties.pointerId = 1 + source.identifier;
+        } else {
+            properties.pointerId = 0;
+            properties.pointerType = 'mouse';
         }
 
         var i = 0;
@@ -56,6 +61,10 @@ var PointerEvent = {
             }
         }
 
+        // add x/y properties aliased to pageX/Y
+        properties.x = properties.pageX;
+        properties.y = properties.pageY;
+
         return Adapter.create(type, originalEvent, properties);
     },
 
@@ -65,23 +74,24 @@ var PointerEvent = {
      * @method trigger
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
+     * @param {Element} [overrideTarget] target to dispatch event from
      */
-    trigger: function(originalEvent, overrideType) {
-        if (!originalEvent || !EventMap.hasOwnProperty(originalEvent.type)) {
+    trigger: function(originalEvent, overrideType, overrideTarget) {
+        var eventName = overrideType || originalEvent.type;
+
+        if (!originalEvent || !EventMap.hasOwnProperty(eventName)) {
             return;
         }
 
-        var eventName = overrideType || originalEvent.type;
-        var types = EventMap[eventName];
-
         var i = 0;
+        var types = EventMap[eventName];
         var length = types.length;
         var event;
 
         for (; i < length; i++) {
             event = PointerEvent.create(types[i], originalEvent);
             if (event) {
-                Adapter.trigger(event, originalEvent.target);
+                Adapter.trigger(event, overrideTarget || originalEvent.target);
             }
         }
     }

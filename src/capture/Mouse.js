@@ -27,37 +27,6 @@ var ENTER_LEAVE_EVENT_MAP = {
 };
 
 /**
- * Cached array
- *
- * @type Array
- * @static
- */
-var CACHED_ARRAY = [];
-
-/**
- * Determine if `child` is a descendant of `target`
- *
- * @param {Element} target
- * @param {Element} child
- * @return {Boolean}
- * @private
- */
-var _contains = function(target, child) {
-    if (target.contains) {
-        return target.contains(child);
-    } else {
-        CACHED_ARRAY.length = 0;
-        var current = child;
-
-        while(current = current.parentNode) {
-            CACHED_ARRAY.push(current);
-        }
-
-        return Util.indexOf(CACHED_ARRAY, target) !== -1;
-    }
-};
-
-/**
  * Determine if we have moused over a new target.
  * Browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
  *
@@ -66,10 +35,10 @@ var _contains = function(target, child) {
  */
 var _detectMouseEnterOrLeave = function(event) {
     var target = event.target;
-    var related = event.relatedTarget;
+    var related = EventTracker.lastTarget;//event.relatedTarget;
     var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
 
-    if (!related || (related !== target && !_contains(target, related))) {
+    if (!related || (related !== target && !Util.contains(target, related))) {
         PointerEvent.trigger(event, eventName);
     }
 };
@@ -125,6 +94,7 @@ var MouseCapture = {
 
             // trigger mouseleave event if applicable
             if (EXIT_EVENT === event.type) {
+                EventTracker.lastTarget = event.relatedTarget;
                 _detectMouseEnterOrLeave(event);
             }
         }

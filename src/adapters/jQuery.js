@@ -17,10 +17,6 @@ var jQueryAdapter = {
         var event = $.Event(originalEvent, properties);
         event.type = type;
 
-        // add x/y properties aliased to clientX/Y
-        event.x = event.clientX;
-        event.y = event.clientY;
-
         return event;
     },
 

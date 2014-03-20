@@ -12,10 +12,34 @@ var Events = require('./Events');
 var EventMap = {
 
     /**
+     * @property touchenter
+     * @type String[]
+     */
+    touchenter: [Events.ENTER],
+
+    /**
+     * @property touchleave
+     * @type String[]
+     */
+    touchleave: [Events.LEAVE],
+
+    /**
+     * @property touchover
+     * @type String[]
+     */
+    touchover: [Events.OVER],
+
+    /**
+     * @property touchout
+     * @type String[]
+     */
+    touchout: [Events.OUT],
+
+    /**
      * @property touchstart
      * @type String[]
      */
-    touchstart: [Events.ENTER, Events.OVER, Events.DOWN],
+    touchstart: [Events.DOWN],
 
     /**
      * @property touchmove
@@ -27,7 +51,7 @@ var EventMap = {
      * @property touchend
      * @type String[]
      */
-    touchend: [Events.UP, Events.OUT, Events.LEAVE],
+    touchend: [Events.UP],
 
     /**
      * @property mouseenter

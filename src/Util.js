@@ -1,4 +1,12 @@
 /**
+ * Cached array
+ *
+ * @type Array
+ * @static
+ */
+var CACHED_ARRAY = [];
+
+/**
  * Utility functions
  *
  * @class Pointer.Util
@@ -86,6 +94,28 @@ var Util = {
             }
 
             return -1;
+        }
+    },
+    /**
+     * Determine if `child` is a descendant of `target`
+     *
+     * @method contains
+     * @param {Element} target
+     * @param {Element} child
+     * @return {Boolean}
+     */
+    contains: function(target, child) {
+        if (target.contains) {
+            return target.contains(child);
+        } else {
+            CACHED_ARRAY.length = 0;
+            var current = child;
+
+            while(current = current.parentNode) {
+                CACHED_ARRAY.push(current);
+            }
+
+            return Util.indexOf(CACHED_ARRAY, target) !== -1;
         }
     }
 

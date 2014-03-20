@@ -5,10 +5,12 @@
  * @static
  */
 var MAP = {
+    mouseenter: 'touchenter',
+    mouseover: 'touchover',
     mousedown: 'touchstart',
-    mouseover: 'touchstart',
-    mouseout: 'touchend',
-    mouseup: 'touchend'
+    mouseup: 'touchend',
+    mouseout: 'touchout',
+    mouseleave: 'touchleave'
 };
 
 /**
@@ -19,8 +21,12 @@ var MAP = {
  * @static
  */
 var LAST_EVENTS = {
+    touchenter: null,
+    touchover: null,
     touchstart: null,
-    touchend: null
+    touchend: null,
+    touchout: null,
+    touchleave: null
 };
 
 /**
@@ -46,15 +52,26 @@ var DELTA_POSITION = 5;
 var EventTracker = {
 
     /**
+     * The last event target
+     *
+     * @property lastTarget
+     * @type HTMLElement|null
+     */
+    lastTarget: null,
+
+    /**
      * Register a touch event used to determine if mouse events are emulated
      *
      * @method register
      * @param {MouseEvent|TouchEvent} event
+     * @param {String} overrideEventName
      * @chainable
      */
-    register: function(event) {
-        if (LAST_EVENTS.hasOwnProperty(event.type)) {
-            LAST_EVENTS[event.type] = event;
+    register: function(event, overrideEventName) {
+        var eventName = overrideEventName || event.type;
+
+        if (LAST_EVENTS.hasOwnProperty(eventName)) {
+            LAST_EVENTS[eventName] = event;
         }
 
         return this;
@@ -81,9 +98,15 @@ var EventTracker = {
 
         var touch = last.changedTouches[0];
 
-        var dx = Math.abs(touch.clientX - event.clientX);
-        var dy = Math.abs(touch.clientY - event.clientY);
+        var dx = Math.abs(touch.pageX - event.pageX);
+        var dy = Math.abs(touch.pageY - event.pageY);
         var dt = Math.abs(last.timeStamp - event.timeStamp);
+
+        // If too much time has passed since the last touch
+        // event, remove it so we no longer test against it.
+        if (dt > DELTA_TIME) {
+            LAST_EVENTS[eventName] = null;
+        }
 
         return (dx <= DELTA_POSITION && dy <= DELTA_POSITION && dt <= DELTA_TIME);
     }

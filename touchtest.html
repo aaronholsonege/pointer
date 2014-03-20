@@ -1,0 +1,81 @@
+<html>
+<head>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            background: #EFEFEF;;
+        }
+
+        .area {
+            width: 300px;
+            height: 500px;
+            margin: 20px 0 20px 20px;
+            padding: 20px;
+            font-size: 24px;
+            overflow: auto;
+            background: #CCC;
+            float: left;
+        }
+        button {
+            padding: 6px 12px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="touch" class="area"></div>
+    <div id="debug" class="area"></div>
+    <button id="clear">Clear</button>
+<script>
+    (function() {
+        'use strict';
+
+        var log = function(e) {
+            if (e.type === 'touchstart') {
+                debug.innerHTML = '------<br />' + debug.innerHTML;
+            }
+            debug.innerHTML = e.type + '<br />' + debug.innerHTML;
+        };
+
+        var clearLog = function() {
+            debug.innerHTML = '';
+        };
+
+        var touch = document.getElementById('touch');
+        var debug = document.getElementById('debug');
+        var clear = document.getElementById('clear');
+
+        clear.addEventListener('click', clearLog, false);
+
+        touch.addEventListener('touchstart', log, false);
+        touch.addEventListener('touchmove', log, false);
+        touch.addEventListener('touchend', log, false);
+        touch.addEventListener('touchcancel', log, false);
+
+        touch.addEventListener('pointerover', log, false);
+        touch.addEventListener('pointerdown', log, false);
+        touch.addEventListener('pointermove', log, false);
+        touch.addEventListener('pointerup', log, false);
+        touch.addEventListener('pointerout', log, false);
+        touch.addEventListener('pointercancel', log, false);
+
+        touch.addEventListener('MSPointerOver', log, false);
+        touch.addEventListener('MSPointerDown', log, false);
+        touch.addEventListener('MSPointerMove', log, false);
+        touch.addEventListener('MSPointerUp', log, false);
+        touch.addEventListener('MSPointerOut', log, false);
+
+        touch.addEventListener('mouseover', log, false);
+        touch.addEventListener('mousedown', log, false);
+        touch.addEventListener('mousemove', log, false);
+        touch.addEventListener('mouseup', log, false);
+        touch.addEventListener('mouseout', log, false);
+
+    }());
+</script>
+</body>
+</html>
