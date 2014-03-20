@@ -46,7 +46,7 @@ var DELTA_TIME = 300;
 var DELTA_POSITION = 5;
 
 /**
- * @class Pointer.EventTracker
+ * @class Pointer.Event.Tracker
  * @static
  */
 var EventTracker = {

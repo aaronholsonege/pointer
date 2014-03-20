@@ -1,5 +1,5 @@
 var Util = require('../Util');
-var PointerEvent = require('../PointerEvent');
+var Controller = require('../Controller');
 var EventTracker = require('../event/Tracker');
 
 /**
@@ -38,17 +38,17 @@ var _detectMouseEnterOrLeave = function(event) {
     var related = EventTracker.lastTarget;//event.relatedTarget;
     var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
 
-    if (!related || (related !== target && !Util.contains(target, related))) {
-        PointerEvent.trigger(event, eventName);
+    if (!related || !Util.contains(target, related)) {
+        Controller.trigger(event, eventName);
     }
 };
 
 /**
- * @class Pointer.Capture.Mouse
+ * @class Pointer.Handler.Mouse
  * @type Object
  * @static
  */
-var MouseCapture = {
+var MouseHandler = {
 
     /**
      * Events to watch
@@ -90,7 +90,7 @@ var MouseCapture = {
                 _detectMouseEnterOrLeave(event);
             }
 
-            PointerEvent.trigger(event);
+            Controller.trigger(event);
 
             // trigger mouseleave event if applicable
             if (EXIT_EVENT === event.type) {
@@ -102,4 +102,4 @@ var MouseCapture = {
 
 };
 
-module.exports = MouseCapture;
+module.exports = MouseHandler;

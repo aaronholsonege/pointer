@@ -67,11 +67,7 @@ var Native = {
      */
     create: function(type, originalEvent, properties) {
         var event = document.createEvent('Event');
-        event.initEvent(
-            type,
-            !properties.noBubble, // can bubble
-            true // cancelable
-        );
+        event.initEvent(type, !properties.noBubble, true);
 
         var prop;
 

@@ -105,6 +105,10 @@ var Util = {
      * @return {Boolean}
      */
     contains: function(target, child) {
+        if (target === child) {
+            return true;
+        }
+
         if (target.contains) {
             return target.contains(child);
         } else {

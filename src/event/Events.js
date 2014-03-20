@@ -2,7 +2,7 @@
  * Pointer event namespace.
  * This is prepended to the pointer events
  *
- * @type {string}
+ * @type String
  * @final
  */
 var NAMESPACE = 'pointer';
@@ -10,7 +10,7 @@ var NAMESPACE = 'pointer';
 /**
  * Pointer event names
  *
- * @class Pointer.Events
+ * @class Pointer.Event
  * @static
  * @final
  */

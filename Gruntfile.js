@@ -9,14 +9,14 @@ module.exports = function (grunt) {
 
         browserify: {
             options: {
-                entry: 'src/Pointer.js',
+                entry: 'src/Bootstrap.js',
                 postBundleCB: function(err, src, done) {
                     done(err, '(function() {\nvar ' + src + '\n}());');
                 }
             },
             native: {
                 files: {
-                    'build/pointer.js' : ['src/Pointer.js']
+                    'build/pointer.js' : ['src/Bootstrap.js']
                 },
                 options: {
                     alias: ['src/adapters/Native.js:Adapter']
@@ -24,7 +24,7 @@ module.exports = function (grunt) {
             },
             jquery: {
                 files: {
-                    'build/jquery.pointer.js' : ['src/Pointer.js']
+                    'build/jquery.pointer.js' : ['src/Bootstrap.js']
                 },
                 options: {
                     alias: ['src/adapters/jQuery.js:Adapter']

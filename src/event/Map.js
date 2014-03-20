@@ -6,7 +6,7 @@ var Events = require('./Events');
  *
  * Values can be either a single event name, or an array of event names.
  *
- * @class Pointer.EventMap
+ * @class Pointer.Event.Map
  * @static
  */
 var EventMap = {
@@ -18,22 +18,10 @@ var EventMap = {
     touchenter: [Events.ENTER],
 
     /**
-     * @property touchleave
-     * @type String[]
-     */
-    touchleave: [Events.LEAVE],
-
-    /**
      * @property touchover
      * @type String[]
      */
     touchover: [Events.OVER],
-
-    /**
-     * @property touchout
-     * @type String[]
-     */
-    touchout: [Events.OUT],
 
     /**
      * @property touchstart
@@ -52,6 +40,18 @@ var EventMap = {
      * @type String[]
      */
     touchend: [Events.UP],
+
+    /**
+     * @property touchout
+     * @type String[]
+     */
+    touchout: [Events.OUT],
+
+    /**
+     * @property touchleave
+     * @type String[]
+     */
+    touchleave: [Events.LEAVE],
 
     /**
      * @property mouseenter

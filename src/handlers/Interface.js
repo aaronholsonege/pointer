@@ -1,9 +1,9 @@
 /**
- * @class Pointer.Capture.Interface
+ * @class Pointer.Handler.Interface
  * @type Object
  * @static
  */
-var CaptureInterface = {
+var HandlerInterface = {
 
     /**
      * Enable event listeners
@@ -21,4 +21,4 @@ var CaptureInterface = {
 
 };
 
-module.exports = CaptureInterface;
+module.exports = HandlerInterface;

@@ -1,5 +1,5 @@
 var Util = require('../Util');
-var PointerEvent = require('../PointerEvent');
+var Controller = require('../Controller');
 var EventTracker = require('../event/Tracker');
 
 /**
@@ -11,8 +11,20 @@ var EventTracker = require('../event/Tracker');
 var ENTER_EVENT = 'touchstart';
 
 /**
- * Determine if we have moused over a new target.
- * Browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
+ * Custome enter/over/out/leave touch events names
+ *
+ * @type Object
+ * @static
+ */
+var EVENTS = {
+    OUT: 'touchout',
+    LEAVE: 'touchleave',
+    ENTER: 'touchenter',
+    OVER: 'touchover'
+};
+
+/**
+ * Determine if we have touched over a new target.
  *
  * @param {MouseEvent} event
  * @param {Element} lastTarget
@@ -20,35 +32,38 @@ var ENTER_EVENT = 'touchstart';
  */
 var _detectMouseEnterOrLeave = function(event, lastTarget) {
     var target = event.target;
-    var related = lastTarget || event.relatedTarget;
 
-    if (related && related !== target) {
-        EventTracker.register(event, 'touchout');
-        PointerEvent.trigger(event, 'touchout', related);
+    // Emulate touchout
+    if (lastTarget && lastTarget !== target) {
+        EventTracker.register(event, EVENTS.OUT);
+        Controller.trigger(event, EVENTS.OUT, lastTarget);
     }
 
-    if (related && (related !== target && !Util.contains(related, target))) {
-        EventTracker.register(event, 'touchleave');
-        PointerEvent.trigger(event, 'touchleave', related);
+    // Emulate touchleave
+    if (lastTarget && !Util.contains(lastTarget, target)) {
+        EventTracker.register(event, EVENTS.LEAVE);
+        Controller.trigger(event, EVENTS.LEAVE, lastTarget);
     }
 
-    if (!related || (related !== target && !Util.contains(target, related))) {
-        EventTracker.register(event, 'touchenter');
-        PointerEvent.trigger(event, 'touchenter');
+    // Emulate touchenter
+    if (!lastTarget || !Util.contains(target, lastTarget)) {
+        EventTracker.register(event, EVENTS.ENTER);
+        Controller.trigger(event, EVENTS.ENTER);
     }
 
-    if (related !== target) {
-        EventTracker.register(event, 'touchover');
-        PointerEvent.trigger(event, 'touchover');
+    // Emulate touchover
+    if (lastTarget !== target) {
+        EventTracker.register(event, EVENTS.OVER);
+        Controller.trigger(event, EVENTS.OVER);
     }
 };
 
 /**
- * @class Pointer.Capture.Touch
+ * @class Pointer.Handler.Touch
  * @type Object
  * @static
  */
-var TouchCapture = {
+var TouchHandler = {
 
     /**
      * Events to watch
@@ -90,11 +105,11 @@ var TouchCapture = {
             _detectMouseEnterOrLeave(event, EventTracker.lastTarget);
         }
 
-        PointerEvent.trigger(event);
+        Controller.trigger(event);
 
         EventTracker.lastTarget = event.target;
     }
 
 };
 
-module.exports = TouchCapture;
+module.exports = TouchHandler;
