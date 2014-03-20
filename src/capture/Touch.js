@@ -44,14 +44,6 @@ var _detectMouseEnterOrLeave = function(event, lastTarget) {
 };
 
 /**
- * Last target from a touch event. Used to determine touchover/out and touchenter/leave events
- *
- * @type HTMLElement
- * @static
- */
-var LAST_TARGET;
-
-/**
  * @class Pointer.Capture.Touch
  * @type Object
  * @static
