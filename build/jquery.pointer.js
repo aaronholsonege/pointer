@@ -59,9 +59,10 @@ var PointerEvent = {
      * @param {String} originalEvent.type
      * @param {TouchList} [originalEvent.touches]
      * @param {TouchList} [originalEvent.changedTouches]
+     * @param {Number} [touchIndex=0]
      * @return {*} Event created from adapter
      */
-    create: function(type, originalEvent) {
+    create: function(type, originalEvent, touchIndex) {
         var properties = {
             noBubble: Util.indexOf(NO_BUBBLE_EVENTS, type) !== -1
         };
@@ -69,11 +70,9 @@ var PointerEvent = {
         var source = originalEvent;
 
         if (originalEvent.type.indexOf('touch') === 0) {
-            properties.changedTouches = originalEvent.changedTouches;
-            properties.touches = originalEvent.touches;
-            source = properties.changedTouches[0];
-            properties.pointerType = 'touch';
+            source = originalEvent.changedTouches[touchIndex || 0];
             properties.pointerId = 1 + source.identifier;
+            properties.pointerType = 'touch';
         } else {
             properties.pointerId = 0;
             properties.pointerType = 'mouse';
@@ -104,8 +103,9 @@ var PointerEvent = {
      * @param {Element} originalEvent.target
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
      * @param {Element} [overrideTarget] target to dispatch event from
+     * @param {Number} [touchIndex=0]
      */
-    trigger: function(originalEvent, overrideType, overrideTarget) {
+    trigger: function(originalEvent, overrideType, overrideTarget, touchIndex) {
         var eventName = overrideType || originalEvent.type;
 
         if (!originalEvent || !EventMap.hasOwnProperty(eventName)) {
@@ -113,7 +113,7 @@ var PointerEvent = {
         }
 
         var type = EventMap[eventName];
-        var event = PointerEvent.create(type, originalEvent);
+        var event = PointerEvent.create(type, originalEvent, touchIndex || 0);
 
         if (event) {
             Adapter.trigger(event, overrideTarget || originalEvent.target);
@@ -859,7 +859,14 @@ var TouchHandler = {
             _detectMouseEnterOrLeave(event, EventTracker.lastTarget);
         }
 
-        Controller.trigger(event);
+        var i = 0;
+        var touches = event.changedTouches;
+        var length = touches.length;
+
+        for (; i < length; i++) {
+            Controller.trigger(event, event.type, event.target, i);
+        }
+
         EventTracker.lastTarget = event.target;
     }
 

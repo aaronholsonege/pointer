@@ -108,7 +108,14 @@ var TouchHandler = {
             _detectMouseEnterOrLeave(event, EventTracker.lastTarget);
         }
 
-        Controller.trigger(event);
+        var i = 0;
+        var touches = event.changedTouches;
+        var length = touches.length;
+
+        for (; i < length; i++) {
+            Controller.trigger(event, event.type, event.target, i);
+        }
+
         EventTracker.lastTarget = event.target;
     }
 
