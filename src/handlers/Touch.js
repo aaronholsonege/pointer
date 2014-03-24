@@ -79,7 +79,9 @@ var _getMethod = function(type) {
  *
  * @type Function
  * @param {Touch} point
+ * @param {Number} point.identifier
  * @param {TouchEvent} event
+ * @param {String} event.type
  * @param {Number} pointIndex
  */
 var _onPointCancelEvent = function(point, event, pointIndex) {
@@ -93,6 +95,7 @@ var _onPointCancelEvent = function(point, event, pointIndex) {
  *
  * @type Function
  * @param {Touch} point
+ * @param {Number} point.identifier
  * @param {TouchEvent} event
  * @param {Number} pointIndex
  */
@@ -129,7 +132,10 @@ var _onPointMoveEvent = function(point, event, pointIndex) {
  *
  * @type Function
  * @param {Touch} point
+ * @param {Number} point.identifier
  * @param {TouchEvent} event
+ * @param {String} event.type
+ * @param {Element} event.target
  * @param {Number} pointIndex
  */
 var _onPointStartEndEvent = function(point, event, pointIndex) {
