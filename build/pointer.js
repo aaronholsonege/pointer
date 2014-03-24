@@ -176,7 +176,7 @@ var Pointer = {
 };
 
 module.exports = Pointer;
-},{"./handlers/Mouse":10,"./handlers/Touch":11}],4:[function(require,module,exports){
+},{"./handlers/Mouse":9,"./handlers/Touch":10}],4:[function(require,module,exports){
 /**
  * Cached array
  *
@@ -587,128 +587,9 @@ var EventMap = {
 
 module.exports = EventMap;
 },{"./Events":7}],9:[function(require,module,exports){
-/**
- * Mouse > touch map
- *
- * @type Object
- * @static
- */
-var MAP = {
-    mouseenter: 'touchenter',
-    mouseover: 'touchover',
-    mousedown: 'touchstart',
-    mouseup: 'touchend',
-    mouseout: 'touchout',
-    mouseleave: 'touchleave'
-};
-
-/**
- * The last triggered touch events to compare mouse
- * events to to determine if they are emulated.
- *
- * @type Object
- * @static
- */
-var LAST_EVENTS = {
-    touchenter: null,
-    touchover: null,
-    touchstart: null,
-    touchend: null,
-    touchout: null,
-    touchleave: null
-};
-
-/**
- * Max time between touch and simulated mouse event
- *
- * @type Number
- * @static
- */
-var DELTA_TIME = 300;
-
-/**
- * Max x/y distance between touch and simulated mouse event
- *
- * @type Number
- * @static
- */
-var DELTA_POSITION = 5;
-
-/**
- * @class Pointer.Event.Tracker
- * @static
- */
-var EventTracker = {
-
-    /**
-     * The last event target
-     *
-     * @property lastTarget
-     * @type HTMLElement|null
-     */
-    lastTarget: null,
-
-    /**
-     * Register a touch event used to determine if mouse events are emulated
-     *
-     * @method register
-     * @param {MouseEvent|TouchEvent} event
-     * @param {String} event.type
-     * @param {String} overrideEventName
-     * @chainable
-     */
-    register: function(event, overrideEventName) {
-        var eventName = overrideEventName || event.type;
-
-        if (LAST_EVENTS.hasOwnProperty(eventName)) {
-            LAST_EVENTS[eventName] = event;
-        }
-
-        return this;
-    },
-
-    /**
-     * Determine if a mouse event has been emulated
-     *
-     * @method isEmulated
-     * @param {MouseEvent} event
-     * @param {String} event.type
-     * @returns {Boolean}
-     */
-    isEmulated: function(event) {
-        if (!MAP.hasOwnProperty(event.type)) {
-            return false;
-        }
-
-        var eventName = MAP[event.type];
-        var last = LAST_EVENTS[eventName];
-
-        if (!last) {
-            return false;
-        }
-
-        var touch = last.changedTouches[0];
-
-        var dx = Math.abs(touch.pageX - event.pageX);
-        var dy = Math.abs(touch.pageY - event.pageY);
-        var dt = Math.abs(last.timeStamp - event.timeStamp);
-
-        // If too much time has passed since the last touch
-        // event, remove it so we no longer test against it.
-        if (dt > DELTA_TIME) {
-            LAST_EVENTS[eventName] = null;
-        }
-
-        return (dx <= DELTA_POSITION && dy <= DELTA_POSITION && dt <= DELTA_TIME);
-    }
-
-};
-
-module.exports = EventTracker;
-},{}],10:[function(require,module,exports){
 var Util = require('../Util');
 var Controller = require('../Controller');
-var EventTracker = require('../event/Tracker');
+var TouchHandler = require('./Touch');
 
 /**
  * Event to detect mouseenter events with
@@ -741,12 +622,12 @@ var ENTER_LEAVE_EVENT_MAP = {
  * @param {MouseEvent} event
  * @param {String} event.type
  * @param {Element} event.target
- * @param {Element} relatedTarget
+ * @param {Element} event.relatedTarget
  * @private
  */
-var _detectMouseEnterOrLeave = function(event, relatedTarget) {
+var _detectMouseEnterOrLeave = function(event) {
     var target = event.target;
-    var related = relatedTarget || EventTracker.lastTarget;
+    var related = event.relatedTarget;
     var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
 
     if (!related || !Util.contains(target, related)) {
@@ -798,7 +679,7 @@ var MouseHandler = {
      * @callback
      */
     onEvent: function(event) {
-        if (!EventTracker.isEmulated(event)) {
+        if (!TouchHandler.touching) {
 
             // trigger mouseenter event if applicable
             if (ENTER_EVENT === event.type) {
@@ -806,11 +687,10 @@ var MouseHandler = {
             }
 
             Controller.trigger(event);
-            EventTracker.lastTarget = event.target;
 
             // trigger mouseleave event if applicable
             if (EXIT_EVENT === event.type) {
-                _detectMouseEnterOrLeave(event, event.relatedTarget);
+                _detectMouseEnterOrLeave(event);
             }
         }
     }
@@ -818,66 +698,160 @@ var MouseHandler = {
 };
 
 module.exports = MouseHandler;
-},{"../Controller":2,"../Util":4,"../event/Tracker":9}],11:[function(require,module,exports){
+},{"../Controller":2,"../Util":4,"./Touch":10}],10:[function(require,module,exports){
 var Util = require('../Util');
 var Controller = require('../Controller');
-var EventTracker = require('../event/Tracker');
 
 /**
- * Event to detect touchenter events with
+ * Touch event names
  *
  * @type String
  * @static
  */
-var ENTER_EVENT = 'touchstart';
+var EVENT_ENTER = 'touchenter';
+var EVENT_OVER = 'touchover';
+var EVENT_START = 'touchstart';
+var EVENT_MOVE = 'touchmove';
+var EVENT_END = 'touchend';
+var EVENT_OUT = 'touchout';
+var EVENT_LEAVE = 'touchleave';
+var EVENT_CANCEL = 'touchcancel';
 
 /**
- * Custom enter/over/out/leave touch events names
+ * List of point event targets
  *
  * @type Object
  * @static
  */
-var EVENTS = {
-    OUT: 'touchout',
-    LEAVE: 'touchleave',
-    ENTER: 'touchenter',
-    OVER: 'touchover'
+var PREVIOUS_TARGET = {};
+
+/**
+ * Touch timeout id
+ *
+ * @type Number
+ * @private
+ */
+var _touchTimer;
+
+/**
+ * Reset touching flag to false
+ *
+ * @type Function
+ * @private
+ */
+var _resetTouchingFlag = function() {
+    TouchHandler.touching = false;
 };
 
 /**
- * Determine if we have touched over a new target.
+ * Reset touch flag and set a time to set it back to false
  *
- * @param {TouchEvent} event
- * @param {Element} event.target
- * @param {Element} lastTarget
+ * @type Function
  * @private
  */
-var _detectMouseEnterOrLeave = function(event, lastTarget) {
+var _startTimer = function() {
+    clearTimeout(_touchTimer);
+    TouchHandler.touching = true;
+    _touchTimer = setTimeout(_resetTouchingFlag, 700);
+};
+
+/**
+ * Determine which method to call for each point
+ *
+ * @type Function
+ * @param {String} type
+ * @returns {Function}
+ * @private
+ */
+var _getMethod = function(type) {
+    switch(type) {
+        case EVENT_START:
+        case EVENT_END:
+            return _onPointStartEndEvent;
+        case EVENT_MOVE:
+            return _onPointMoveEvent;
+        default:
+            return _onPointCancelEvent;
+    }
+};
+
+/**
+ * Trigger cancel for each touch point
+ *
+ * @type Function
+ * @param {Touch} point
+ * @param {TouchEvent} event
+ * @param {Number} pointIndex
+ */
+var _onPointCancelEvent = function(point, event, pointIndex) {
+    PREVIOUS_TARGET[point.identifier] = null;
+    Controller.trigger(event, event.type, event.target, pointIndex);
+    _resetTouchingFlag();
+};
+
+/**
+ * Trigger move for each touch point
+ *
+ * @type Function
+ * @param {Touch} point
+ * @param {TouchEvent} event
+ * @param {Number} pointIndex
+ */
+var _onPointMoveEvent = function(point, event, pointIndex) {
+    var newTarget = document.elementFromPoint(point.clientX, point.clientY);
+    var currentTarget = PREVIOUS_TARGET[point.identifier];
+
+    PREVIOUS_TARGET[point.identifier] = newTarget;
+
+    if (newTarget !== currentTarget) {
+        if (currentTarget) {
+            Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
+
+            if (!Util.contains(currentTarget, newTarget)) {
+                Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
+            }
+        }
+
+        if (newTarget) {
+            if (!Util.contains(newTarget, currentTarget)) {
+                Controller.trigger(event, EVENT_ENTER, newTarget, pointIndex);
+            }
+
+            Controller.trigger(event, EVENT_OVER, newTarget, pointIndex);
+        }
+    }
+
+    Controller.trigger(event, EVENT_MOVE, newTarget, pointIndex);
+    _startTimer();
+};
+
+/**
+ * Trigger start/end for each touch point
+ *
+ * @type Function
+ * @param {Touch} point
+ * @param {TouchEvent} event
+ * @param {Number} pointIndex
+ */
+var _onPointStartEndEvent = function(point, event, pointIndex) {
     var target = event.target;
+    var type = event.type;
 
-    // Emulate touchout
-    if (lastTarget && lastTarget !== target) {
-        EventTracker.register(event, EVENTS.OUT);
-        Controller.trigger(event, EVENTS.OUT, lastTarget);
+    if (type === EVENT_START) {
+        PREVIOUS_TARGET[point.identifier] = target;
+        Controller.trigger(event, EVENT_ENTER, target, pointIndex);
+        Controller.trigger(event, EVENT_OVER, target, pointIndex);
     }
 
-    // Emulate touchleave
-    if (lastTarget && !Util.contains(lastTarget, target)) {
-        EventTracker.register(event, EVENTS.LEAVE);
-        Controller.trigger(event, EVENTS.LEAVE, lastTarget);
+    Controller.trigger(event, type, target, pointIndex);
+
+    if (type === EVENT_END) {
+        PREVIOUS_TARGET[point.identifier] = null;
+        Controller.trigger(event, EVENT_OUT, target, pointIndex);
+        Controller.trigger(event, EVENT_LEAVE, target, pointIndex);
     }
 
-    // Emulate touchenter
-    if (!lastTarget || !Util.contains(target, lastTarget)) {
-        EventTracker.register(event, EVENTS.ENTER);
-        Controller.trigger(event, EVENTS.ENTER);
-    }
-
-    // Emulate touchover
-    if (lastTarget !== target) {
-        EventTracker.register(event, EVENTS.OVER);
-        Controller.trigger(event, EVENTS.OVER);
-    }
+    _startTimer();
 };
 
 /**
@@ -888,12 +862,20 @@ var _detectMouseEnterOrLeave = function(event, lastTarget) {
 var TouchHandler = {
 
     /**
+     * Was there a touch event in the last 700ms?
+     *
+     * @property touching
+     * @type Boolean
+     */
+    touching: false,
+
+    /**
      * Events to watch
      *
      * @property events
      * @type String[]
      */
-    events: ['touchstart' ,'touchmove', 'touchend', 'touchcancel'],
+    events: [EVENT_START, EVENT_MOVE, EVENT_END, EVENT_CANCEL],
 
     /**
      * Enable event listeners
@@ -923,25 +905,19 @@ var TouchHandler = {
      * @callback
      */
     onEvent: function(event) {
-        EventTracker.register(event);
-
-        if (event.type === ENTER_EVENT) {
-            _detectMouseEnterOrLeave(event, EventTracker.lastTarget);
-        }
-
         var i = 0;
         var touches = event.changedTouches;
         var length = touches.length;
 
-        for (; i < length; i++) {
-            Controller.trigger(event, event.type, event.target, i);
-        }
+        var method = _getMethod(event.type);
 
-        EventTracker.lastTarget = event.target;
+        for (; i < length; i++) {
+            method(touches[i], event, i);
+        }
     }
 
 };
 
 module.exports = TouchHandler;
-},{"../Controller":2,"../Util":4,"../event/Tracker":9}]},{},[1])
+},{"../Controller":2,"../Util":4}]},{},[1])
 }());

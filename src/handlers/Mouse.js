@@ -1,6 +1,6 @@
 var Util = require('../Util');
 var Controller = require('../Controller');
-var EventTracker = require('../event/Tracker');
+var TouchHandler = require('./Touch');
 
 /**
  * Event to detect mouseenter events with
@@ -33,12 +33,12 @@ var ENTER_LEAVE_EVENT_MAP = {
  * @param {MouseEvent} event
  * @param {String} event.type
  * @param {Element} event.target
- * @param {Element} relatedTarget
+ * @param {Element} event.relatedTarget
  * @private
  */
-var _detectMouseEnterOrLeave = function(event, relatedTarget) {
+var _detectMouseEnterOrLeave = function(event) {
     var target = event.target;
-    var related = relatedTarget || EventTracker.lastTarget;
+    var related = event.relatedTarget;
     var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
 
     if (!related || !Util.contains(target, related)) {
@@ -90,7 +90,7 @@ var MouseHandler = {
      * @callback
      */
     onEvent: function(event) {
-        if (!EventTracker.isEmulated(event)) {
+        if (!TouchHandler.touching) {
 
             // trigger mouseenter event if applicable
             if (ENTER_EVENT === event.type) {
@@ -98,11 +98,10 @@ var MouseHandler = {
             }
 
             Controller.trigger(event);
-            EventTracker.lastTarget = event.target;
 
             // trigger mouseleave event if applicable
             if (EXIT_EVENT === event.type) {
-                _detectMouseEnterOrLeave(event, event.relatedTarget);
+                _detectMouseEnterOrLeave(event);
             }
         }
     }
