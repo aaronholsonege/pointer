@@ -693,15 +693,15 @@ var _startTimer = function() {
  * @returns {Function}
  * @private
  */
-var _getMethod = function(type) {
+var _getPointMethod = function(type) {
     switch(type) {
         case EVENT_START:
         case EVENT_END:
-            return _onPointStartEndEvent;
+            return _onPointStartEnd;
         case EVENT_MOVE:
-            return _onPointMoveEvent;
+            return _onPointMove;
         default:
-            return _onPointCancelEvent;
+            return _onPointCancel;
     }
 };
 
@@ -715,7 +715,7 @@ var _getMethod = function(type) {
  * @param {String} event.type
  * @param {Number} pointIndex
  */
-var _onPointCancelEvent = function(point, event, pointIndex) {
+var _onPointCancel = function(point, event, pointIndex) {
     PREVIOUS_TARGET[point.identifier] = null;
     Controller.trigger(event, event.type, event.target, pointIndex);
     _resetTouchingFlag();
@@ -730,7 +730,7 @@ var _onPointCancelEvent = function(point, event, pointIndex) {
  * @param {TouchEvent} event
  * @param {Number} pointIndex
  */
-var _onPointMoveEvent = function(point, event, pointIndex) {
+var _onPointMove = function(point, event, pointIndex) {
     var newTarget = document.elementFromPoint(point.clientX, point.clientY);
     var currentTarget = PREVIOUS_TARGET[point.identifier];
 
@@ -740,12 +740,14 @@ var _onPointMoveEvent = function(point, event, pointIndex) {
         if (currentTarget) {
             Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
 
+            // If the new target is not a child of the previous target, fire a leave event
             if (!Util.contains(currentTarget, newTarget)) {
                 Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
             }
         }
 
         if (newTarget) {
+            // If the current target is not a child of the new target, fire a enter event
             if (!Util.contains(newTarget, currentTarget)) {
                 Controller.trigger(event, EVENT_ENTER, newTarget, pointIndex);
             }
@@ -769,7 +771,7 @@ var _onPointMoveEvent = function(point, event, pointIndex) {
  * @param {Element} event.target
  * @param {Number} pointIndex
  */
-var _onPointStartEndEvent = function(point, event, pointIndex) {
+var _onPointStartEnd = function(point, event, pointIndex) {
     var target = event.target;
     var type = event.type;
 
@@ -779,12 +781,13 @@ var _onPointStartEndEvent = function(point, event, pointIndex) {
         Controller.trigger(event, EVENT_OVER, target, pointIndex);
     }
 
-    Controller.trigger(event, type, target, pointIndex);
+    var currentTarget = PREVIOUS_TARGET[point.identifier] || target;
+    Controller.trigger(event, type, currentTarget, pointIndex);
 
     if (type === EVENT_END) {
         PREVIOUS_TARGET[point.identifier] = null;
-        Controller.trigger(event, EVENT_OUT, target, pointIndex);
-        Controller.trigger(event, EVENT_LEAVE, target, pointIndex);
+        Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
+        Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
     }
 
     _startTimer();
@@ -845,7 +848,7 @@ var TouchHandler = {
         var touches = event.changedTouches;
         var length = touches.length;
 
-        var method = _getMethod(event.type);
+        var method = _getPointMethod(event.type);
 
         for (; i < length; i++) {
             method(touches[i], event, i);
