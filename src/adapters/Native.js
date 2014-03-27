@@ -10,22 +10,12 @@
 var PROPS = {
     view: null,
     detail: null,
-    x: 0,
-    y: 0,
-    pageX: 0,
-    pageY: 0,
-    screenX: 0,
-    screenY: 0,
-    clientX: 0,
-    clientY: 0,
     ctrlKey: false,
     altKey: false,
     shiftKey: false,
     metaKey: false,
     button: 0,
-    relatedTarget: null,
-    pointerType: 'mouse',
-    pointerId: 0
+    relatedTarget: null
 };
 
 /**
