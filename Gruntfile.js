@@ -43,6 +43,20 @@ module.exports = function (grunt) {
             }
         },
 
+        yuidoc: {
+            compile: {
+                name: '<%= pkg.title %>',
+                description: '<%= pkg.description %>',
+                version: '<%= pkg.version %>',
+                url: '<%= pkg.homepage %>',
+                options: {
+                    paths: './src/',
+                    outdir: './documentation/',
+                    themedir: "./tools/yuidoc-themes/friendly"
+                }
+            }
+        },
+
         uglify: {
             options: {
             },
@@ -61,5 +75,7 @@ module.exports = function (grunt) {
 
     // Tasks
     grunt.registerTask('default', ['build']);
-    grunt.registerTask('build', ['browserify', 'uglify']);
+
+    grunt.registerTask('docs', ['yuidoc']);
+    grunt.registerTask('build', ['browserify', 'uglify', 'docs']);
 };

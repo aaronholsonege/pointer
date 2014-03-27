@@ -1,14 +1,18 @@
 {
-  "name": "pointer",
-  "version": "0.9.0",
-  "private": true,
-  "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-uglify": "latest",
-    "grunt-contrib-watch": "~0.4.4",
-    "load-grunt-tasks": "~0.2.0",
-    "time-grunt": "~0.2.3",
-    "grunt-plato": "~0.2.1",
-    "grunt-browserify": "latest"
-  }
+    "name": "pointer",
+    "title": "Pointer",
+    "description": "A lightweight Pointer Event polyfill.",
+    "homepage": "https://github.com/aarongloege/pointer",
+    "version": "0.9.0",
+    "private": true,
+    "devDependencies": {
+        "grunt": "~0.4.1",
+        "grunt-contrib-uglify": "latest",
+        "grunt-contrib-watch": "~0.4.4",
+        "load-grunt-tasks": "~0.2.0",
+        "time-grunt": "~0.2.3",
+        "grunt-plato": "~0.2.1",
+        "grunt-browserify": "latest",
+        "grunt-contrib-yuidoc": "0.5.2"
+    }
 }
