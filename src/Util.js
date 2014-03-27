@@ -3,6 +3,7 @@
  *
  * @type Array
  * @static
+ * @private
  */
 var CACHED_ARRAY = [];
 
@@ -77,30 +78,29 @@ var Util = {
     },
 
     /**
-     * Perform indexOf on array
+     * Search array for a value.
+     *
+     * Legacy IE doesn't support Array.indexOf,
+     * and doing a for loop is faster anyway.
      *
      * @method indexOf
      * @param {Array} array
-     * @param {Function} [array.indexOf]
-     * @param {*} item
+     * @param {mixed} item
      * @return {Number}
      */
     indexOf: function(array, item) {
-        if (Array.prototype.indexOf) {
-            return array.indexOf(item);
-        } else {
-            var i = 0;
-            var length = array.length;
+        var i = 0;
+        var length = array.length;
 
-            for (; i < length; i++) {
-                if (array[i] === item) {
-                    return i;
-                }
+        for (; i < length; i++) {
+            if (array[i] === item) {
+                return i;
             }
-
-            return -1;
         }
+
+        return -1;
     },
+
     /**
      * Determine if `child` is a descendant of `target`
      *

@@ -6,6 +6,7 @@ var TouchHandler = require('./Touch');
  * Event to detect mouseenter events with
  * @type String
  * @static
+ * @private
  */
 var ENTER_EVENT = 'mouseover';
 
@@ -13,6 +14,7 @@ var ENTER_EVENT = 'mouseover';
  * Event to detect mouseleave events with
  * @type String
  * @static
+ * @private
  */
 var EXIT_EVENT = 'mouseout';
 
@@ -20,6 +22,7 @@ var EXIT_EVENT = 'mouseout';
  * Mouse enter/leave event map
  * @type Object
  * @static
+ * @private
  */
 var ENTER_LEAVE_EVENT_MAP = {
     mouseover: 'mouseenter',
@@ -48,7 +51,6 @@ var _detectMouseEnterOrLeave = function(event) {
 
 /**
  * @class Pointer.Handler.Mouse
- * @type Object
  * @static
  */
 var MouseHandler = {
@@ -59,25 +61,7 @@ var MouseHandler = {
      * @property events
      * @type String[]
      */
-    events: ['mouseover', 'mousedown', 'mousemove', 'mouseup', 'mouseout'],
-
-    /**
-     * Enable event listeners
-     *
-     * @method enable
-     */
-    enable: function() {
-        Util.on(this.events, this.onEvent);
-    },
-
-    /**
-     * Disable event listeners
-     *
-     * @method disable
-     */
-    disable: function() {
-        Util.off(this.events, this.onEvent);
-    },
+    events: [ENTER_EVENT, 'mousedown', 'mousemove', 'mouseup', EXIT_EVENT],
 
     /**
      * If event is not simulated, convert to pointer

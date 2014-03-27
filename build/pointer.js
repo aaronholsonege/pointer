@@ -36,16 +36,41 @@ var Util = require('./Util');
  *
  * @type String[]
  * @static
+ * @private
  */
 var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
 
 /**
- * Properties to copy from original event to new event
+ * Default properties to apply to newly created events
  *
- * @type String[]
+ * These values are only used in values do not exists in the
+ * `properties` or `originalEvent` object called with `create` method
+ *
+ * @type Object
  * @static
+ * @private
  */
-var PROPS = 'screenX screenY pageX pageY offsetX offsetY clientX clientY'.split(' ');
+var PROPS = {
+    screenX: 0,
+    screenY: 0,
+    pageX: 0,
+    pageY: 0,
+    offsetX: 0,
+    offsetY: 0,
+    clientX: 0,
+    clientY: 0,
+    view: null,
+    detail: null,
+    ctrlKey: false,
+    altKey: false,
+    shiftKey: false,
+    metaKey: false,
+    button: 0,
+    relatedTarget: null,
+    width: 0,
+    height: 0,
+    pressure: 0
+};
 
 /**
  * Get proprties to set to event
@@ -63,32 +88,23 @@ var PROPS = 'screenX screenY pageX pageY offsetX offsetY clientX clientY'.split(
 var _getProperties = function(type, originalEvent, touchIndex) {
     var source = originalEvent;
     var properties = {
-        noBubble: Util.indexOf(NO_BUBBLE_EVENTS, type) !== -1,
-        width: 0,
-        height: 0,
-        pressure: 0,
-        tiltX: 0,
-        tiltY: 0
+        pointerId: 0,
+        pointerType: 'mouse'
     };
 
     if (originalEvent.type.indexOf('touch') === 0) {
         source = originalEvent.changedTouches[touchIndex || 0];
         properties.pointerId = 1 + source.identifier;
         properties.pointerType = 'touch';
-    } else {
-        properties.pointerId = 0;
-        properties.pointerType = 'mouse';
-        properties.isPrimary = true;
     }
 
     properties.isPrimary = properties.pointerId <= 1;
 
-    var i = 0;
-    var length = PROPS.length;
+    var name;
 
-    for (; i < length; i++) {
-        if (source.hasOwnProperty(PROPS[i])) {
-            properties[PROPS[i]] = source[PROPS[i]];
+    for (name in PROPS) {
+        if (PROPS.hasOwnProperty(name)) {
+            properties[name] = source[name] || PROPS[name];
         }
     }
 
@@ -114,12 +130,17 @@ var PointerEvent = {
      * @param {String} type Pointer event name
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {Number} [touchIndex=0]
-     * @return {*} Event created from adapter
+     * @return {mixed} Event created from adapter
      */
     create: function(type, originalEvent, touchIndex) {
         var properties = _getProperties(type, originalEvent, touchIndex);
 
-        return Adapter.create(type, originalEvent, properties);
+        return Adapter.create(
+            type,
+            originalEvent,
+            properties,
+            Util.indexOf(NO_BUBBLE_EVENTS, type) === -1
+        );
     },
 
     /**
@@ -152,12 +173,14 @@ var PointerEvent = {
 
 module.exports = PointerEvent;
 },{"./Util":4,"./event/Events":7,"./event/Map":8,"Adapter":"OqFEuB"}],3:[function(require,module,exports){
+var Util = require('./Util');
 var MouseHandler = require('./handlers/Mouse');
 var TouchHandler = require('./handlers/Touch');
 
 /**
  * @type Boolean
  * @static
+ * @private
  */
 var _isEnabled = false;
 
@@ -181,8 +204,9 @@ var Pointer = {
 
         _isEnabled = true;
 
-        TouchHandler.enable();
-        MouseHandler.enable();
+        Util
+            .on(TouchHandler.events, TouchHandler.onEvent)
+            .on(MouseHandler.events, MouseHandler.onEvent);
     },
 
     /**
@@ -197,19 +221,21 @@ var Pointer = {
 
         _isEnabled = false;
 
-        TouchHandler.disable();
-        MouseHandler.disable();
+        Util
+            .off(TouchHandler.events, TouchHandler.onEvent)
+            .off(MouseHandler.events, MouseHandler.onEvent);
     }
 
 };
 
 module.exports = Pointer;
-},{"./handlers/Mouse":9,"./handlers/Touch":10}],4:[function(require,module,exports){
+},{"./Util":4,"./handlers/Mouse":9,"./handlers/Touch":10}],4:[function(require,module,exports){
 /**
  * Cached array
  *
  * @type Array
  * @static
+ * @private
  */
 var CACHED_ARRAY = [];
 
@@ -284,30 +310,29 @@ var Util = {
     },
 
     /**
-     * Perform indexOf on array
+     * Search array for a value.
+     *
+     * Legacy IE doesn't support Array.indexOf,
+     * and doing a for loop is faster anyway.
      *
      * @method indexOf
      * @param {Array} array
-     * @param {Function} [array.indexOf]
-     * @param {*} item
+     * @param {mixed} item
      * @return {Number}
      */
     indexOf: function(array, item) {
-        if (Array.prototype.indexOf) {
-            return array.indexOf(item);
-        } else {
-            var i = 0;
-            var length = array.length;
+        var i = 0;
+        var length = array.length;
 
-            for (; i < length; i++) {
-                if (array[i] === item) {
-                    return i;
-                }
+        for (; i < length; i++) {
+            if (array[i] === item) {
+                return i;
             }
-
-            return -1;
         }
+
+        return -1;
     },
+
     /**
      * Determine if `child` is a descendant of `target`
      *
@@ -341,42 +366,15 @@ var Util = {
 module.exports = Util;
 },{}],"OqFEuB":[function(require,module,exports){
 /**
- * Default properties to apply to newly created events
- *
- * These values are only used in values do not exists in the
- * `properties` or `originalEvent` object called with `create` method
- *
- * @type Object
- * @static
- */
-var PROPS = {
-    view: null,
-    detail: null,
-    ctrlKey: false,
-    altKey: false,
-    shiftKey: false,
-    metaKey: false,
-    button: 0,
-    relatedTarget: null
-};
-
-/**
- * Method names to override in event
- *
- * @type String[]
- * @static
- */
-var OVERRIDE_METHODS = ['preventDefault', 'stopPropagation', 'stopImmediatePropagation'];
-
-/**
  * Override original method in `event` to also call same method in `originalEvent`
  *
+ * @type Function
+ * @param {String} method
  * @param {Event} event
  * @param {MouseEvent|TouchEvent} originalEvent
- * @param {String} method
  * @private
  */
-var _overrideMethod = function(event, originalEvent, method) {
+var _overrideMethod = function(method, event, originalEvent) {
     var originalMethod = event[method];
     event[method] = function() {
         originalEvent[method]();
@@ -386,7 +384,9 @@ var _overrideMethod = function(event, originalEvent, method) {
 
 /**
  * Native pointer event creation and dispatching.
- * Only IE9+ is supported
+ *
+ * Legacy IE (IE8 and below) are not supported by this
+ * adapter - they do not support natively dispatching custom events.
  *
  * @class Pointer.Adapter.Native
  * @static
@@ -394,38 +394,38 @@ var _overrideMethod = function(event, originalEvent, method) {
 var Native = {
 
     /**
+     * Create a new Event object
+     *
      * @method create
      * @param {String} type
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {Object} properties
-     * @param {Boolean} [properties.noBubble]
+     * @param {Boolean} [bubbles=true]
      * @return {Event}
      */
-    create: function(type, originalEvent, properties) {
+    create: function(type, originalEvent, properties, bubbles) {
         var event = document.createEvent('Event');
-        event.initEvent(type, !properties.noBubble, true);
+        event.initEvent(type, bubbles !== false, true);
 
         var prop;
 
         // Add event properties
-        for (prop in PROPS) {
-            if (PROPS.hasOwnProperty(prop)) {
-                event[prop] = properties[prop] || originalEvent[prop] || PROPS[prop];
+        for (prop in properties) {
+            if (properties.hasOwnProperty(prop)) {
+                event[prop] = properties[prop];
             }
         }
 
-        var i = 0;
-        var length = OVERRIDE_METHODS.length;
-
-        // Override event methods to also call `originalEvent` methods
-        for (; i < length; i++) {
-            _overrideMethod(event, originalEvent, OVERRIDE_METHODS[i]);
-        }
+        _overrideMethod('preventDefault', event, originalEvent);
+        _overrideMethod('stopPropagation', event, originalEvent);
+        _overrideMethod('stopImmediatePropagation', event, originalEvent);
 
         return event;
     },
 
     /**
+     * Trigger an event on `target`
+     *
      * @method trigger
      * @param {Event} event
      * @param {HTMLElement} target
@@ -460,43 +460,43 @@ var Events = {
 
     /**
      * @property MOVE
-     * @type string
+     * @type String
      */
     MOVE: NAMESPACE + 'move',
 
     /**
      * @property ENTER
-     * @type string
+     * @type String
      */
     ENTER: NAMESPACE + 'enter',
 
     /**
      * @property OVER
-     * @type string
+     * @type String
      */
     OVER: NAMESPACE + 'over',
 
     /**
      * @property DOWN
-     * @type string
+     * @type String
      */
     DOWN: NAMESPACE + 'down',
 
     /**
      * @property UP
-     * @type string
+     * @type String
      */
     UP: NAMESPACE + 'up',
 
     /**
      * @property OUT
-     * @type string
+     * @type String
      */
     OUT: NAMESPACE + 'out',
 
     /**
      * @property LEAVE
-     * @type string
+     * @type String
      */
     LEAVE: NAMESPACE + 'leave'
 
@@ -514,6 +514,7 @@ var Events = require('./Events');
  *
  * @class Pointer.Event.Map
  * @static
+ * @final
  */
 var EventMap = {
 
@@ -613,6 +614,7 @@ var TouchHandler = require('./Touch');
  * Event to detect mouseenter events with
  * @type String
  * @static
+ * @private
  */
 var ENTER_EVENT = 'mouseover';
 
@@ -620,6 +622,7 @@ var ENTER_EVENT = 'mouseover';
  * Event to detect mouseleave events with
  * @type String
  * @static
+ * @private
  */
 var EXIT_EVENT = 'mouseout';
 
@@ -627,6 +630,7 @@ var EXIT_EVENT = 'mouseout';
  * Mouse enter/leave event map
  * @type Object
  * @static
+ * @private
  */
 var ENTER_LEAVE_EVENT_MAP = {
     mouseover: 'mouseenter',
@@ -655,7 +659,6 @@ var _detectMouseEnterOrLeave = function(event) {
 
 /**
  * @class Pointer.Handler.Mouse
- * @type Object
  * @static
  */
 var MouseHandler = {
@@ -666,25 +669,7 @@ var MouseHandler = {
      * @property events
      * @type String[]
      */
-    events: ['mouseover', 'mousedown', 'mousemove', 'mouseup', 'mouseout'],
-
-    /**
-     * Enable event listeners
-     *
-     * @method enable
-     */
-    enable: function() {
-        Util.on(this.events, this.onEvent);
-    },
-
-    /**
-     * Disable event listeners
-     *
-     * @method disable
-     */
-    disable: function() {
-        Util.off(this.events, this.onEvent);
-    },
+    events: [ENTER_EVENT, 'mousedown', 'mousemove', 'mouseup', EXIT_EVENT],
 
     /**
      * If event is not simulated, convert to pointer
@@ -725,6 +710,7 @@ var Controller = require('../Controller');
  *
  * @type String
  * @static
+ * @private
  */
 var EVENT_ENTER = 'touchenter';
 var EVENT_OVER = 'touchover';
@@ -736,12 +722,16 @@ var EVENT_LEAVE = 'touchleave';
 var EVENT_CANCEL = 'touchcancel';
 
 /**
- * List of point event targets
+ * List of the previous point event targets.
+ *
+ * Used to determine if a touch event has changed targets
+ * and will then fire enter/over and out/leave events.
  *
  * @type Object
  * @static
+ * @private
  */
-var PREVIOUS_TARGET = {};
+var PREVIOUS_TARGETS = {};
 
 /**
  * Touch timeout id
@@ -802,9 +792,10 @@ var _getPointMethod = function(type) {
  * @param {TouchEvent} event
  * @param {String} event.type
  * @param {Number} pointIndex
+ * @private
  */
 var _onPointCancel = function(point, event, pointIndex) {
-    PREVIOUS_TARGET[point.identifier] = null;
+    PREVIOUS_TARGETS[point.identifier] = null;
     Controller.trigger(event, event.type, event.target, pointIndex);
     _resetTouchingFlag();
 };
@@ -817,12 +808,13 @@ var _onPointCancel = function(point, event, pointIndex) {
  * @param {Number} point.identifier
  * @param {TouchEvent} event
  * @param {Number} pointIndex
+ * @private
  */
 var _onPointMove = function(point, event, pointIndex) {
     var newTarget = document.elementFromPoint(point.clientX, point.clientY);
-    var currentTarget = PREVIOUS_TARGET[point.identifier];
+    var currentTarget = PREVIOUS_TARGETS[point.identifier];
 
-    PREVIOUS_TARGET[point.identifier] = newTarget;
+    PREVIOUS_TARGETS[point.identifier] = newTarget;
 
     if (newTarget !== currentTarget) {
         if (currentTarget) {
@@ -858,22 +850,23 @@ var _onPointMove = function(point, event, pointIndex) {
  * @param {String} event.type
  * @param {Element} event.target
  * @param {Number} pointIndex
+ * @private
  */
 var _onPointStartEnd = function(point, event, pointIndex) {
     var target = event.target;
     var type = event.type;
 
     if (type === EVENT_START) {
-        PREVIOUS_TARGET[point.identifier] = target;
+        PREVIOUS_TARGETS[point.identifier] = target;
         Controller.trigger(event, EVENT_ENTER, target, pointIndex);
         Controller.trigger(event, EVENT_OVER, target, pointIndex);
     }
 
-    var currentTarget = PREVIOUS_TARGET[point.identifier] || target;
+    var currentTarget = PREVIOUS_TARGETS[point.identifier] || target;
     Controller.trigger(event, type, currentTarget, pointIndex);
 
     if (type === EVENT_END) {
-        PREVIOUS_TARGET[point.identifier] = null;
+        PREVIOUS_TARGETS[point.identifier] = null;
         Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
         Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
     }
@@ -883,7 +876,6 @@ var _onPointStartEnd = function(point, event, pointIndex) {
 
 /**
  * @class Pointer.Handler.Touch
- * @type Object
  * @static
  */
 var TouchHandler = {
@@ -903,24 +895,6 @@ var TouchHandler = {
      * @type String[]
      */
     events: [EVENT_START, EVENT_MOVE, EVENT_END, EVENT_CANCEL],
-
-    /**
-     * Enable event listeners
-     *
-     * @method enable
-     */
-    enable: function() {
-        Util.on(this.events, this.onEvent);
-    },
-
-    /**
-     * Disable event listeners
-     *
-     * @method disable
-     */
-    disable: function() {
-        Util.off(this.events, this.onEvent);
-    },
 
     /**
      * Register event (for mouse simulation detection) and convert to pointer
@@ -947,4 +921,4 @@ var TouchHandler = {
 
 module.exports = TouchHandler;
 },{"../Controller":2,"../Util":4}]},{},[1])
-}());
+}());;

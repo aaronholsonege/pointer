@@ -6,6 +6,7 @@ var Controller = require('../Controller');
  *
  * @type String
  * @static
+ * @private
  */
 var EVENT_ENTER = 'touchenter';
 var EVENT_OVER = 'touchover';
@@ -17,12 +18,16 @@ var EVENT_LEAVE = 'touchleave';
 var EVENT_CANCEL = 'touchcancel';
 
 /**
- * List of point event targets
+ * List of the previous point event targets.
+ *
+ * Used to determine if a touch event has changed targets
+ * and will then fire enter/over and out/leave events.
  *
  * @type Object
  * @static
+ * @private
  */
-var PREVIOUS_TARGET = {};
+var PREVIOUS_TARGETS = {};
 
 /**
  * Touch timeout id
@@ -83,9 +88,10 @@ var _getPointMethod = function(type) {
  * @param {TouchEvent} event
  * @param {String} event.type
  * @param {Number} pointIndex
+ * @private
  */
 var _onPointCancel = function(point, event, pointIndex) {
-    PREVIOUS_TARGET[point.identifier] = null;
+    PREVIOUS_TARGETS[point.identifier] = null;
     Controller.trigger(event, event.type, event.target, pointIndex);
     _resetTouchingFlag();
 };
@@ -98,12 +104,13 @@ var _onPointCancel = function(point, event, pointIndex) {
  * @param {Number} point.identifier
  * @param {TouchEvent} event
  * @param {Number} pointIndex
+ * @private
  */
 var _onPointMove = function(point, event, pointIndex) {
     var newTarget = document.elementFromPoint(point.clientX, point.clientY);
-    var currentTarget = PREVIOUS_TARGET[point.identifier];
+    var currentTarget = PREVIOUS_TARGETS[point.identifier];
 
-    PREVIOUS_TARGET[point.identifier] = newTarget;
+    PREVIOUS_TARGETS[point.identifier] = newTarget;
 
     if (newTarget !== currentTarget) {
         if (currentTarget) {
@@ -139,22 +146,23 @@ var _onPointMove = function(point, event, pointIndex) {
  * @param {String} event.type
  * @param {Element} event.target
  * @param {Number} pointIndex
+ * @private
  */
 var _onPointStartEnd = function(point, event, pointIndex) {
     var target = event.target;
     var type = event.type;
 
     if (type === EVENT_START) {
-        PREVIOUS_TARGET[point.identifier] = target;
+        PREVIOUS_TARGETS[point.identifier] = target;
         Controller.trigger(event, EVENT_ENTER, target, pointIndex);
         Controller.trigger(event, EVENT_OVER, target, pointIndex);
     }
 
-    var currentTarget = PREVIOUS_TARGET[point.identifier] || target;
+    var currentTarget = PREVIOUS_TARGETS[point.identifier] || target;
     Controller.trigger(event, type, currentTarget, pointIndex);
 
     if (type === EVENT_END) {
-        PREVIOUS_TARGET[point.identifier] = null;
+        PREVIOUS_TARGETS[point.identifier] = null;
         Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
         Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
     }
@@ -164,7 +172,6 @@ var _onPointStartEnd = function(point, event, pointIndex) {
 
 /**
  * @class Pointer.Handler.Touch
- * @type Object
  * @static
  */
 var TouchHandler = {
@@ -184,24 +191,6 @@ var TouchHandler = {
      * @type String[]
      */
     events: [EVENT_START, EVENT_MOVE, EVENT_END, EVENT_CANCEL],
-
-    /**
-     * Enable event listeners
-     *
-     * @method enable
-     */
-    enable: function() {
-        Util.on(this.events, this.onEvent);
-    },
-
-    /**
-     * Disable event listeners
-     *
-     * @method disable
-     */
-    disable: function() {
-        Util.off(this.events, this.onEvent);
-    },
 
     /**
      * Register event (for mouse simulation detection) and convert to pointer

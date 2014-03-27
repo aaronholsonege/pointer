@@ -1,23 +1,25 @@
 /**
  * @class Pointer.Handler.Interface
- * @type Object
+ * @interface
  * @static
  */
 var HandlerInterface = {
 
     /**
-     * Enable event listeners
+     * Array of events to listen for
      *
-     * @method enable
+     * @property events
      */
-    enable: function() {},
+    events: [],
 
     /**
-     * Disable event listeners
+     * Callback for all event listening to from the `events` property
      *
-     * @method disable
+     * @method onEvent
+     * @param {Event} event
+     * @callback
      */
-    disable: function() {}
+    onEvent: function(event) {}
 
 };
 

@@ -8,16 +8,41 @@ var Util = require('./Util');
  *
  * @type String[]
  * @static
+ * @private
  */
 var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
 
 /**
- * Properties to copy from original event to new event
+ * Default properties to apply to newly created events
  *
- * @type String[]
+ * These values are only used in values do not exists in the
+ * `properties` or `originalEvent` object called with `create` method
+ *
+ * @type Object
  * @static
+ * @private
  */
-var PROPS = 'screenX screenY pageX pageY offsetX offsetY clientX clientY'.split(' ');
+var PROPS = {
+    screenX: 0,
+    screenY: 0,
+    pageX: 0,
+    pageY: 0,
+    offsetX: 0,
+    offsetY: 0,
+    clientX: 0,
+    clientY: 0,
+    view: null,
+    detail: null,
+    ctrlKey: false,
+    altKey: false,
+    shiftKey: false,
+    metaKey: false,
+    button: 0,
+    relatedTarget: null,
+    width: 0,
+    height: 0,
+    pressure: 0
+};
 
 /**
  * Get proprties to set to event
@@ -35,32 +60,23 @@ var PROPS = 'screenX screenY pageX pageY offsetX offsetY clientX clientY'.split(
 var _getProperties = function(type, originalEvent, touchIndex) {
     var source = originalEvent;
     var properties = {
-        noBubble: Util.indexOf(NO_BUBBLE_EVENTS, type) !== -1,
-        width: 0,
-        height: 0,
-        pressure: 0,
-        tiltX: 0,
-        tiltY: 0
+        pointerId: 0,
+        pointerType: 'mouse'
     };
 
     if (originalEvent.type.indexOf('touch') === 0) {
         source = originalEvent.changedTouches[touchIndex || 0];
         properties.pointerId = 1 + source.identifier;
         properties.pointerType = 'touch';
-    } else {
-        properties.pointerId = 0;
-        properties.pointerType = 'mouse';
-        properties.isPrimary = true;
     }
 
     properties.isPrimary = properties.pointerId <= 1;
 
-    var i = 0;
-    var length = PROPS.length;
+    var name;
 
-    for (; i < length; i++) {
-        if (source.hasOwnProperty(PROPS[i])) {
-            properties[PROPS[i]] = source[PROPS[i]];
+    for (name in PROPS) {
+        if (PROPS.hasOwnProperty(name)) {
+            properties[name] = source[name] || PROPS[name];
         }
     }
 
@@ -86,12 +102,17 @@ var PointerEvent = {
      * @param {String} type Pointer event name
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {Number} [touchIndex=0]
-     * @return {*} Event created from adapter
+     * @return {mixed} Event created from adapter
      */
     create: function(type, originalEvent, touchIndex) {
         var properties = _getProperties(type, originalEvent, touchIndex);
 
-        return Adapter.create(type, originalEvent, properties);
+        return Adapter.create(
+            type,
+            originalEvent,
+            properties,
+            Util.indexOf(NO_BUBBLE_EVENTS, type) === -1
+        );
     },
 
     /**

@@ -18,43 +18,43 @@ var Events = {
 
     /**
      * @property MOVE
-     * @type string
+     * @type String
      */
     MOVE: NAMESPACE + 'move',
 
     /**
      * @property ENTER
-     * @type string
+     * @type String
      */
     ENTER: NAMESPACE + 'enter',
 
     /**
      * @property OVER
-     * @type string
+     * @type String
      */
     OVER: NAMESPACE + 'over',
 
     /**
      * @property DOWN
-     * @type string
+     * @type String
      */
     DOWN: NAMESPACE + 'down',
 
     /**
      * @property UP
-     * @type string
+     * @type String
      */
     UP: NAMESPACE + 'up',
 
     /**
      * @property OUT
-     * @type string
+     * @type String
      */
     OUT: NAMESPACE + 'out',
 
     /**
      * @property LEAVE
-     * @type string
+     * @type String
      */
     LEAVE: NAMESPACE + 'leave'
 

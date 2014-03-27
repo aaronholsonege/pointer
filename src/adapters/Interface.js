@@ -1,5 +1,5 @@
 /**
- * @class Pointer.Adapter.AdapterInterface
+ * @class Pointer.Adapter.Interface
  * @interface
  * @static
  */
@@ -12,15 +12,16 @@ var AdapterInterface = {
      * @param {String} type
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {Object} properties
-     * @return {*} Created pointer event
+     * @param {Boolean} [bubbles=true]
+     * @return {mixed} Created pointer event
      */
-    create: function(type, originalEvent, properties) {},
+    create: function(type, originalEvent, properties, bubbles) {},
 
     /**
      * Dispatch pointer event to target
      *
      * @method trigger
-     * @param {*} event Pointer event
+     * @param {mixed} event Pointer event
      * @param {HTMLElement} target
      */
     trigger: function(event, target) {}

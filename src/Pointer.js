@@ -1,9 +1,11 @@
+var Util = require('./Util');
 var MouseHandler = require('./handlers/Mouse');
 var TouchHandler = require('./handlers/Touch');
 
 /**
  * @type Boolean
  * @static
+ * @private
  */
 var _isEnabled = false;
 
@@ -27,8 +29,9 @@ var Pointer = {
 
         _isEnabled = true;
 
-        TouchHandler.enable();
-        MouseHandler.enable();
+        Util
+            .on(TouchHandler.events, TouchHandler.onEvent)
+            .on(MouseHandler.events, MouseHandler.onEvent);
     },
 
     /**
@@ -43,8 +46,9 @@ var Pointer = {
 
         _isEnabled = false;
 
-        TouchHandler.disable();
-        MouseHandler.disable();
+        Util
+            .off(TouchHandler.events, TouchHandler.onEvent)
+            .off(MouseHandler.events, MouseHandler.onEvent);
     }
 
 };

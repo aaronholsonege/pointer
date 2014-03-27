@@ -8,6 +8,7 @@ var Events = require('./Events');
  *
  * @class Pointer.Event.Map
  * @static
+ * @final
  */
 var EventMap = {
 
