@@ -28,7 +28,7 @@ if (document.readyState === 'complete') {
 },{"./Pointer":3,"./Util":4}],2:[function(require,module,exports){
 var Events = require('./event/Events');
 var EventMap = require('./event/Map');
-var Adapter = require('Adapter');
+var Adapter = require('adapter/event');
 var Util = require('./Util');
 
 /**
@@ -172,7 +172,7 @@ var PointerEvent = {
 };
 
 module.exports = PointerEvent;
-},{"./Util":4,"./event/Events":7,"./event/Map":8,"Adapter":"OqFEuB"}],3:[function(require,module,exports){
+},{"./Util":4,"./event/Events":9,"./event/Map":10,"adapter/event":"mbL6jR"}],3:[function(require,module,exports){
 var Util = require('./Util');
 var MouseHandler = require('./handlers/Mouse');
 var TouchHandler = require('./handlers/Touch');
@@ -229,7 +229,7 @@ var Pointer = {
 };
 
 module.exports = Pointer;
-},{"./Util":4,"./handlers/Mouse":9,"./handlers/Touch":10}],4:[function(require,module,exports){
+},{"./Util":4,"./handlers/Mouse":11,"./handlers/Touch":12}],4:[function(require,module,exports){
 /**
  * Cached array
  *
@@ -391,7 +391,7 @@ var Util = {
 };
 
 module.exports = Util;
-},{}],"OqFEuB":[function(require,module,exports){
+},{}],"mbL6jR":[function(require,module,exports){
 /**
  * Override original method in `event` to also call same method in `originalEvent`
  *
@@ -415,7 +415,7 @@ var _overrideMethod = function(method, event, originalEvent) {
  * Legacy IE (IE8 and below) are not supported by this
  * adapter - they do not support natively dispatching custom events.
  *
- * @class Pointer.Adapter.Native
+ * @class Pointer.Adapter.Event.Native
  * @static
  */
 var Native = {
@@ -464,9 +464,38 @@ var Native = {
 };
 
 module.exports = Native;
-},{}],"Adapter":[function(require,module,exports){
-module.exports=require('OqFEuB');
-},{}],7:[function(require,module,exports){
+},{}],"adapter/event":[function(require,module,exports){
+module.exports=require('mbL6jR');
+},{}],"adapter/toucharea":[function(require,module,exports){
+module.exports=require('C84uZi');
+},{}],"C84uZi":[function(require,module,exports){
+/**
+ * @class Pointer.Adapter.TouchArea.Attribute
+ * @static
+ */
+var TouchAreaAttribute = {
+
+    /**
+     * Determine if `target` or a parent node of `target` has
+     * a `touch-action` attribute with a value of `none`.
+     *
+     * @method hasTouchAction
+     * @param {Element} target
+     * @param {Function} target.getAttribute
+     * @returns {Boolean}
+     */
+    detect: function(target) {
+        while (target.getAttribute && !target.getAttribute(ATTRIBUTE)) {
+            target = target.parentNode;
+        }
+
+        return target.getAttribute && target.getAttribute(ATTRIBUTE) === 'none' || false;
+    }
+
+};
+
+module.exports = TouchAreaAttribute;
+},{}],9:[function(require,module,exports){
 /**
  * Pointer event namespace.
  * This is prepended to the pointer events
@@ -530,7 +559,7 @@ var Events = {
 };
 
 module.exports = Events;
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var Events = require('./Events');
 
 /**
@@ -632,7 +661,7 @@ var EventMap = {
 };
 
 module.exports = EventMap;
-},{"./Events":7}],9:[function(require,module,exports){
+},{"./Events":9}],11:[function(require,module,exports){
 var Util = require('../Util');
 var Controller = require('../Controller');
 var TouchHandler = require('./Touch');
@@ -728,8 +757,9 @@ var MouseHandler = {
 };
 
 module.exports = MouseHandler;
-},{"../Controller":2,"../Util":4,"./Touch":10}],10:[function(require,module,exports){
+},{"../Controller":2,"../Util":4,"./Touch":12}],12:[function(require,module,exports){
 var Util = require('../Util');
+var TouchAreaAdapter = require('adapter/toucharea');
 var Controller = require('../Controller');
 
 /**
@@ -867,7 +897,7 @@ var _onPointMove = function(point, event, pointIndex) {
 
     // If the target (or a parent node) has the touch-action attribute
     // set to "none", prevent the browser default action.
-    if (newTarget && Util.hasTouchAction(newTarget)) {
+    if (newTarget && TouchAreaAdapter.detect(newTarget)) {
         event.preventDefault();
     }
 
@@ -954,5 +984,5 @@ var TouchHandler = {
 };
 
 module.exports = TouchHandler;
-},{"../Controller":2,"../Util":4}]},{},[1])
+},{"../Controller":2,"../Util":4,"adapter/toucharea":"C84uZi"}]},{},[1])
 }());;

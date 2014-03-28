@@ -30,7 +30,10 @@ module.exports = function (grunt) {
                     'build/pointer.js' : ['src/Bootstrap.js']
                 },
                 options: {
-                    alias: ['src/adapters/Native.js:Adapter']
+                    alias: [
+                        'src/adapters/event/Native.js:adapter/event',
+                        'src/adapters/toucharea/Attribute.js:adapter/toucharea'
+                    ]
                 }
             },
             jquery: {
@@ -38,7 +41,10 @@ module.exports = function (grunt) {
                     'build/jquery.pointer.js' : ['src/Bootstrap.js']
                 },
                 options: {
-                    alias: ['src/adapters/jQuery.js:Adapter']
+                    alias: [
+                        'src/adapters/event/jQuery.js:adapter/event',
+                        'src/adapters/toucharea/Attribute.js:adapter/toucharea'
+                    ]
                 }
             }
         },

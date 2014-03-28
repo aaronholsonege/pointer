@@ -1,6 +1,6 @@
 var Events = require('./event/Events');
 var EventMap = require('./event/Map');
-var Adapter = require('Adapter');
+var Adapter = require('adapter/event');
 var Util = require('./Util');
 
 /**

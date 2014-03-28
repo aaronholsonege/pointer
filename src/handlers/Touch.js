@@ -1,4 +1,5 @@
 var Util = require('../Util');
+var TouchAreaAdapter = require('adapter/toucharea');
 var Controller = require('../Controller');
 
 /**
@@ -136,7 +137,7 @@ var _onPointMove = function(point, event, pointIndex) {
 
     // If the target (or a parent node) has the touch-action attribute
     // set to "none", prevent the browser default action.
-    if (newTarget && Util.hasTouchAction(newTarget)) {
+    if (newTarget && TouchAreaAdapter.detect(newTarget)) {
         event.preventDefault();
     }
 
