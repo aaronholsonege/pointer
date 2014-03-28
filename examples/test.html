@@ -5,7 +5,7 @@
     <title>jQuery.pointer Example</title>
 
     <!-- jQuery -->
-    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="viewport" content="width=device-width" />
     <script src="//code.jquery.com/jquery-1.8.2.min.js"></script>
     <script src="../jquery.fixHook.js"></script>
     <script src="../build/pointer.js"></script>
@@ -17,9 +17,6 @@
             $body
                 .on('pointerenter pointerover pointerdown pointerup pointerout pointerleave', function(e) {
                     console.log(e);
-                })
-                .on('pointermove', function(e) {
-                    e.preventDefault();
                 })
                 .on('pointermove pointerdown pointerup', function(e) {
                     var $pointer = $tracker.find('#point' + e.pointerId);
@@ -127,10 +124,10 @@
     </style>
 </head>
 <body>
-<div></div>
-<div></div>
-<div></div>
-<div></div>
+<div touch-action="none"></div>
+<div touch-action="none"></div>
+<div touch-action="none"></div>
+<div touch-action="none"></div>
 <ul id="tracker"></ul>
 </body>
 </html>

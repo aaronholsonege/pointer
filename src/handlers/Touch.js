@@ -102,7 +102,7 @@ var _onPointCancel = function(point, event, pointIndex) {
  * @type Function
  * @param {Touch} point
  * @param {Number} point.identifier
- * @param {TouchEvent} event
+ * @param {Event} event
  * @param {Number} pointIndex
  * @private
  */
@@ -133,6 +133,13 @@ var _onPointMove = function(point, event, pointIndex) {
     }
 
     Controller.trigger(event, EVENT_MOVE, newTarget, pointIndex);
+
+    // If the target (or a parent node) has the touch-action attribute
+    // set to "none", prevent the browser default action.
+    if (newTarget && Util.hasTouchAction(newTarget)) {
+        event.preventDefault();
+    }
+
     _startTimer();
 };
 
