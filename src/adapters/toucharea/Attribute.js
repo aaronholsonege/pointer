@@ -1,4 +1,13 @@
 /**
+ * Attribute name
+ *
+ * @type String
+ * @static
+ * @final
+ */
+var ATTRIBUTE = 'touch-action';
+
+/**
  * @class Pointer.Adapter.TouchArea.Attribute
  * @static
  */

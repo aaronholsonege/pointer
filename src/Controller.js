@@ -1,6 +1,7 @@
 var Events = require('./event/Events');
 var EventMap = require('./event/Map');
 var Adapter = require('adapter/event');
+var Tracker = require('./event/Tracker');
 var Util = require('./Util');
 
 /**
@@ -137,6 +138,7 @@ var PointerEvent = {
         var event = PointerEvent.create(type, originalEvent, touchIndex || 0);
 
         if (event) {
+            Tracker.register(event, eventName);
             Adapter.trigger(event, overrideTarget || originalEvent.target);
         }
     }

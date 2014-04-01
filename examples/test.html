@@ -15,8 +15,8 @@
             var $tracker = $('#tracker');
 
             $body
-                .on('pointerenter pointerover pointerdown pointerup pointerout pointerleave', function(e) {
-                    console.log(e);
+                .on('pointerenter pointerover pointerdown pointerup pointerout pointerleave pointercancel', function(e) {
+//                    console.log(e.type, e.pageX, e.pageY);
                 })
                 .on('pointermove pointerdown pointerup', function(e) {
                     var $pointer = $tracker.find('#point' + e.pointerId);
@@ -51,7 +51,7 @@
                     .on('pointerenter', function() {
                         $(this).addClass('inside');
                     })
-                    .on('pointerleave', function() {
+                    .on('pointerleave pointercancel', function() {
                         $(this).removeClass('inside').removeClass('active');
                     })
                     .on('pointerdown', function(e) {
@@ -123,7 +123,7 @@
         }
     </style>
 </head>
-<body>
+<body touch-action="none">
 <div touch-action="none"></div>
 <div touch-action="none"></div>
 <div touch-action="none"></div>

@@ -31,36 +31,6 @@ var EVENT_CANCEL = 'touchcancel';
 var PREVIOUS_TARGETS = {};
 
 /**
- * Touch timeout id
- *
- * @type Number
- * @private
- */
-var _touchTimer;
-
-/**
- * Reset touching flag to false
- *
- * @type Function
- * @private
- */
-var _resetTouchingFlag = function() {
-    TouchHandler.touching = false;
-};
-
-/**
- * Reset touch flag and set a time to set it back to false
- *
- * @type Function
- * @private
- */
-var _startTimer = function() {
-    clearTimeout(_touchTimer);
-    TouchHandler.touching = true;
-    _touchTimer = setTimeout(_resetTouchingFlag, 700);
-};
-
-/**
  * Determine which method to call for each point
  *
  * @type Function
@@ -94,7 +64,6 @@ var _getPointMethod = function(type) {
 var _onPointCancel = function(point, event, pointIndex) {
     PREVIOUS_TARGETS[point.identifier] = null;
     Controller.trigger(event, event.type, event.target, pointIndex);
-    _resetTouchingFlag();
 };
 
 /**
@@ -140,8 +109,6 @@ var _onPointMove = function(point, event, pointIndex) {
     if (newTarget && TouchAreaAdapter.detect(newTarget)) {
         event.preventDefault();
     }
-
-    _startTimer();
 };
 
 /**
@@ -174,8 +141,6 @@ var _onPointStartEnd = function(point, event, pointIndex) {
         Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
         Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
     }
-
-    _startTimer();
 };
 
 /**
@@ -183,14 +148,6 @@ var _onPointStartEnd = function(point, event, pointIndex) {
  * @static
  */
 var TouchHandler = {
-
-    /**
-     * Was there a touch event in the last 700ms?
-     *
-     * @property touching
-     * @type Boolean
-     */
-    touching: false,
 
     /**
      * Events to watch

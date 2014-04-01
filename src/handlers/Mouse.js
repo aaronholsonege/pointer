@@ -1,6 +1,6 @@
 var Util = require('../Util');
 var Controller = require('../Controller');
-var TouchHandler = require('./Touch');
+var Tracker = require('../event/Tracker');
 
 /**
  * Event to detect mouseenter events with
@@ -74,7 +74,7 @@ var MouseHandler = {
      * @callback
      */
     onEvent: function(event) {
-        if (!TouchHandler.touching) {
+        if (!Tracker.isEmulated(event)) {
 
             // trigger mouseenter event if applicable
             if (ENTER_EVENT === event.type) {
