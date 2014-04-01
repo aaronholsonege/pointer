@@ -56,7 +56,13 @@ var Events = {
      * @property LEAVE
      * @type String
      */
-    LEAVE: NAMESPACE + 'leave'
+    LEAVE: NAMESPACE + 'leave',
+
+    /**
+     * @property CANCEL
+     * @type String
+     */
+    CANCEL: NAMESPACE + 'cancel'
 
 };
 

@@ -536,7 +536,13 @@ var Events = {
      * @property LEAVE
      * @type String
      */
-    LEAVE: NAMESPACE + 'leave'
+    LEAVE: NAMESPACE + 'leave',
+
+    /**
+     * @property CANCEL
+     * @type String
+     */
+    CANCEL: NAMESPACE + 'cancel'
 
 };
 
@@ -597,6 +603,12 @@ var EventMap = {
      * @type String
      */
     touchleave: Events.LEAVE,
+
+    /**
+     * @property touchcancel
+     * @type String
+     */
+    touchcancel: Events.CANCEL,
 
     /**
      * @property mouseenter

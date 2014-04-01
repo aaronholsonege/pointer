@@ -55,6 +55,12 @@ var EventMap = {
     touchleave: Events.LEAVE,
 
     /**
+     * @property touchcancel
+     * @type String
+     */
+    touchcancel: Events.CANCEL,
+
+    /**
      * @property mouseenter
      * @type String
      */

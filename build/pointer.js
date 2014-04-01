@@ -393,8 +393,6 @@ var Util = {
 };
 
 module.exports = Util;
-},{}],"adapter/event":[function(require,module,exports){
-module.exports=require('mbL6jR');
 },{}],"mbL6jR":[function(require,module,exports){
 /**
  * Override original method in `event` to also call same method in `originalEvent`
@@ -468,6 +466,8 @@ var Native = {
 };
 
 module.exports = Native;
+},{}],"adapter/event":[function(require,module,exports){
+module.exports=require('mbL6jR');
 },{}],"adapter/toucharea":[function(require,module,exports){
 module.exports=require('C84uZi');
 },{}],"C84uZi":[function(require,module,exports){
@@ -565,7 +565,13 @@ var Events = {
      * @property LEAVE
      * @type String
      */
-    LEAVE: NAMESPACE + 'leave'
+    LEAVE: NAMESPACE + 'leave',
+
+    /**
+     * @property CANCEL
+     * @type String
+     */
+    CANCEL: NAMESPACE + 'cancel'
 
 };
 
@@ -626,6 +632,12 @@ var EventMap = {
      * @type String
      */
     touchleave: Events.LEAVE,
+
+    /**
+     * @property touchcancel
+     * @type String
+     */
+    touchcancel: Events.CANCEL,
 
     /**
      * @property mouseenter
