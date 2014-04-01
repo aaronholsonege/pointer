@@ -16,7 +16,7 @@ var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
 /**
  * Default properties to apply to newly created events
  *
- * These values are only used in values do not exists in the
+ * These values are only used if values do not exists in the
  * `properties` or `originalEvent` object called with `create` method
  *
  * @type Object
@@ -91,10 +91,10 @@ var _getProperties = function(type, originalEvent, touchIndex) {
 /**
  * Create and trigger pointer events
  *
- * @class Pointer.Controller
+ * @class Controller
  * @static
  */
-var PointerEvent = {
+var Controller = {
 
     /**
      * Create a new pointer event
@@ -135,7 +135,7 @@ var PointerEvent = {
         }
 
         var type = EventMap[eventName];
-        var event = PointerEvent.create(type, originalEvent, touchIndex || 0);
+        var event = Controller.create(type, originalEvent, touchIndex || 0);
 
         if (event) {
             Tracker.register(event, eventName);
@@ -145,4 +145,4 @@ var PointerEvent = {
 
 };
 
-module.exports = PointerEvent;
+module.exports = Controller;

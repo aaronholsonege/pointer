@@ -6,7 +6,7 @@ var Events = require('./Events');
  *
  * Values can be either a single event name, or an array of event names.
  *
- * @class Pointer.Event.Map
+ * @class Event.Map
  * @static
  * @final
  */

@@ -21,7 +21,7 @@ var _overrideMethod = function(method, event, originalEvent) {
  * Legacy IE (IE8 and below) are not supported by this
  * adapter - they do not support natively dispatching custom events.
  *
- * @class Pointer.Adapter.Event.Native
+ * @class Adapter.Event.Native
  * @static
  */
 var Native = {

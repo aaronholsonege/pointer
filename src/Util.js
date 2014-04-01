@@ -8,19 +8,9 @@
 var CACHED_ARRAY = [];
 
 /**
- * Name of touch attribute to stop browser defaults on touch events
- *
- * @type String
- * @static
- * @private
- * @final
- */
-var ATTRIBUTE = 'touch-action';
-
-/**
  * Utility functions
  *
- * @class Pointer.Util
+ * @class Util
  * @static
  */
 var Util = {
@@ -137,23 +127,6 @@ var Util = {
 
             return Util.indexOf(CACHED_ARRAY, target) !== -1;
         }
-    },
-
-    /**
-     * Determine if `target` or a parent node of `target` has
-     * a `touch-action` attribute with a value of `none`.
-     *
-     * @method hasTouchAction
-     * @param {Element} target
-     * @param {Function} target.getAttribute
-     * @returns {Boolean}
-     */
-    hasTouchAction: function(target) {
-        while (target.getAttribute && !target.getAttribute(ATTRIBUTE)) {
-            target = target.parentNode;
-        }
-
-        return target.getAttribute && target.getAttribute(ATTRIBUTE) === 'none' || false;
     }
 
 };

@@ -1,5 +1,5 @@
 /**
- * @class Pointer.Adapter.Event.Interface
+ * @class Adapter.Event.Interface
  * @interface
  * @static
  */

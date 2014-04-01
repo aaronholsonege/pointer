@@ -44,7 +44,7 @@ var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
 /**
  * Default properties to apply to newly created events
  *
- * These values are only used in values do not exists in the
+ * These values are only used if values do not exists in the
  * `properties` or `originalEvent` object called with `create` method
  *
  * @type Object
@@ -119,10 +119,10 @@ var _getProperties = function(type, originalEvent, touchIndex) {
 /**
  * Create and trigger pointer events
  *
- * @class Pointer.Controller
+ * @class Controller
  * @static
  */
-var PointerEvent = {
+var Controller = {
 
     /**
      * Create a new pointer event
@@ -163,7 +163,7 @@ var PointerEvent = {
         }
 
         var type = EventMap[eventName];
-        var event = PointerEvent.create(type, originalEvent, touchIndex || 0);
+        var event = Controller.create(type, originalEvent, touchIndex || 0);
 
         if (event) {
             Tracker.register(event, eventName);
@@ -173,7 +173,7 @@ var PointerEvent = {
 
 };
 
-module.exports = PointerEvent;
+module.exports = Controller;
 },{"./Util":4,"./event/Events":9,"./event/Map":10,"./event/Tracker":11,"adapter/event":"Sy7Mtw"}],3:[function(require,module,exports){
 var Util = require('./Util');
 var MouseHandler = require('./handlers/Mouse');
@@ -242,19 +242,9 @@ module.exports = Pointer;
 var CACHED_ARRAY = [];
 
 /**
- * Name of touch attribute to stop browser defaults on touch events
- *
- * @type String
- * @static
- * @private
- * @final
- */
-var ATTRIBUTE = 'touch-action';
-
-/**
  * Utility functions
  *
- * @class Pointer.Util
+ * @class Util
  * @static
  */
 var Util = {
@@ -371,35 +361,20 @@ var Util = {
 
             return Util.indexOf(CACHED_ARRAY, target) !== -1;
         }
-    },
-
-    /**
-     * Determine if `target` or a parent node of `target` has
-     * a `touch-action` attribute with a value of `none`.
-     *
-     * @method hasTouchAction
-     * @param {Element} target
-     * @param {Function} target.getAttribute
-     * @returns {Boolean}
-     */
-    hasTouchAction: function(target) {
-        while (target.getAttribute && !target.getAttribute(ATTRIBUTE)) {
-            target = target.parentNode;
-        }
-
-        return target.getAttribute && target.getAttribute(ATTRIBUTE) === 'none' || false;
     }
 
 };
 
 module.exports = Util;
+},{}],"adapter/event":[function(require,module,exports){
+module.exports=require('Sy7Mtw');
 },{}],"Sy7Mtw":[function(require,module,exports){
 var $ = window.jQuery;
 
 /**
  * jQuery event creating and dispatching.
  *
- * @class Pointer.Adapter.EventjQuery
+ * @class Adapter.EventjQuery
  * @static
  */
 var jQueryAdapter = {
@@ -437,8 +412,6 @@ var jQueryAdapter = {
 };
 
 module.exports = jQueryAdapter;
-},{}],"adapter/event":[function(require,module,exports){
-module.exports=require('Sy7Mtw');
 },{}],"adapter/toucharea":[function(require,module,exports){
 module.exports=require('C84uZi');
 },{}],"C84uZi":[function(require,module,exports){
@@ -452,7 +425,7 @@ module.exports=require('C84uZi');
 var ATTRIBUTE = 'touch-action';
 
 /**
- * @class Pointer.Adapter.TouchArea.Attribute
+ * @class Adapter.TouchArea.Attribute
  * @static
  */
 var TouchAreaAttribute = {
@@ -490,7 +463,7 @@ var NAMESPACE = 'pointer';
 /**
  * Pointer event names
  *
- * @class Pointer.Event
+ * @class Event
  * @static
  * @final
  */
@@ -556,7 +529,7 @@ var Events = require('./Events');
  *
  * Values can be either a single event name, or an array of event names.
  *
- * @class Pointer.Event.Map
+ * @class Event.Map
  * @static
  * @final
  */
@@ -701,7 +674,7 @@ var DELTA_TIME = 750;
 var DELTA_POSITION = 15;
 
 /**
- * @class Pointer.Event.Tracker
+ * @class Event.Tracker
  * @static
  */
 var EventTracker = {
@@ -756,7 +729,8 @@ var EventTracker = {
             pointer = previousEvent[pointerId];
 
             // Check timestamp delta if `event.type` is not mouseout - mouseout
-            // event don't fire until the next touch on touch devices.
+            // event don't fire until the next touch on touch devices. So comparing
+            // timestamps should not be done.
             if (event.type !== 'mouseout') {
                 var dt = Math.abs(event.timeStamp - pointer.timeStamp);
 
@@ -836,7 +810,7 @@ var _detectMouseEnterOrLeave = function(event) {
 };
 
 /**
- * @class Pointer.Handler.Mouse
+ * @class Handler.Mouse
  * @static
  */
 var MouseHandler = {
@@ -1028,7 +1002,7 @@ var _onPointStartEnd = function(point, event, pointIndex) {
 };
 
 /**
- * @class Pointer.Handler.Touch
+ * @class Handler.Touch
  * @static
  */
 var TouchHandler = {

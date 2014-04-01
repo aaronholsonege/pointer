@@ -1,5 +1,5 @@
 /**
- * @class Pointer.Handler.Interface
+ * @class Handler.Interface
  * @interface
  * @static
  */

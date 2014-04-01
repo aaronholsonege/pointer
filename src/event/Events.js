@@ -10,7 +10,7 @@ var NAMESPACE = 'pointer';
 /**
  * Pointer event names
  *
- * @class Pointer.Event
+ * @class Event
  * @static
  * @final
  */

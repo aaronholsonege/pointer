@@ -3,7 +3,7 @@ var $ = window.jQuery;
 /**
  * jQuery event creating and dispatching.
  *
- * @class Pointer.Adapter.EventjQuery
+ * @class Adapter.EventjQuery
  * @static
  */
 var jQueryAdapter = {

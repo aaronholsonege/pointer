@@ -146,7 +146,7 @@ var _onPointStartEnd = function(point, event, pointIndex) {
 };
 
 /**
- * @class Pointer.Handler.Touch
+ * @class Handler.Touch
  * @static
  */
 var TouchHandler = {

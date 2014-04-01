@@ -43,7 +43,7 @@ var DELTA_TIME = 750;
 var DELTA_POSITION = 15;
 
 /**
- * @class Pointer.Event.Tracker
+ * @class Event.Tracker
  * @static
  */
 var EventTracker = {
@@ -98,7 +98,8 @@ var EventTracker = {
             pointer = previousEvent[pointerId];
 
             // Check timestamp delta if `event.type` is not mouseout - mouseout
-            // event don't fire until the next touch on touch devices.
+            // event don't fire until the next touch on touch devices. So comparing
+            // timestamps should not be done.
             if (event.type !== 'mouseout') {
                 var dt = Math.abs(event.timeStamp - pointer.timeStamp);
 

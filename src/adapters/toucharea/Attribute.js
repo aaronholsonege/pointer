@@ -8,7 +8,7 @@
 var ATTRIBUTE = 'touch-action';
 
 /**
- * @class Pointer.Adapter.TouchArea.Attribute
+ * @class Adapter.TouchArea.Attribute
  * @static
  */
 var TouchAreaAttribute = {

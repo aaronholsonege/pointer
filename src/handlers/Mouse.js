@@ -50,7 +50,7 @@ var _detectMouseEnterOrLeave = function(event) {
 };
 
 /**
- * @class Pointer.Handler.Mouse
+ * @class Handler.Mouse
  * @static
  */
 var MouseHandler = {
