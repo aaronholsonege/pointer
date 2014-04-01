@@ -64,6 +64,7 @@ var _getPointMethod = function(type) {
 var _onPointCancel = function(point, event, pointIndex) {
     PREVIOUS_TARGETS[point.identifier] = null;
     Controller.trigger(event, event.type, event.target, pointIndex);
+    Controller.trigger(event, EVENT_OUT, event.target, pointIndex);
 };
 
 /**
