@@ -393,8 +393,6 @@ var Util = {
 };
 
 module.exports = Util;
-},{}],"adapter/event":[function(require,module,exports){
-module.exports=require('Sy7Mtw');
 },{}],"Sy7Mtw":[function(require,module,exports){
 var $ = window.jQuery;
 
@@ -439,6 +437,8 @@ var jQueryAdapter = {
 };
 
 module.exports = jQueryAdapter;
+},{}],"adapter/event":[function(require,module,exports){
+module.exports=require('Sy7Mtw');
 },{}],"adapter/toucharea":[function(require,module,exports){
 module.exports=require('C84uZi');
 },{}],"C84uZi":[function(require,module,exports){
@@ -947,6 +947,7 @@ var _onPointCancel = function(point, event, pointIndex) {
     PREVIOUS_TARGETS[point.identifier] = null;
     Controller.trigger(event, event.type, event.target, pointIndex);
     Controller.trigger(event, EVENT_OUT, event.target, pointIndex);
+    Controller.trigger(event, EVENT_LEAVE, event.target, pointIndex);
 };
 
 /**
