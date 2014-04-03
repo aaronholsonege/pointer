@@ -112,8 +112,8 @@ var EventTracker = {
                 }
             }
 
-            var dx = Math.abs(pointer.pageX - event.pageX);
-            var dy = Math.abs(pointer.pageY - event.pageY);
+            var dx = Math.abs(pointer.clientX - event.clientX);
+            var dy = Math.abs(pointer.clientX - event.clientX);
 
             if (dx <= DELTA_POSITION && dy <= DELTA_POSITION) {
                 return true;

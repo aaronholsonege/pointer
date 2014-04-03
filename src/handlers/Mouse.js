@@ -40,7 +40,7 @@ var ENTER_LEAVE_EVENT_MAP = {
  * @private
  */
 var _detectMouseEnterOrLeave = function(event) {
-    var target = event.target;
+    var target = event.target || event.srcElement;
     var related = event.relatedTarget;
     var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
 

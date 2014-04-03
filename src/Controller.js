@@ -81,11 +81,54 @@ var _getProperties = function(type, originalEvent, touchIndex) {
         }
     }
 
+    if (!properties.pageX && properties.clientX) {
+        properties.pageX = properties.clientX + _getPageOffset('Left');
+        properties.pageY = properties.clientY + _getPageOffset('Top');
+    }
+
     // add x/y properties aliased to pageX/Y
     properties.x = properties.pageX;
     properties.y = properties.pageY;
 
     return properties;
+};
+
+/**
+ * Get the current page offset
+ *
+ * @type Function
+ * @param {String} prop
+ * @returns {Number}
+ * @private
+ */
+var _getPageOffset = function(prop) {
+    var doc = document;
+    var body = doc.body;
+
+    var scroll = 'scroll' + prop;
+    var client = 'client' + prop;
+
+    return (doc[scroll] || body[scroll] || 0) - (doc[client] || body[client] || 0);
+};
+
+/**
+ * Get event target
+ *
+ * @type Function
+ * @param {Event} event
+ * @param {Element} [target]
+ * @returns {Element}
+ * @private
+ */
+var _getTarget = function(event, target) {
+    target = target || event.target || event.srcElement || document;
+
+    // Target should not be a text node
+    if (target.nodeType === 3) {
+        target = target.parentNode;
+    }
+
+    return target;
 };
 
 /**
@@ -136,10 +179,11 @@ var Controller = {
 
         var type = EventMap[eventName];
         var event = Controller.create(type, originalEvent, touchIndex || 0);
+        var target = _getTarget(originalEvent, overrideTarget);
 
         if (event) {
             Tracker.register(event, eventName);
-            Adapter.trigger(event, overrideTarget || originalEvent.target);
+            Adapter.trigger(event, target);
         }
     }
 
