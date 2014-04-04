@@ -410,8 +410,6 @@ var Util = {
 };
 
 module.exports = Util;
-},{}],"adapter/event":[function(require,module,exports){
-module.exports=require('Sy7Mtw');
 },{}],"Sy7Mtw":[function(require,module,exports){
 var $ = window.jQuery;
 
@@ -456,6 +454,8 @@ var jQueryAdapter = {
 };
 
 module.exports = jQueryAdapter;
+},{}],"adapter/event":[function(require,module,exports){
+module.exports=require('Sy7Mtw');
 },{}],"adapter/toucharea":[function(require,module,exports){
 module.exports=require('C84uZi');
 },{}],"C84uZi":[function(require,module,exports){
@@ -710,14 +710,6 @@ var LAST_EVENTS = {
 var DELTA_TIME = 750;
 
 /**
- * Max x/y distance between touch and simulated mouse event
- *
- * @type Number
- * @static
- */
-var DELTA_POSITION = 15;
-
-/**
  * @class Event.Tracker
  * @static
  */
@@ -772,25 +764,15 @@ var EventTracker = {
 
             pointer = previousEvent[pointerId];
 
-            // Check timestamp delta if `event.type` is not mouseout - mouseout
-            // event don't fire until the next touch on touch devices. So comparing
-            // timestamps should not be done.
-            if (event.type !== 'mouseout') {
-                var dt = Math.abs(event.timeStamp - pointer.timeStamp);
-
-                // If too much time has passed since the last touch
-                // event, remove it so we no longer test against it.
-                // Then return false to avoid checking anything else.
-                if (dt > DELTA_TIME) {
-                    LAST_EVENTS[eventName][pointerId] = null;
-                    continue;
-                }
+            // If too much time has passed since the last touch
+            // event, remove it so we no longer test against it.
+            // Then continue to the next point - no use in comparing positions.
+            if (Math.abs(event.timeStamp - pointer.timeStamp) > DELTA_TIME) {
+                LAST_EVENTS[eventName][pointerId] = null;
+                continue;
             }
 
-            var dx = Math.abs(pointer.clientX - event.clientX);
-            var dy = Math.abs(pointer.clientX - event.clientX);
-
-            if (dx <= DELTA_POSITION && dy <= DELTA_POSITION) {
+            if (pointer.clientX === event.clientX && pointer.clientX === event.clientX) {
                 return true;
             }
         }

@@ -35,10 +35,18 @@
         'use strict';
 
         var log = function(e) {
+            var x = e.pageX;
+            var y = e.pageY;
+            if (e.changedTouches) {
+                x = e.changedTouches[0].pageX;
+                y = e.changedTouches[0].pageY;
+            }
+
             if (e.type === 'touchstart') {
                 debug.innerHTML = '------<br />' + debug.innerHTML;
             }
-            debug.innerHTML = e.type + '<br />' + debug.innerHTML;
+
+            debug.innerHTML = e.type + ' (' + x + ', ' + y + ')<br />' + debug.innerHTML;
         };
 
         var clearLog = function() {
@@ -56,18 +64,22 @@
         touch.addEventListener('touchend', log, false);
         touch.addEventListener('touchcancel', log, false);
 
+        touch.addEventListener('pointerenter', log, false);
         touch.addEventListener('pointerover', log, false);
         touch.addEventListener('pointerdown', log, false);
         touch.addEventListener('pointermove', log, false);
         touch.addEventListener('pointerup', log, false);
         touch.addEventListener('pointerout', log, false);
+        touch.addEventListener('pointerleave', log, false);
         touch.addEventListener('pointercancel', log, false);
 
+        touch.addEventListener('MSPointerEnter', log, false);
         touch.addEventListener('MSPointerOver', log, false);
         touch.addEventListener('MSPointerDown', log, false);
         touch.addEventListener('MSPointerMove', log, false);
         touch.addEventListener('MSPointerUp', log, false);
         touch.addEventListener('MSPointerOut', log, false);
+        touch.addEventListener('MSPointerLeave', log, false);
         touch.addEventListener('MSPointerCancel', log, false);
 
         touch.addEventListener('mouseover', log, false);
@@ -75,6 +87,8 @@
         touch.addEventListener('mousemove', log, false);
         touch.addEventListener('mouseup', log, false);
         touch.addEventListener('mouseout', log, false);
+
+        touch.addEventListener('click', log, false);
 
     }());
 </script>
