@@ -69,6 +69,8 @@ var PROPS = {
     relatedTarget: null,
     width: 0,
     height: 0,
+    tiltX: 0,
+    tiltY: 0,
     pressure: 0
 };
 

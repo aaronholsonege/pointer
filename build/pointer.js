@@ -69,6 +69,8 @@ var PROPS = {
     relatedTarget: null,
     width: 0,
     height: 0,
+    tiltX: 0,
+    tiltY: 0,
     pressure: 0
 };
 
@@ -421,8 +423,6 @@ var Util = {
 };
 
 module.exports = Util;
-},{}],"adapter/event":[function(require,module,exports){
-module.exports=require('mbL6jR');
 },{}],"mbL6jR":[function(require,module,exports){
 /**
  * Override original method in `event` to also call same method in `originalEvent`
@@ -496,6 +496,8 @@ var Native = {
 };
 
 module.exports = Native;
+},{}],"adapter/event":[function(require,module,exports){
+module.exports=require('mbL6jR');
 },{}],"adapter/toucharea":[function(require,module,exports){
 module.exports=require('C84uZi');
 },{}],"C84uZi":[function(require,module,exports){
