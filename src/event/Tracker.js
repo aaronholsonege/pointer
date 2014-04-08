@@ -27,12 +27,15 @@ var LAST_EVENTS = {
 };
 
 /**
- * Max time between touch and simulated mouse event
+ * Max time between touch and simulated mouse event (2 seconds)
+ *
+ * We only use this to expire a touch event - after 2 seconds,
+ * no longer use this event when detecting simulated events.
  *
  * @type Number
  * @static
  */
-var DELTA_TIME = 750;
+var DELTA_TIME = 2000;
 
 /**
  * @class Event.Tracker

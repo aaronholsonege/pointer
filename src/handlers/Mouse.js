@@ -1,33 +1,37 @@
 var Util = require('../Util');
+var Events = require('../event/Events').MOUSE;
 var Controller = require('../Controller');
 var Tracker = require('../event/Tracker');
 
 /**
- * Event to detect mouseenter events with
+ * Mouse event names
+ *
  * @type String
  * @static
  * @private
  */
-var ENTER_EVENT = 'mouseover';
-
-/**
- * Event to detect mouseleave events with
- * @type String
- * @static
- * @private
- */
-var EXIT_EVENT = 'mouseout';
+var EVENT_ENTER = Events[0];
+var EVENT_OVER = Events[1];
+var EVENT_DOWN = Events[2];
+var EVENT_MOVE = Events[3];
+var EVENT_UP = Events[4];
+var EVENT_OUT = Events[5];
+var EVENT_LEAVE = Events[6];
 
 /**
  * Mouse enter/leave event map
+ *
  * @type Object
  * @static
  * @private
  */
-var ENTER_LEAVE_EVENT_MAP = {
-    mouseover: 'mouseenter',
-    mouseout: 'mouseleave'
-};
+var ENTER_LEAVE_EVENT_MAP = {};
+
+// mouseover: mouseenter
+ENTER_LEAVE_EVENT_MAP[EVENT_OVER] = EVENT_ENTER;
+
+// mouseout: mouseleave
+ENTER_LEAVE_EVENT_MAP[EVENT_OUT] = EVENT_LEAVE;
 
 /**
  * Determine if we have moused over a new target.
@@ -61,7 +65,7 @@ var MouseHandler = {
      * @property events
      * @type String[]
      */
-    events: [ENTER_EVENT, 'mousedown', 'mousemove', 'mouseup', EXIT_EVENT],
+    events: [EVENT_OVER, EVENT_DOWN, EVENT_MOVE, EVENT_UP, EVENT_OUT],
 
     /**
      * If event is not simulated, convert to pointer
@@ -77,14 +81,14 @@ var MouseHandler = {
         if (!Tracker.isEmulated(event)) {
 
             // trigger mouseenter event if applicable
-            if (ENTER_EVENT === event.type) {
+            if (EVENT_OVER === event.type) {
                 _detectMouseEnterOrLeave(event);
             }
 
             Controller.trigger(event);
 
             // trigger mouseleave event if applicable
-            if (EXIT_EVENT === event.type) {
+            if (EVENT_OUT === event.type) {
                 _detectMouseEnterOrLeave(event);
             }
         }

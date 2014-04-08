@@ -27,7 +27,6 @@ if (document.readyState === 'complete') {
 }
 },{"./Pointer":3,"./Util":4}],2:[function(require,module,exports){
 var Events = require('./event/Events');
-var EventMap = require('./event/Map');
 var Adapter = require('adapter/event');
 var Tracker = require('./event/Tracker');
 var Util = require('./Util');
@@ -39,7 +38,7 @@ var Util = require('./Util');
  * @static
  * @private
  */
-var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
+var NO_BUBBLE_EVENTS = [Events.POINTER[0], Events.POINTER[6]];
 
 /**
  * Default properties to apply to newly created events
@@ -201,11 +200,11 @@ var Controller = {
     trigger: function(originalEvent, overrideType, overrideTarget, touchIndex) {
         var eventName = overrideType || originalEvent.type;
 
-        if (!originalEvent || !EventMap.hasOwnProperty(eventName)) {
+        if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
             return;
         }
 
-        var type = EventMap[eventName];
+        var type = Events.MAP[eventName];
         var event = Controller.create(type, originalEvent, touchIndex || 0);
         var target = _getTarget(originalEvent, overrideTarget);
 
@@ -218,7 +217,7 @@ var Controller = {
 };
 
 module.exports = Controller;
-},{"./Util":4,"./event/Events":9,"./event/Map":10,"./event/Tracker":11,"adapter/event":"mbL6jR"}],3:[function(require,module,exports){
+},{"./Util":4,"./event/Events":9,"./event/Tracker":10,"adapter/event":"mbL6jR"}],3:[function(require,module,exports){
 var Util = require('./Util');
 var MouseHandler = require('./handlers/Mouse');
 var TouchHandler = require('./handlers/Touch');
@@ -275,7 +274,7 @@ var Pointer = {
 };
 
 module.exports = Pointer;
-},{"./Util":4,"./handlers/Mouse":12,"./handlers/Touch":13}],4:[function(require,module,exports){
+},{"./Util":4,"./handlers/Mouse":11,"./handlers/Touch":12}],4:[function(require,module,exports){
 /**
  * Cached array
  *
@@ -524,6 +523,8 @@ var TouchAreaAttribute = {
 
 module.exports = TouchAreaAttribute;
 },{}],9:[function(require,module,exports){
+var Util = require('../Util');
+
 /**
  * Pointer event namespace.
  * This is prepended to the pointer events
@@ -531,177 +532,142 @@ module.exports = TouchAreaAttribute;
  * @type String
  * @final
  */
-var NAMESPACE = 'pointer';
+var NAMESPACE_POINTER = 'pointer';
+
+/**
+ * Mouse event namespace.
+ * This is prepended to the mouse events
+ *
+ * @type String
+ * @final
+ */
+var NAMESPACE_MOUSE = 'mouse';
+
+/**
+ * Touch event namespace.
+ * This is prepended to the touch events
+ *
+ * @type String
+ * @final
+ */
+var NAMESPACE_TOUCH = 'touch';
 
 /**
  * Pointer event names
  *
- * @class Event
+ * @static
+ * @final
+ */
+var PointerEvents = [
+    NAMESPACE_POINTER + 'enter',
+    NAMESPACE_POINTER + 'over',
+    NAMESPACE_POINTER + 'down',
+    NAMESPACE_POINTER + 'move',
+    NAMESPACE_POINTER + 'up',
+    NAMESPACE_POINTER + 'out',
+    NAMESPACE_POINTER + 'leave',
+    NAMESPACE_POINTER + 'cancel'
+];
+
+/**
+ * Mouse event names
+ *
+ * @static
+ * @final
+ */
+var MouseEvents = [
+    NAMESPACE_MOUSE + 'enter',
+    NAMESPACE_MOUSE + 'over',
+    NAMESPACE_MOUSE + 'down',
+    NAMESPACE_MOUSE + 'move',
+    NAMESPACE_MOUSE + 'up',
+    NAMESPACE_MOUSE + 'out',
+    NAMESPACE_MOUSE + 'leave',
+    NAMESPACE_MOUSE + 'cancel'
+];
+
+/**
+ * Touch event names
+ *
+ * @static
+ * @final
+ */
+var TouchEvents = [
+    NAMESPACE_TOUCH + 'enter',
+    NAMESPACE_TOUCH + 'over',
+    NAMESPACE_TOUCH + 'start',
+    NAMESPACE_TOUCH + 'move',
+    NAMESPACE_TOUCH + 'end',
+    NAMESPACE_TOUCH + 'out',
+    NAMESPACE_TOUCH + 'leave',
+    NAMESPACE_TOUCH + 'cancel'
+];
+
+/**
+ * Event map
+ *
+ * @type Object
+ * @static
+ */
+var MAP = {};
+
+/**
+ * Event names
+ *
+ * @class Event.Events
  * @static
  * @final
  */
 var Events = {
 
     /**
-     * @property MOVE
-     * @type String
+     * @property POINTER
+     * @type String[]
+     * @final
      */
-    MOVE: NAMESPACE + 'move',
+    POINTER: PointerEvents,
 
     /**
-     * @property ENTER
-     * @type String
+     * @property MOUSE
+     * @type String[]
+     * @final
      */
-    ENTER: NAMESPACE + 'enter',
+    MOUSE: MouseEvents,
 
     /**
-     * @property OVER
-     * @type String
+     * @property TOUCH
+     * @type String[]
+     * @final
      */
-    OVER: NAMESPACE + 'over',
+    TOUCH: TouchEvents,
 
     /**
-     * @property DOWN
-     * @type String
+     * Map touch or mouse event to pointer event name
+     *
+     * @property MAP
+     * @type Object
+     * @static
      */
-    DOWN: NAMESPACE + 'down',
-
-    /**
-     * @property UP
-     * @type String
-     */
-    UP: NAMESPACE + 'up',
-
-    /**
-     * @property OUT
-     * @type String
-     */
-    OUT: NAMESPACE + 'out',
-
-    /**
-     * @property LEAVE
-     * @type String
-     */
-    LEAVE: NAMESPACE + 'leave',
-
-    /**
-     * @property CANCEL
-     * @type String
-     */
-    CANCEL: NAMESPACE + 'cancel'
+    MAP: MAP
 
 };
+
+// Build out event map
+var i = 0;
+var length = PointerEvents.length;
+
+for (; i < length; i++) {
+    if (TouchEvents[i]) {
+        MAP[TouchEvents[i]] = PointerEvents[i];
+    }
+
+    if (MouseEvents[i]) {
+        MAP[MouseEvents[i]] = PointerEvents[i];
+    }
+}
 
 module.exports = Events;
-},{}],10:[function(require,module,exports){
-var Events = require('./Events');
-
-/**
- * Map of mouse/touch event to their respective pointer event(s)
- * When these events (keys) are captured, the defined pointer event(s) are fired.
- *
- * Values can be either a single event name, or an array of event names.
- *
- * @class Event.Map
- * @static
- * @final
- */
-var EventMap = {
-
-    /**
-     * @property touchenter
-     * @type String
-     */
-    touchenter: Events.ENTER,
-
-    /**
-     * @property touchover
-     * @type String
-     */
-    touchover: Events.OVER,
-
-    /**
-     * @property touchstart
-     * @type String
-     */
-    touchstart: Events.DOWN,
-
-    /**
-     * @property touchmove
-     * @type String
-     */
-    touchmove: Events.MOVE,
-
-    /**
-     * @property touchend
-     * @type String
-     */
-    touchend: Events.UP,
-
-    /**
-     * @property touchout
-     * @type String
-     */
-    touchout: Events.OUT,
-
-    /**
-     * @property touchleave
-     * @type String
-     */
-    touchleave: Events.LEAVE,
-
-    /**
-     * @property touchcancel
-     * @type String
-     */
-    touchcancel: Events.CANCEL,
-
-    /**
-     * @property mouseenter
-     * @type String
-     */
-    mouseenter: Events.ENTER,
-
-    /**
-     * @property mouseover
-     * @type String
-     */
-    mouseover: Events.OVER,
-
-    /**
-     * @property mousedown
-     * @type String
-     */
-    mousedown: Events.DOWN,
-
-    /**
-     * @property mousemove
-     * @type String
-     */
-    mousemove: Events.MOVE,
-
-    /**
-     * @property mouseup
-     * @type String
-     */
-    mouseup: Events.UP,
-
-    /**
-     * @property mouseout
-     * @type String
-     */
-    mouseout: Events.OUT,
-
-    /**
-     * @property mouseleave
-     * @type String
-     */
-    mouseleave: Events.LEAVE
-
-};
-
-module.exports = EventMap;
-},{"./Events":9}],11:[function(require,module,exports){
+},{"../Util":4}],10:[function(require,module,exports){
 /**
  * Mouse > touch map
  *
@@ -731,12 +697,15 @@ var LAST_EVENTS = {
 };
 
 /**
- * Max time between touch and simulated mouse event
+ * Max time between touch and simulated mouse event (2 seconds)
+ *
+ * We only use this to expire a touch event - after 2 seconds,
+ * no longer use this event when detecting simulated events.
  *
  * @type Number
  * @static
  */
-var DELTA_TIME = 750;
+var DELTA_TIME = 2000;
 
 /**
  * @class Event.Tracker
@@ -812,37 +781,41 @@ var EventTracker = {
 };
 
 module.exports = EventTracker;
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var Util = require('../Util');
+var Events = require('../event/Events').MOUSE;
 var Controller = require('../Controller');
 var Tracker = require('../event/Tracker');
 
 /**
- * Event to detect mouseenter events with
+ * Mouse event names
+ *
  * @type String
  * @static
  * @private
  */
-var ENTER_EVENT = 'mouseover';
-
-/**
- * Event to detect mouseleave events with
- * @type String
- * @static
- * @private
- */
-var EXIT_EVENT = 'mouseout';
+var EVENT_ENTER = Events[0];
+var EVENT_OVER = Events[1];
+var EVENT_DOWN = Events[2];
+var EVENT_MOVE = Events[3];
+var EVENT_UP = Events[4];
+var EVENT_OUT = Events[5];
+var EVENT_LEAVE = Events[6];
 
 /**
  * Mouse enter/leave event map
+ *
  * @type Object
  * @static
  * @private
  */
-var ENTER_LEAVE_EVENT_MAP = {
-    mouseover: 'mouseenter',
-    mouseout: 'mouseleave'
-};
+var ENTER_LEAVE_EVENT_MAP = {};
+
+// mouseover: mouseenter
+ENTER_LEAVE_EVENT_MAP[EVENT_OVER] = EVENT_ENTER;
+
+// mouseout: mouseleave
+ENTER_LEAVE_EVENT_MAP[EVENT_OUT] = EVENT_LEAVE;
 
 /**
  * Determine if we have moused over a new target.
@@ -876,7 +849,7 @@ var MouseHandler = {
      * @property events
      * @type String[]
      */
-    events: [ENTER_EVENT, 'mousedown', 'mousemove', 'mouseup', EXIT_EVENT],
+    events: [EVENT_OVER, EVENT_DOWN, EVENT_MOVE, EVENT_UP, EVENT_OUT],
 
     /**
      * If event is not simulated, convert to pointer
@@ -892,14 +865,14 @@ var MouseHandler = {
         if (!Tracker.isEmulated(event)) {
 
             // trigger mouseenter event if applicable
-            if (ENTER_EVENT === event.type) {
+            if (EVENT_OVER === event.type) {
                 _detectMouseEnterOrLeave(event);
             }
 
             Controller.trigger(event);
 
             // trigger mouseleave event if applicable
-            if (EXIT_EVENT === event.type) {
+            if (EVENT_OUT === event.type) {
                 _detectMouseEnterOrLeave(event);
             }
         }
@@ -908,8 +881,9 @@ var MouseHandler = {
 };
 
 module.exports = MouseHandler;
-},{"../Controller":2,"../Util":4,"../event/Tracker":11}],13:[function(require,module,exports){
+},{"../Controller":2,"../Util":4,"../event/Events":9,"../event/Tracker":10}],12:[function(require,module,exports){
 var Util = require('../Util');
+var Events = require('../event/Events').TOUCH;
 var TouchAreaAdapter = require('adapter/toucharea');
 var Controller = require('../Controller');
 
@@ -920,14 +894,14 @@ var Controller = require('../Controller');
  * @static
  * @private
  */
-var EVENT_ENTER = 'touchenter';
-var EVENT_OVER = 'touchover';
-var EVENT_START = 'touchstart';
-var EVENT_MOVE = 'touchmove';
-var EVENT_END = 'touchend';
-var EVENT_OUT = 'touchout';
-var EVENT_LEAVE = 'touchleave';
-var EVENT_CANCEL = 'touchcancel';
+var EVENT_ENTER = Events[0];
+var EVENT_OVER = Events[1];
+var EVENT_START = Events[2];
+var EVENT_MOVE = Events[3];
+var EVENT_END = Events[4];
+var EVENT_OUT = Events[5];
+var EVENT_LEAVE = Events[6];
+var EVENT_CANCEL = Events[7];
 
 /**
  * List of the previous point event targets.
@@ -1094,5 +1068,5 @@ var TouchHandler = {
 };
 
 module.exports = TouchHandler;
-},{"../Controller":2,"../Util":4,"adapter/toucharea":"C84uZi"}]},{},[1])
+},{"../Controller":2,"../Util":4,"../event/Events":9,"adapter/toucharea":"C84uZi"}]},{},[1])
 }());;

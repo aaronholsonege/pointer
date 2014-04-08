@@ -1,4 +1,5 @@
 var Util = require('../Util');
+var Events = require('../event/Events').TOUCH;
 var TouchAreaAdapter = require('adapter/toucharea');
 var Controller = require('../Controller');
 
@@ -9,14 +10,14 @@ var Controller = require('../Controller');
  * @static
  * @private
  */
-var EVENT_ENTER = 'touchenter';
-var EVENT_OVER = 'touchover';
-var EVENT_START = 'touchstart';
-var EVENT_MOVE = 'touchmove';
-var EVENT_END = 'touchend';
-var EVENT_OUT = 'touchout';
-var EVENT_LEAVE = 'touchleave';
-var EVENT_CANCEL = 'touchcancel';
+var EVENT_ENTER = Events[0];
+var EVENT_OVER = Events[1];
+var EVENT_START = Events[2];
+var EVENT_MOVE = Events[3];
+var EVENT_END = Events[4];
+var EVENT_OUT = Events[5];
+var EVENT_LEAVE = Events[6];
+var EVENT_CANCEL = Events[7];
 
 /**
  * List of the previous point event targets.

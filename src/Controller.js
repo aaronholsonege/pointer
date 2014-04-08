@@ -1,5 +1,4 @@
 var Events = require('./event/Events');
-var EventMap = require('./event/Map');
 var Adapter = require('adapter/event');
 var Tracker = require('./event/Tracker');
 var Util = require('./Util');
@@ -11,7 +10,7 @@ var Util = require('./Util');
  * @static
  * @private
  */
-var NO_BUBBLE_EVENTS = [Events.ENTER, Events.LEAVE];
+var NO_BUBBLE_EVENTS = [Events.POINTER[0], Events.POINTER[6]];
 
 /**
  * Default properties to apply to newly created events
@@ -173,11 +172,11 @@ var Controller = {
     trigger: function(originalEvent, overrideType, overrideTarget, touchIndex) {
         var eventName = overrideType || originalEvent.type;
 
-        if (!originalEvent || !EventMap.hasOwnProperty(eventName)) {
+        if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
             return;
         }
 
-        var type = EventMap[eventName];
+        var type = Events.MAP[eventName];
         var event = Controller.create(type, originalEvent, touchIndex || 0);
         var target = _getTarget(originalEvent, overrideTarget);
 
