@@ -45,6 +45,17 @@ var PROPS = {
 };
 
 /**
+ * Get current unix time
+ *
+ * @type Function
+ * @return {Number}
+ * @private
+ */
+var _now = Date.now || function() {
+    return +new Date();
+};
+
+/**
  * Get proprties to set to event
  *
  * @type Function
@@ -61,7 +72,8 @@ var _getProperties = function(type, originalEvent, touchIndex) {
     var source = originalEvent;
     var properties = {
         pointerId: 0,
-        pointerType: 'mouse'
+        pointerType: 'mouse',
+        timeStamp: originalEvent.timeStamp || _now() // make sure we have a timestamp
     };
 
     if (originalEvent.type.indexOf('touch') === 0) {
