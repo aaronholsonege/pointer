@@ -423,6 +423,8 @@ var Util = {
 };
 
 module.exports = Util;
+},{}],"adapter/event":[function(require,module,exports){
+module.exports=require('mbL6jR');
 },{}],"mbL6jR":[function(require,module,exports){
 /**
  * Override original method in `event` to also call same method in `originalEvent`
@@ -496,8 +498,6 @@ var Native = {
 };
 
 module.exports = Native;
-},{}],"adapter/event":[function(require,module,exports){
-module.exports=require('mbL6jR');
 },{}],"adapter/toucharea":[function(require,module,exports){
 module.exports=require('C84uZi');
 },{}],"C84uZi":[function(require,module,exports){
@@ -784,7 +784,11 @@ var EventTracker = {
                 continue;
             }
 
-            if (pointer.clientX === event.clientX && pointer.clientX === event.clientX) {
+            if (
+                pointer.target === event.target
+                && pointer.clientX === event.clientX
+                && pointer.clientX === event.clientX
+            ) {
                 return true;
             }
         }

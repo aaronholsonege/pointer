@@ -755,7 +755,11 @@ var EventTracker = {
                 continue;
             }
 
-            if (pointer.clientX === event.clientX && pointer.clientX === event.clientX) {
+            if (
+                pointer.target === event.target
+                && pointer.clientX === event.clientX
+                && pointer.clientX === event.clientX
+            ) {
                 return true;
             }
         }
