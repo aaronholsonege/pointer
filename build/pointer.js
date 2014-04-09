@@ -537,34 +537,26 @@ var TouchAreaAttribute = {
 
 module.exports = TouchAreaAttribute;
 },{}],9:[function(require,module,exports){
-var Util = require('../Util');
-
 /**
- * Pointer event namespace.
- * This is prepended to the pointer events
  *
- * @type String
- * @final
+ * @type Function
+ * @param {String} namespace
+ * @param {Boolean} [isTouch=false]
+ * @returns {String[]}
+ * @private
  */
-var NAMESPACE_POINTER = 'pointer';
-
-/**
- * Mouse event namespace.
- * This is prepended to the mouse events
- *
- * @type String
- * @final
- */
-var NAMESPACE_MOUSE = 'mouse';
-
-/**
- * Touch event namespace.
- * This is prepended to the touch events
- *
- * @type String
- * @final
- */
-var NAMESPACE_TOUCH = 'touch';
+var _defineEvents = function(namespace, isTouch) {
+    return [
+        namespace + 'enter',
+        namespace + 'over',
+        namespace + (isTouch ? 'start' : 'down'),
+        namespace + 'move',
+        namespace + (isTouch ? 'end' : 'up'),
+        namespace + 'out',
+        namespace + 'leave',
+        namespace + 'cancel'
+    ]
+};
 
 /**
  * Pointer event names
@@ -572,16 +564,7 @@ var NAMESPACE_TOUCH = 'touch';
  * @static
  * @final
  */
-var PointerEvents = [
-    NAMESPACE_POINTER + 'enter',
-    NAMESPACE_POINTER + 'over',
-    NAMESPACE_POINTER + 'down',
-    NAMESPACE_POINTER + 'move',
-    NAMESPACE_POINTER + 'up',
-    NAMESPACE_POINTER + 'out',
-    NAMESPACE_POINTER + 'leave',
-    NAMESPACE_POINTER + 'cancel'
-];
+var PointerEvents = _defineEvents('pointer');
 
 /**
  * Mouse event names
@@ -589,16 +572,7 @@ var PointerEvents = [
  * @static
  * @final
  */
-var MouseEvents = [
-    NAMESPACE_MOUSE + 'enter',
-    NAMESPACE_MOUSE + 'over',
-    NAMESPACE_MOUSE + 'down',
-    NAMESPACE_MOUSE + 'move',
-    NAMESPACE_MOUSE + 'up',
-    NAMESPACE_MOUSE + 'out',
-    NAMESPACE_MOUSE + 'leave',
-    NAMESPACE_MOUSE + 'cancel'
-];
+var MouseEvents = _defineEvents('mouse');
 
 /**
  * Touch event names
@@ -606,16 +580,7 @@ var MouseEvents = [
  * @static
  * @final
  */
-var TouchEvents = [
-    NAMESPACE_TOUCH + 'enter',
-    NAMESPACE_TOUCH + 'over',
-    NAMESPACE_TOUCH + 'start',
-    NAMESPACE_TOUCH + 'move',
-    NAMESPACE_TOUCH + 'end',
-    NAMESPACE_TOUCH + 'out',
-    NAMESPACE_TOUCH + 'leave',
-    NAMESPACE_TOUCH + 'cancel'
-];
+var TouchEvents = _defineEvents('touch', true);
 
 /**
  * Event map
@@ -681,7 +646,7 @@ for (; i < length; i++) {
 }
 
 module.exports = Events;
-},{"../Util":4}],10:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /**
  * Mouse > touch map
  *
