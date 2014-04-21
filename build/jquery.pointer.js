@@ -32,15 +32,6 @@ var Tracker = require('./event/Tracker');
 var Util = require('./Util');
 
 /**
- * Pointer events that should not bubble
- *
- * @type String[]
- * @static
- * @private
- */
-var NO_BUBBLE_EVENTS = [Events.POINTER[0], Events.POINTER[6]];
-
-/**
  * Default properties to apply to newly created events
  *
  * These values are only used if values do not exists in the
@@ -196,7 +187,7 @@ var Controller = {
             type,
             originalEvent,
             properties,
-            Util.indexOf(NO_BUBBLE_EVENTS, type) === -1
+            type !== Events.POINTER[0] && type !== Events.POINTER[6] // enter and leave events should not bubble
         );
     },
 
@@ -290,13 +281,39 @@ var Pointer = {
 module.exports = Pointer;
 },{"./Util":4,"./handlers/Mouse":11,"./handlers/Touch":12}],4:[function(require,module,exports){
 /**
- * Cached array
+ * Attach or detach event callback from target
  *
- * @type Array
- * @static
+ * @function
+ * @param {String|String[]} event
+ * @param {Function} callback
+ * @param {HTMLElement} [target=document.body]
+ * @param {Function} [target.addEventListener]
+ * @param {Function} [target.removeEventListener]
+ * @param {Function} [target.attachEvent]
+ * @param {Function} [target.detachEvent]
+ * @param {Boolean} [add=false]
  * @private
  */
-var CACHED_ARRAY = [];
+var _addOrRemoveEvent = function(event, callback, target, add) {
+    if (!target) {
+        target = document.body;
+    }
+
+    var i = 0;
+    var events = (event instanceof Array) ? event : event.split(' ');
+    var length = events.length;
+
+    var method = (add ? 'add' : 'remove') + 'EventListener';
+    var methodLegacy = (add ? 'attach' : 'detach') + 'Event';
+
+    for (; i < length; i++) {
+        if (target[method]) {
+            target[method](events[i], callback, false);
+        } else {
+            target[methodLegacy]('on' + events[i], callback);
+        }
+    }
+};
 
 /**
  * Utility functions
@@ -318,21 +335,7 @@ var Util = {
      * @chainable
      */
     on: function(event, callback, target) {
-        if (!target) {
-            target = document.body;
-        }
-
-        var i = 0;
-        var events = (event instanceof Array) ? event : event.split(' ');
-        var length = events.length;
-
-        for (; i < length; i++) {
-            if (target.addEventListener) {
-                target.addEventListener(events[i], callback, false);
-            } else {
-                target.attachEvent('on' + events[i], callback);
-            }
-        }
+        _addOrRemoveEvent(event, callback, target, true);
 
         return this;
     },
@@ -349,21 +352,7 @@ var Util = {
      * @chainable
      */
     off: function(event, callback, target) {
-        if (!target) {
-            target = document.body;
-        }
-
-        var i = 0;
-        var events = (event instanceof Array) ? event : event.split(' ');
-        var length = events.length;
-
-        for (; i < length; i++) {
-            if (target.removeEventListener) {
-                target.removeEventListener(events[i], callback, false);
-            } else {
-                target.detachEvent('on' + events[i], callback);
-            }
-        }
+        _addOrRemoveEvent(event, callback, target);
 
         return this;
     },
@@ -409,14 +398,17 @@ var Util = {
         if (target.contains) {
             return target.contains(child);
         } else {
-            CACHED_ARRAY.length = 0;
             var current = child;
+            var found = false;
 
-            while(current = current.parentNode) {
-                CACHED_ARRAY.push(current);
+            while (current = current.parentNode) {
+                if (current === target) {
+                    found = true;
+                    break;
+                }
             }
 
-            return Util.indexOf(CACHED_ARRAY, target) !== -1;
+            return found;
         }
     }
 
@@ -757,21 +749,6 @@ var EVENT_OUT = Events[5];
 var EVENT_LEAVE = Events[6];
 
 /**
- * Mouse enter/leave event map
- *
- * @type Object
- * @static
- * @private
- */
-var ENTER_LEAVE_EVENT_MAP = {};
-
-// mouseover: mouseenter
-ENTER_LEAVE_EVENT_MAP[EVENT_OVER] = EVENT_ENTER;
-
-// mouseout: mouseleave
-ENTER_LEAVE_EVENT_MAP[EVENT_OUT] = EVENT_LEAVE;
-
-/**
  * Determine if we have moused over a new target.
  * Browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
  *
@@ -784,7 +761,7 @@ ENTER_LEAVE_EVENT_MAP[EVENT_OUT] = EVENT_LEAVE;
 var _detectMouseEnterOrLeave = function(event) {
     var target = event.target || event.srcElement;
     var related = event.relatedTarget;
-    var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
+    var eventName = event.type === EVENT_OVER ? EVENT_ENTER : EVENT_LEAVE;
 
     if (!related || !Util.contains(target, related)) {
         Controller.trigger(event, eventName);

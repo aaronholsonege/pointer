@@ -1,11 +1,37 @@
 /**
- * Cached array
+ * Attach or detach event callback from target
  *
- * @type Array
- * @static
+ * @function
+ * @param {String|String[]} event
+ * @param {Function} callback
+ * @param {HTMLElement} [target=document.body]
+ * @param {Function} [target.addEventListener]
+ * @param {Function} [target.removeEventListener]
+ * @param {Function} [target.attachEvent]
+ * @param {Function} [target.detachEvent]
+ * @param {Boolean} [add=false]
  * @private
  */
-var CACHED_ARRAY = [];
+var _addOrRemoveEvent = function(event, callback, target, add) {
+    if (!target) {
+        target = document.body;
+    }
+
+    var i = 0;
+    var events = (event instanceof Array) ? event : event.split(' ');
+    var length = events.length;
+
+    var method = (add ? 'add' : 'remove') + 'EventListener';
+    var methodLegacy = (add ? 'attach' : 'detach') + 'Event';
+
+    for (; i < length; i++) {
+        if (target[method]) {
+            target[method](events[i], callback, false);
+        } else {
+            target[methodLegacy]('on' + events[i], callback);
+        }
+    }
+};
 
 /**
  * Utility functions
@@ -27,21 +53,7 @@ var Util = {
      * @chainable
      */
     on: function(event, callback, target) {
-        if (!target) {
-            target = document.body;
-        }
-
-        var i = 0;
-        var events = (event instanceof Array) ? event : event.split(' ');
-        var length = events.length;
-
-        for (; i < length; i++) {
-            if (target.addEventListener) {
-                target.addEventListener(events[i], callback, false);
-            } else {
-                target.attachEvent('on' + events[i], callback);
-            }
-        }
+        _addOrRemoveEvent(event, callback, target, true);
 
         return this;
     },
@@ -58,21 +70,7 @@ var Util = {
      * @chainable
      */
     off: function(event, callback, target) {
-        if (!target) {
-            target = document.body;
-        }
-
-        var i = 0;
-        var events = (event instanceof Array) ? event : event.split(' ');
-        var length = events.length;
-
-        for (; i < length; i++) {
-            if (target.removeEventListener) {
-                target.removeEventListener(events[i], callback, false);
-            } else {
-                target.detachEvent('on' + events[i], callback);
-            }
-        }
+        _addOrRemoveEvent(event, callback, target);
 
         return this;
     },
@@ -118,14 +116,17 @@ var Util = {
         if (target.contains) {
             return target.contains(child);
         } else {
-            CACHED_ARRAY.length = 0;
             var current = child;
+            var found = false;
 
-            while(current = current.parentNode) {
-                CACHED_ARRAY.push(current);
+            while (current = current.parentNode) {
+                if (current === target) {
+                    found = true;
+                    break;
+                }
             }
 
-            return Util.indexOf(CACHED_ARRAY, target) !== -1;
+            return found;
         }
     }
 
