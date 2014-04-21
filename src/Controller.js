@@ -4,15 +4,6 @@ var Tracker = require('./event/Tracker');
 var Util = require('./Util');
 
 /**
- * Pointer events that should not bubble
- *
- * @type String[]
- * @static
- * @private
- */
-var NO_BUBBLE_EVENTS = [Events.POINTER[0], Events.POINTER[6]];
-
-/**
  * Default properties to apply to newly created events
  *
  * These values are only used if values do not exists in the
@@ -168,7 +159,7 @@ var Controller = {
             type,
             originalEvent,
             properties,
-            Util.indexOf(NO_BUBBLE_EVENTS, type) === -1
+            type !== Events.POINTER[0] && type !== Events.POINTER[6] // enter and leave events should not bubble
         );
     },
 

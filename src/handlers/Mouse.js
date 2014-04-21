@@ -19,21 +19,6 @@ var EVENT_OUT = Events[5];
 var EVENT_LEAVE = Events[6];
 
 /**
- * Mouse enter/leave event map
- *
- * @type Object
- * @static
- * @private
- */
-var ENTER_LEAVE_EVENT_MAP = {};
-
-// mouseover: mouseenter
-ENTER_LEAVE_EVENT_MAP[EVENT_OVER] = EVENT_ENTER;
-
-// mouseout: mouseleave
-ENTER_LEAVE_EVENT_MAP[EVENT_OUT] = EVENT_LEAVE;
-
-/**
  * Determine if we have moused over a new target.
  * Browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
  *
@@ -46,7 +31,7 @@ ENTER_LEAVE_EVENT_MAP[EVENT_OUT] = EVENT_LEAVE;
 var _detectMouseEnterOrLeave = function(event) {
     var target = event.target || event.srcElement;
     var related = event.relatedTarget;
-    var eventName = ENTER_LEAVE_EVENT_MAP[event.type];
+    var eventName = event.type === EVENT_OVER ? EVENT_ENTER : EVENT_LEAVE;
 
     if (!related || !Util.contains(target, related)) {
         Controller.trigger(event, eventName);
