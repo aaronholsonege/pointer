@@ -1,0 +1,76 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    min-height: 100%;
+}
+
+.area {
+    float: left;
+    width: 50%;
+    height: 100%;
+}
+
+.area_console {
+    background: #CCC;
+}
+
+.spot {
+    float: left;
+    width: 200px;
+    height: 200px;
+    background: #ddd;
+    margin: 20px;
+}
+
+.inactive {
+    opacity: 0.5;
+}
+
+.inside {
+    background: #aaa;
+}
+
+.active {
+    background: green;
+}
+
+.console {
+    width: 50%;
+    float: left;
+    height: 100%;
+    overflow: auto;
+    font-family: monospace;
+}
+
+.simulated {
+    opacity: 0.5;
+}
+
+.pointer {
+    font-weight: bold;
+}
+
+.console li {
+    margin: 10px;
+    list-style: none;
+    border: 1px solid #BBB;
+    padding: 20px;
+}
+
+@media screen and (max-width: 400px) {
+    div {
+        width: 100px;
+        height: 100px;
+        margin: 10px;
+    }
+
+    .console li {
+        padding: 10px;
+        font-size: 10px;
+        margin: 10px;
+    }
+}

@@ -741,8 +741,16 @@ var EventTracker = {
                 continue;
             }
 
+            var target = event.target;
+
+            // If this is a mouseout event, compare the related target
+            // instead which is the element that previous had focus for touchstart
+            if (event.type === 'mouseout') {
+                target = event.relatedTarget;
+            }
+
             if (
-                pointer.target === event.target
+                pointer.target === target
                 && pointer.clientX === event.clientX
                 && pointer.clientX === event.clientX
             ) {
@@ -835,6 +843,11 @@ var MouseHandler = {
             if (EVENT_OUT === event.type) {
                 _detectMouseEnterOrLeave(event);
             }
+        } else {
+            // Add a simulated flag because hey, why not
+            try {
+                event._isSimulated = true;
+            } catch(e) {}
         }
     }
 

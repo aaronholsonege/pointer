@@ -38,9 +38,10 @@ module.exports = function (grunt) {
             },
             jquery: {
                 files: {
-                    'build/jquery.pointer.js' : ['src/Bootstrap.js']
+                    'build/jquery.pointer.js' : ['src/Bootstrap.jquery.js']
                 },
                 options: {
+                    entry: 'src/Bootstrap.jquery.js',
                     alias: [
                         'src/adapters/event/jQuery.js:adapter/event',
                         'src/adapters/toucharea/Attribute.js:adapter/toucharea'

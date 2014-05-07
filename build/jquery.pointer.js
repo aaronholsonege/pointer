@@ -8,23 +8,7 @@ if (window.navigator.pointerEnabled === true) {
     return;
 }
 
-// Initialize Pointer when the page is ready
-var _onReady = function() {
-    Util
-        .off('DOMContentLoaded', _onReady, document)
-        .off('load', _onReady, window);
-
-    Pointer.enable();
-};
-
-if (document.readyState === 'complete') {
-    // keep the script kickoff on an async thread
-    setTimeout(Pointer.enable);
-} else {
-    Util
-        .on('DOMContentLoaded', _onReady, document)
-        .on('load', _onReady, window);
-}
+window.jQuery(document).ready(Pointer.enable);
 },{"./Pointer":3,"./Util":4}],2:[function(require,module,exports){
 var Events = require('./event/Events');
 var Adapter = require('adapter/event');
@@ -712,8 +696,16 @@ var EventTracker = {
                 continue;
             }
 
+            var target = event.target;
+
+            // If this is a mouseout event, compare the related target
+            // instead which is the element that previous had focus for touchstart
+            if (event.type === 'mouseout') {
+                target = event.relatedTarget;
+            }
+
             if (
-                pointer.target === event.target
+                pointer.target === target
                 && pointer.clientX === event.clientX
                 && pointer.clientX === event.clientX
             ) {
@@ -806,6 +798,11 @@ var MouseHandler = {
             if (EVENT_OUT === event.type) {
                 _detectMouseEnterOrLeave(event);
             }
+        } else {
+            // Add a simulated flag because hey, why not
+            try {
+                event._isSimulated = true;
+            } catch(e) {}
         }
     }
 

@@ -76,6 +76,11 @@ var MouseHandler = {
             if (EVENT_OUT === event.type) {
                 _detectMouseEnterOrLeave(event);
             }
+        } else {
+            // Add a simulated flag because hey, why not
+            try {
+                event._isSimulated = true;
+            } catch(e) {}
         }
     }
 
