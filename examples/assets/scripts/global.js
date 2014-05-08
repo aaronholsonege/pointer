@@ -248,7 +248,7 @@ $(document).ready(function() {
     };
 
     EventConsole.init();
-    TrackerConsole.init();
+//    TrackerConsole.init();
 
     $('.spot')
         .on('pointerenter', function() {
