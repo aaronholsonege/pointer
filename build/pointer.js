@@ -903,6 +903,14 @@ var EVENT_CANCEL = Events[7];
 var PREVIOUS_TARGETS = {};
 
 /**
+ * Last `touchmove` position
+ * @type Object
+ * @static
+ * @private
+ */
+var PREVIOUS_POSITIONS = {};
+
+/**
  * Determine which method to call for each point
  *
  * @type Function
@@ -1028,14 +1036,30 @@ var TouchHandler = {
      * @callback
      */
     onEvent: function(event) {
-        var i = 0;
+        var i = -1;
         var touches = event.changedTouches;
-        var length = touches.length;
+
+        var id;
+        var touch;
+        var previousTouch;
 
         var method = _getPointMethod(event.type);
 
-        for (; i < length; i++) {
-            method(touches[i], event, i);
+        while (touch = touches[++i]) {
+            id = touch.identifier;
+
+            // The `touchmove` event triggers when ANY active point moves,
+            // so we want to filter out the points that didn't move.
+            if (event.type === EVENT_MOVE) {
+                previousTouch = PREVIOUS_POSITIONS[id];
+                if (previousTouch && previousTouch.pageX === touch.pageX && previousTouch.pageY === touch.pageY) {
+                    continue;
+                }
+
+                PREVIOUS_POSITIONS[id] = touch;
+            }
+
+            method(touch, event, i);
         }
     }
 
