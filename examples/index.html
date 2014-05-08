@@ -14,22 +14,48 @@
 </head>
 <body>
 <div class="area area_playground area_50" touch-action="none">
-    <div class="spot">
-        <div class="spot-inner spot"></div>
+    <div class="spot js-spot">
+        <div class="spot-inner js-spot"></div>
     </div>
-    <div class="spot">
-        <div class="spot-inner spot"></div>
+    <div class="spot js-spot">
+        <div class="spot-inner js-spot"></div>
     </div>
-    <div class="spot spot_alt" touch-action="all">
-        <div class="spot-inner spot"></div>
+    <div class="spot spot_alt js-spot" touch-action="all">
+        <div class="spot-inner js-spot">
+
+            <div class="spot-innereset spot-inner spot-back js-spot"></div>
+        </div>
+        <div class="spot-back spot-inner js-spot"></div>
     </div>
-    <div class="spot">
-        <div class="spot-inner spot"></div>
+    <div class="spot js-spot">
+        <div class="spot-inner js-spot"></div>
     </div>
 </div>
 <div class="area area_console">
-    <div class="console console-1" id="console"></div>
-    <ul class="console console-2" id="tracker"></ul>
+    <div class="console-wrap">
+        <table class="console">
+            <tr>
+                <td>
+                    <div id="console" class="console-log"></div>
+                </td>
+            </tr>
+            <tr>
+                <td class="console-area">
+                    <div class="console-col">
+                        <div id="tracker" class="console-points"></div>
+                    </div>
+                    <div class="console-col">
+                        <div class="console-options">
+                            <input type="checkbox" id="show-sim" checked /> <label for="show-sim">Show Simulated Events</label><br />
+                            <input type="checkbox" id="show-point" checked /> <label for="show-point">Show Pointer Events</label><br />
+                            <input type="checkbox" id="show-non-sim" checked /> <label for="show-non-sim">Show Non-Simulated Events</label><br />
+                            <button class="btn" id="clear">Clear Console</button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </div>
+    </div>
 </div>
 </body>
 </html>

@@ -8,22 +8,39 @@ html, body {
     min-height: 100%;
 }
 
+body {
+    font-size: 14px;
+}
+
 .area {
-    float: left;
     width: 50%;
-    height: 100%;
     position: relative;
 }
 
+.area_playground {
+    min-height: 100%;
+    text-align: center;
+    font-size: 0;
+}
+
 .area_console {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
     background: #CCC;
 }
 
+.btn {
+    padding: 4px 6px;
+}
+
 .spot {
-    font-size: 0;
     display: inline-block;
+    position: relative;
     background: #ddd;
-    margin: 20px;
+    margin: 20px 20px 0;
+    padding: 20px;
 }
 
 .spot_alt {
@@ -31,9 +48,18 @@ html, body {
 }
 
 .spot-inner {
+    position: relative;
     width: 160px;
     height: 160px;
     background: #FFF;
+    border: 1px solid #333;
+    display: block;
+}
+
+.spot-back {
+    position: absolute;
+    top: 50px;
+    left: 50px;
 }
 
 .inactive {
@@ -53,27 +79,59 @@ html, body {
 }
 
 .console {
-    height: 100%;
-    overflow: auto;
+    width: 100%;
     font-family: monospace;
+    border-spacing: 0;
 }
 
-.console span {
-    padding: 4px;
+.console-wrap {
+    padding: 10px;
+}
+
+.console td {
+    vertical-align: top;
+}
+
+.console-col {
+    width: 50%;
+    float: left;
+}
+
+.console-log {
+    overflow: auto;
+}
+
+.console-log span {
+    padding: 0 4px;
+    display: block;
     white-space: nowrap;
 }
 
-.console-1 {
-    /*margin-right: 150px;*/
+.console-points,
+.console-options {
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid #bbb;
 }
 
-.console-2 {
+.hide-simulated .simulated {
     display: none;
-    width: 150px;
-    position: absolute;
-    top: 0;
-    right: 0;
+}
+
+.hide-non-simulated .non-simulated {
+    display: none;
+}
+
+.hide-pointer .pointer {
+    display: none;
+}
+
+.controls {
+    position: fixed;
     bottom: 0;
+    left: 0;
+    right: 0;
+    background: red;
 }
 
 .simulated {
@@ -84,30 +142,35 @@ html, body {
     font-weight: bold;
 }
 
-.console li {
-    margin: 10px;
+.point {
+    padding: 0 4px;
     list-style: none;
-    border: 1px solid #BBB;
-    padding: 20px;
 }
 
-@media screen and (max-width: 400px) {
-    .spot {
-        margin: 10px;
+@media screen and (max-width: 800px) {
+
+    .console-col {
+        width: 100%;
+        float: none;
     }
+
+    .spot-inner {
+        width: 110px;
+        height: 110px;
+    }
+
+    body {
+        font-size: 12px;
+    }
+}
+
+@media screen and (max-width: 500px) {
     .spot-inner {
         width: 80px;
         height: 80px;
-        margin: 10px;
     }
 
     body {
         font-size: 8px;
-    }
-
-    .console li {
-        padding: 10px;
-        font-size: 10px;
-        margin: 10px;
     }
 }

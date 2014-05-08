@@ -14,6 +14,12 @@ $(document).ready(function() {
     var $document = $(document);
 
     /**
+     * @type {jQuery}
+     * @static
+     */
+    var $window = $(window);
+
+    /**
      * @class EventConsole
      * @static
      */
@@ -24,6 +30,7 @@ $(document).ready(function() {
          */
         init: function() {
             this.$element = $('#console');
+            this.$options = $('.console-options');
 
             this.enable();
         },
@@ -35,9 +42,11 @@ $(document).ready(function() {
             $document
                 .on('mouseover mousedown mousemove mouseup mouseout', '.area_playground', this.onMouseEvent)
                 .on('touchstart touchmove touchend touchcancel', '.area_playground', this.onTouchEvent)
-                .on('pointerenter pointerover pointerdown pointermove pointerup pointerout pointerleave pointercancel', '.area_playground', this.onPointerEvent);
+                .on('pointerenter pointerover pointerdown pointermove pointerup pointerout pointerleave pointercancel', '.area_playground', this.onPointerEvent)
+                .on('change', 'input', this.onInputChange)
+                .on('click', '#clear', this.onClear);
 
-            $('.spot').on('pointerenter pointerleave', this.onPointerEvent);
+            $('.js-spot').on('pointerenter pointerleave', this.onPointerEvent);
         },
 
         /**
@@ -45,7 +54,7 @@ $(document).ready(function() {
          * @param {jQuery|HTMLElement|String} element
          */
         prepend: function(element) {
-            this.$element.prepend(element + '<br />');
+            this.$element.prepend(element);
         },
 
         /**
@@ -66,7 +75,7 @@ $(document).ready(function() {
          * @returns {String}
          */
         renderItem: function(event, append) {
-            var cls = '';
+            var cls = 'non-simulated';
             if (event.type.indexOf('pointer') === 0) {
                 cls = 'pointer';
             } else if (event.originalEvent._isSimulated) {
@@ -113,6 +122,27 @@ $(document).ready(function() {
             }
 
             return selector;
+        },
+
+        onClear: function() {
+            EventConsole.$element.empty();
+        },
+
+        onInputChange: function(event) {
+            var cls = '';
+            switch (event.target.id) {
+                case 'show-sim':
+                    cls = 'hide-simulated';
+                    break;
+                case 'show-point':
+                    cls = 'hide-pointer';
+                    break;
+                case 'show-non-sim':
+                    cls = 'hide-non-simulated';
+                    break;
+            }
+
+            EventConsole.$element.toggleClass(cls, !$(event.target).is(':checked'));
         },
 
         /**
@@ -186,7 +216,7 @@ $(document).ready(function() {
 
             for (; i < length; i++) {
                 this.$element.append(this.renderItem());
-                this.updateItem(i, 0, 0, '');
+                this.updateItem(i);
             }
         },
 
@@ -195,27 +225,23 @@ $(document).ready(function() {
          * @returns {jQuery}
          */
         renderItem: function() {
-            return $('<li></li>').addClass('inactive');
+            return $('<li></li>').addClass('inactive').addClass('point');
         },
 
         /**
          * @method updateItem
          * @param {Number} index
-         * @param {Number} x
-         * @param {Number} y
-         * @param {String} target
+         * @param {Number} [x=0]
+         * @param {Number} [y=0]
+         * @param {HTMLElement} [target]
          * @returns {jQuery}
          */
         updateItem: function(index, x, y, target) {
             var $pointer = this.$element.children().eq(index);
 
-            $pointer
-                .html([
-                    'Point ' + index,
-                    'x: ' + x,
-                    'y: ' + y,
-                    'target: ' + target
-                ].join('<br />'));
+            var cls = target ? EventConsole._getSelector(target) : 'null';
+
+            $pointer.html('[' + index + '] [' + (x || 0) + ', ' + (y || 0) + ', ' + cls + ']');
 
             return $pointer;
         },
@@ -235,7 +261,7 @@ $(document).ready(function() {
                 event.pointerId,
                 event.pageX,
                 event.pageY,
-                event.target.nodeName.toLowerCase()
+                event.target
             );
 
             if (event.pointerType === 'touch') {
@@ -248,9 +274,9 @@ $(document).ready(function() {
     };
 
     EventConsole.init();
-//    TrackerConsole.init();
+    TrackerConsole.init();
 
-    $('.spot')
+    $('.js-spot')
         .on('pointerenter', function() {
             $(this).addClass('inside');
         })
@@ -263,4 +289,23 @@ $(document).ready(function() {
         .on('pointerup', function(e) {
             $(this).removeClass('active');
         });
+
+    $window
+        .on('resize', function() {
+            var offset = 0;
+
+            var $area = $('.console-area');
+            var $console = $('.console');
+
+            if ($area.length) {
+                offset += $area.height();
+            }
+
+            if ($console.length) {
+                offset += $console.outerHeight(true) - $console.innerHeight();
+            }
+
+            EventConsole.$element.css('height', $window.height() - offset)
+        })
+        .trigger('resize');
 });
