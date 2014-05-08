@@ -136,6 +136,41 @@ var _getTarget = function(event, target) {
 };
 
 /**
+ * Detect and trigger enter/leave events
+ *
+ * @type Function
+ * @param {String} eventName
+ * @param {MouseEvent|TouchEvent} event
+ * @param {HTMLElement} event.relatedTarget
+ * @param {HTMLElement} target
+ * @param {HTMLElement} target.parentNode
+ * @param {HTMLElement} [relatedTarget]
+ * @param {Number} [pointerId=0]
+ * @private
+ */
+var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, pointerId) {
+    var pointerEvent;
+
+    if (!relatedTarget) {
+        relatedTarget = event.relatedTarget;
+    }
+
+    // Climb up DOM tree and trigger pointerenter/pointerleave
+    // on all applicable elements that have been entered/left.
+    do {
+        if (!relatedTarget || !Util.contains(target, relatedTarget)) {
+            pointerEvent = Controller.create(eventName, event, pointerId);
+            if (pointerEvent) {
+                Tracker.register(pointerEvent, eventName);
+                Adapter.trigger(pointerEvent, target);
+            }
+        } else {
+            break;
+        }
+    } while (target = target.parentNode);
+};
+
+/**
  * Create and trigger pointer events
  *
  * @class Controller
@@ -169,12 +204,14 @@ var Controller = {
      * @method trigger
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {String} originalEvent.type
+     * @param {Element} originalEvent.relatedTarget
      * @param {Element} originalEvent.target
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
      * @param {Element} [overrideTarget] target to dispatch event from
      * @param {Number} [touchIndex=0]
+     * @param {HTMLElement} [relatedTarget]
      */
-    trigger: function(originalEvent, overrideType, overrideTarget, touchIndex) {
+    trigger: function(originalEvent, overrideType, overrideTarget, touchIndex, relatedTarget) {
         var eventName = overrideType || originalEvent.type;
 
         if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
@@ -182,12 +219,24 @@ var Controller = {
         }
 
         var type = Events.MAP[eventName];
-        var event = Controller.create(type, originalEvent, touchIndex || 0);
+        var pointerId = touchIndex || 0;
+        var event = Controller.create(type, originalEvent, pointerId);
         var target = _getTarget(originalEvent, overrideTarget);
 
         if (event) {
             Tracker.register(event, eventName);
+
+            // trigger pointerenter
+            if (type === Events.POINTER[1]) {
+                _detectEnterOrLeave(Events.POINTER[0], originalEvent, target, relatedTarget, pointerId);
+            }
+
             Adapter.trigger(event, target);
+
+            // trigger pointerleave
+            if (type === Events.POINTER[5]) {
+                _detectEnterOrLeave(Events.POINTER[6], originalEvent, target, relatedTarget, pointerId);
+            }
         }
     }
 

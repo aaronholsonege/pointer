@@ -12,6 +12,7 @@ html, body {
     float: left;
     width: 50%;
     height: 100%;
+    position: relative;
 }
 
 .area_console {
@@ -19,11 +20,20 @@ html, body {
 }
 
 .spot {
-    float: left;
-    width: 200px;
-    height: 200px;
+    font-size: 0;
+    display: inline-block;
     background: #ddd;
     margin: 20px;
+}
+
+.spot_alt {
+    background:#EEE;
+}
+
+.spot-inner {
+    width: 160px;
+    height: 160px;
+    background: #FFF;
 }
 
 .inactive {
@@ -34,16 +44,36 @@ html, body {
     background: #aaa;
 }
 
+.spot-inner.inside {
+    background: #CCC;
+}
+
 .active {
-    background: green;
+    background: green !important;
 }
 
 .console {
-    width: 50%;
-    float: left;
     height: 100%;
     overflow: auto;
     font-family: monospace;
+}
+
+.console span {
+    padding: 4px;
+    white-space: nowrap;
+}
+
+.console-1 {
+    /*margin-right: 150px;*/
+}
+
+.console-2 {
+    display: none;
+    width: 150px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .simulated {
@@ -62,10 +92,17 @@ html, body {
 }
 
 @media screen and (max-width: 400px) {
-    div {
-        width: 100px;
-        height: 100px;
+    .spot {
         margin: 10px;
+    }
+    .spot-inner {
+        width: 80px;
+        height: 80px;
+        margin: 10px;
+    }
+
+    body {
+        font-size: 8px;
     }
 
     .console li {

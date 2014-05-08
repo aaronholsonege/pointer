@@ -10,13 +10,11 @@ var Controller = require('../Controller');
  * @static
  * @private
  */
-var EVENT_ENTER = Events[0];
 var EVENT_OVER = Events[1];
 var EVENT_START = Events[2];
 var EVENT_MOVE = Events[3];
 var EVENT_END = Events[4];
 var EVENT_OUT = Events[5];
-var EVENT_LEAVE = Events[6];
 var EVENT_CANCEL = Events[7];
 
 /**
@@ -66,7 +64,6 @@ var _onPointCancel = function(point, event, pointIndex) {
     PREVIOUS_TARGETS[point.identifier] = null;
     Controller.trigger(event, event.type, event.target, pointIndex);
     Controller.trigger(event, EVENT_OUT, event.target, pointIndex);
-    Controller.trigger(event, EVENT_LEAVE, event.target, pointIndex);
 };
 
 /**
@@ -87,21 +84,11 @@ var _onPointMove = function(point, event, pointIndex) {
 
     if (newTarget !== currentTarget) {
         if (currentTarget) {
-            Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
-
-            // If the new target is not a child of the previous target, fire a leave event
-            if (!Util.contains(currentTarget, newTarget)) {
-                Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
-            }
+            Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex, newTarget);
         }
 
         if (newTarget) {
-            // If the current target is not a child of the new target, fire a enter event
-            if (!Util.contains(newTarget, currentTarget)) {
-                Controller.trigger(event, EVENT_ENTER, newTarget, pointIndex);
-            }
-
-            Controller.trigger(event, EVENT_OVER, newTarget, pointIndex);
+            Controller.trigger(event, EVENT_OVER, newTarget, pointIndex, currentTarget);
         }
     }
 
@@ -132,7 +119,6 @@ var _onPointStartEnd = function(point, event, pointIndex) {
 
     if (type === EVENT_START) {
         PREVIOUS_TARGETS[point.identifier] = target;
-        Controller.trigger(event, EVENT_ENTER, target, pointIndex);
         Controller.trigger(event, EVENT_OVER, target, pointIndex);
     }
 
@@ -142,7 +128,6 @@ var _onPointStartEnd = function(point, event, pointIndex) {
     if (type === EVENT_END) {
         PREVIOUS_TARGETS[point.identifier] = null;
         Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
-        Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
     }
 };
 

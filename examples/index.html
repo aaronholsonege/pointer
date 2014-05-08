@@ -13,15 +13,23 @@
     <link rel="stylesheet" href="assets/styles/style.css"/>
 </head>
 <body>
-<div class="area area_playground area_50">
-    <div class="spot" touch-action="none"></div>
-    <div class="spot" touch-action="none"></div>
-    <div class="spot" touch-action="none"></div>
-    <div class="spot" touch-action="none"></div>
+<div class="area area_playground area_50" touch-action="none">
+    <div class="spot">
+        <div class="spot-inner spot"></div>
+    </div>
+    <div class="spot">
+        <div class="spot-inner spot"></div>
+    </div>
+    <div class="spot spot_alt" touch-action="all">
+        <div class="spot-inner spot"></div>
+    </div>
+    <div class="spot">
+        <div class="spot-inner spot"></div>
+    </div>
 </div>
 <div class="area area_console">
-    <div class="console" id="console"></div>
-    <ul class="console" id="tracker"></ul>
+    <div class="console console-1" id="console"></div>
+    <ul class="console console-2" id="tracker"></ul>
 </div>
 </body>
 </html>

@@ -164,6 +164,41 @@ var _getTarget = function(event, target) {
 };
 
 /**
+ * Detect and trigger enter/leave events
+ *
+ * @type Function
+ * @param {String} eventName
+ * @param {MouseEvent|TouchEvent} event
+ * @param {HTMLElement} event.relatedTarget
+ * @param {HTMLElement} target
+ * @param {HTMLElement} target.parentNode
+ * @param {HTMLElement} [relatedTarget]
+ * @param {Number} [pointerId=0]
+ * @private
+ */
+var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, pointerId) {
+    var pointerEvent;
+
+    if (!relatedTarget) {
+        relatedTarget = event.relatedTarget;
+    }
+
+    // Climb up DOM tree and trigger pointerenter/pointerleave
+    // on all applicable elements that have been entered/left.
+    do {
+        if (!relatedTarget || !Util.contains(target, relatedTarget)) {
+            pointerEvent = Controller.create(eventName, event, pointerId);
+            if (pointerEvent) {
+                Tracker.register(pointerEvent, eventName);
+                Adapter.trigger(pointerEvent, target);
+            }
+        } else {
+            break;
+        }
+    } while (target = target.parentNode);
+};
+
+/**
  * Create and trigger pointer events
  *
  * @class Controller
@@ -197,12 +232,14 @@ var Controller = {
      * @method trigger
      * @param {MouseEvent|TouchEvent} originalEvent
      * @param {String} originalEvent.type
+     * @param {Element} originalEvent.relatedTarget
      * @param {Element} originalEvent.target
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
      * @param {Element} [overrideTarget] target to dispatch event from
      * @param {Number} [touchIndex=0]
+     * @param {HTMLElement} [relatedTarget]
      */
-    trigger: function(originalEvent, overrideType, overrideTarget, touchIndex) {
+    trigger: function(originalEvent, overrideType, overrideTarget, touchIndex, relatedTarget) {
         var eventName = overrideType || originalEvent.type;
 
         if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
@@ -210,12 +247,24 @@ var Controller = {
         }
 
         var type = Events.MAP[eventName];
-        var event = Controller.create(type, originalEvent, touchIndex || 0);
+        var pointerId = touchIndex || 0;
+        var event = Controller.create(type, originalEvent, pointerId);
         var target = _getTarget(originalEvent, overrideTarget);
 
         if (event) {
             Tracker.register(event, eventName);
+
+            // trigger pointerenter
+            if (type === Events.POINTER[1]) {
+                _detectEnterOrLeave(Events.POINTER[0], originalEvent, target, relatedTarget, pointerId);
+            }
+
             Adapter.trigger(event, target);
+
+            // trigger pointerleave
+            if (type === Events.POINTER[5]) {
+                _detectEnterOrLeave(Events.POINTER[6], originalEvent, target, relatedTarget, pointerId);
+            }
         }
     }
 
@@ -777,33 +826,11 @@ var Tracker = require('../event/Tracker');
  * @static
  * @private
  */
-var EVENT_ENTER = Events[0];
 var EVENT_OVER = Events[1];
 var EVENT_DOWN = Events[2];
 var EVENT_MOVE = Events[3];
 var EVENT_UP = Events[4];
 var EVENT_OUT = Events[5];
-var EVENT_LEAVE = Events[6];
-
-/**
- * Determine if we have moused over a new target.
- * Browsers implementation of mouseenter/mouseleave is shaky, so we are manually detecting it.
- *
- * @param {MouseEvent} event
- * @param {String} event.type
- * @param {Element} event.target
- * @param {Element} event.relatedTarget
- * @private
- */
-var _detectMouseEnterOrLeave = function(event) {
-    var target = event.target || event.srcElement;
-    var related = event.relatedTarget;
-    var eventName = event.type === EVENT_OVER ? EVENT_ENTER : EVENT_LEAVE;
-
-    if (!related || !Util.contains(target, related)) {
-        Controller.trigger(event, eventName);
-    }
-};
 
 /**
  * @class Handler.Mouse
@@ -831,18 +858,7 @@ var MouseHandler = {
      */
     onEvent: function(event) {
         if (!Tracker.isEmulated(event)) {
-
-            // trigger mouseenter event if applicable
-            if (EVENT_OVER === event.type) {
-                _detectMouseEnterOrLeave(event);
-            }
-
             Controller.trigger(event);
-
-            // trigger mouseleave event if applicable
-            if (EVENT_OUT === event.type) {
-                _detectMouseEnterOrLeave(event);
-            }
         } else {
             // Add a simulated flag because hey, why not
             try {
@@ -867,13 +883,11 @@ var Controller = require('../Controller');
  * @static
  * @private
  */
-var EVENT_ENTER = Events[0];
 var EVENT_OVER = Events[1];
 var EVENT_START = Events[2];
 var EVENT_MOVE = Events[3];
 var EVENT_END = Events[4];
 var EVENT_OUT = Events[5];
-var EVENT_LEAVE = Events[6];
 var EVENT_CANCEL = Events[7];
 
 /**
@@ -923,7 +937,6 @@ var _onPointCancel = function(point, event, pointIndex) {
     PREVIOUS_TARGETS[point.identifier] = null;
     Controller.trigger(event, event.type, event.target, pointIndex);
     Controller.trigger(event, EVENT_OUT, event.target, pointIndex);
-    Controller.trigger(event, EVENT_LEAVE, event.target, pointIndex);
 };
 
 /**
@@ -944,21 +957,11 @@ var _onPointMove = function(point, event, pointIndex) {
 
     if (newTarget !== currentTarget) {
         if (currentTarget) {
-            Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
-
-            // If the new target is not a child of the previous target, fire a leave event
-            if (!Util.contains(currentTarget, newTarget)) {
-                Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
-            }
+            Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex, newTarget);
         }
 
         if (newTarget) {
-            // If the current target is not a child of the new target, fire a enter event
-            if (!Util.contains(newTarget, currentTarget)) {
-                Controller.trigger(event, EVENT_ENTER, newTarget, pointIndex);
-            }
-
-            Controller.trigger(event, EVENT_OVER, newTarget, pointIndex);
+            Controller.trigger(event, EVENT_OVER, newTarget, pointIndex, currentTarget);
         }
     }
 
@@ -989,7 +992,6 @@ var _onPointStartEnd = function(point, event, pointIndex) {
 
     if (type === EVENT_START) {
         PREVIOUS_TARGETS[point.identifier] = target;
-        Controller.trigger(event, EVENT_ENTER, target, pointIndex);
         Controller.trigger(event, EVENT_OVER, target, pointIndex);
     }
 
@@ -999,7 +1001,6 @@ var _onPointStartEnd = function(point, event, pointIndex) {
     if (type === EVENT_END) {
         PREVIOUS_TARGETS[point.identifier] = null;
         Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
-        Controller.trigger(event, EVENT_LEAVE, currentTarget, pointIndex);
     }
 };
 
