@@ -1027,6 +1027,7 @@ var TouchHandler = {
         var id;
         var touch;
         var previousTouch;
+        var position;
 
         var method = _onPointCancel;
 
@@ -1047,15 +1048,13 @@ var TouchHandler = {
             // so we want to filter out the points that didn't move.
             if (event.type === EVENT_MOVE) {
                 previousTouch = PREVIOUS_POSITIONS[id];
-                if (
-                    previousTouch
-                    && previousTouch.pageX === touch.pageX
-                    && previousTouch.pageY === touch.pageY
-                ) {
+                position = touch.pageX + '|' + touch.pageY;
+
+                if (previousTouch === position) {
                     continue;
                 }
 
-                PREVIOUS_POSITIONS[id] = touch;
+                PREVIOUS_POSITIONS[id] = position;
             }
 
             method(touch, event, i);
@@ -1066,4 +1065,4 @@ var TouchHandler = {
 
 module.exports = TouchHandler;
 },{"../Controller":2,"../Util":4,"../event/Events":9,"adapter/toucharea":"C84uZi"}]},{},[1])
-}());;
+}());
