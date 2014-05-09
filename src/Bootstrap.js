@@ -12,12 +12,12 @@ var _onReady = function() {
         .off('DOMContentLoaded', _onReady, document)
         .off('load', _onReady, window);
 
-    Pointer.enable();
+    Pointer();
 };
 
 if (document.readyState === 'complete') {
     // keep the script kickoff on an async thread
-    setTimeout(Pointer.enable);
+    setTimeout(Pointer);
 } else {
     Util
         .on('DOMContentLoaded', _onReady, document)

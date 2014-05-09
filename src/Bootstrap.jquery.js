@@ -6,4 +6,4 @@ if (window.navigator.pointerEnabled === true) {
     return;
 }
 
-window.jQuery(document).ready(Pointer.enable);
+window.jQuery(document).ready(Pointer);

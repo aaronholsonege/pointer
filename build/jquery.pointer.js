@@ -8,7 +8,7 @@ if (window.navigator.pointerEnabled === true) {
     return;
 }
 
-window.jQuery(document).ready(Pointer.enable);
+window.jQuery(document).ready(Pointer);
 },{"./Pointer":3,"./Util":4}],2:[function(require,module,exports){
 var Events = require('./event/Events');
 var Adapter = require('adapter/event');
@@ -277,54 +277,15 @@ var MouseHandler = require('./handlers/Mouse');
 var TouchHandler = require('./handlers/Touch');
 
 /**
- * @type Boolean
- * @static
- * @private
- */
-var _isEnabled = false;
-
-/**
  * Bind mouse/touch events to convert to pointer events
  *
  * @class Pointer
- * @static
+ * @type Function
  */
-var Pointer = {
-
-    /**
-     * Enable tracking of touch/mouse events
-     *
-     * @method enable
-     */
-    enable: function() {
-        if (_isEnabled) {
-            return;
-        }
-
-        _isEnabled = true;
-
-        Util
-            .on(TouchHandler.events, TouchHandler.onEvent)
-            .on(MouseHandler.events, MouseHandler.onEvent);
-    },
-
-    /**
-     * Disable tracking of touch/mouse events
-     *
-     * @method disable
-     */
-    disable: function() {
-        if (!_isEnabled) {
-            return;
-        }
-
-        _isEnabled = false;
-
-        Util
-            .off(TouchHandler.events, TouchHandler.onEvent)
-            .off(MouseHandler.events, MouseHandler.onEvent);
-    }
-
+var Pointer =  function() {
+    Util
+        .on(TouchHandler.events, TouchHandler.onEvent)
+        .on(MouseHandler.events, MouseHandler.onEvent);
 };
 
 module.exports = Pointer;
@@ -353,13 +314,12 @@ var _addOrRemoveEvent = function(event, callback, target, add) {
     var length = events.length;
 
     var method = (add ? 'add' : 'remove') + 'EventListener';
-    var methodLegacy = (add ? 'attach' : 'detach') + 'Event';
 
     for (; i < length; i++) {
         if (target[method]) {
             target[method](events[i], callback, false);
         } else {
-            target[methodLegacy]('on' + events[i], callback);
+            target[(add ? 'attach' : 'detach') + 'Event']('on' + events[i], callback);
         }
     }
 };
@@ -773,7 +733,7 @@ var EventTracker = {
             var target = event.target;
 
             // If this is a mouseout event, compare the related target
-            // instead which is the element that previous had focus for touchstart
+            // instead which is the element that previously had focus for touchstart
             if (event.type === 'mouseout') {
                 target = event.relatedTarget;
             }
@@ -911,26 +871,6 @@ var PREVIOUS_TARGETS = {};
 var PREVIOUS_POSITIONS = {};
 
 /**
- * Determine which method to call for each point
- *
- * @type Function
- * @param {String} type
- * @returns {Function}
- * @private
- */
-var _getPointMethod = function(type) {
-    switch(type) {
-        case EVENT_START:
-        case EVENT_END:
-            return _onPointStartEnd;
-        case EVENT_MOVE:
-            return _onPointMove;
-        default:
-            return _onPointCancel;
-    }
-};
-
-/**
  * Trigger cancel for each touch point
  *
  * @type Function
@@ -1043,7 +983,17 @@ var TouchHandler = {
         var touch;
         var previousTouch;
 
-        var method = _getPointMethod(event.type);
+        var method = _onPointCancel;
+
+        switch(event.type) {
+            case EVENT_START:
+            case EVENT_END:
+                method = _onPointStartEnd;
+                break;
+            case EVENT_MOVE:
+                method = _onPointMove;
+                break;
+        }
 
         while (touch = touches[++i]) {
             id = touch.identifier;
@@ -1052,7 +1002,11 @@ var TouchHandler = {
             // so we want to filter out the points that didn't move.
             if (event.type === EVENT_MOVE) {
                 previousTouch = PREVIOUS_POSITIONS[id];
-                if (previousTouch && previousTouch.pageX === touch.pageX && previousTouch.pageY === touch.pageY) {
+                if (
+                    previousTouch
+                    && previousTouch.pageX === touch.pageX
+                    && previousTouch.pageY === touch.pageY
+                ) {
                     continue;
                 }
 

@@ -112,7 +112,7 @@ var EventTracker = {
             var target = event.target;
 
             // If this is a mouseout event, compare the related target
-            // instead which is the element that previous had focus for touchstart
+            // instead which is the element that previously had focus for touchstart
             if (event.type === 'mouseout') {
                 target = event.relatedTarget;
             }

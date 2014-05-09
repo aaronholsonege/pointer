@@ -22,13 +22,12 @@ var _addOrRemoveEvent = function(event, callback, target, add) {
     var length = events.length;
 
     var method = (add ? 'add' : 'remove') + 'EventListener';
-    var methodLegacy = (add ? 'attach' : 'detach') + 'Event';
 
     for (; i < length; i++) {
         if (target[method]) {
             target[method](events[i], callback, false);
         } else {
-            target[methodLegacy]('on' + events[i], callback);
+            target[(add ? 'attach' : 'detach') + 'Event']('on' + events[i], callback);
         }
     }
 };

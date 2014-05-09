@@ -38,26 +38,6 @@ var PREVIOUS_TARGETS = {};
 var PREVIOUS_POSITIONS = {};
 
 /**
- * Determine which method to call for each point
- *
- * @type Function
- * @param {String} type
- * @returns {Function}
- * @private
- */
-var _getPointMethod = function(type) {
-    switch(type) {
-        case EVENT_START:
-        case EVENT_END:
-            return _onPointStartEnd;
-        case EVENT_MOVE:
-            return _onPointMove;
-        default:
-            return _onPointCancel;
-    }
-};
-
-/**
  * Trigger cancel for each touch point
  *
  * @type Function
@@ -170,7 +150,17 @@ var TouchHandler = {
         var touch;
         var previousTouch;
 
-        var method = _getPointMethod(event.type);
+        var method = _onPointCancel;
+
+        switch(event.type) {
+            case EVENT_START:
+            case EVENT_END:
+                method = _onPointStartEnd;
+                break;
+            case EVENT_MOVE:
+                method = _onPointMove;
+                break;
+        }
 
         while (touch = touches[++i]) {
             id = touch.identifier;
@@ -179,7 +169,11 @@ var TouchHandler = {
             // so we want to filter out the points that didn't move.
             if (event.type === EVENT_MOVE) {
                 previousTouch = PREVIOUS_POSITIONS[id];
-                if (previousTouch && previousTouch.pageX === touch.pageX && previousTouch.pageY === touch.pageY) {
+                if (
+                    previousTouch
+                    && previousTouch.pageX === touch.pageX
+                    && previousTouch.pageY === touch.pageY
+                ) {
                     continue;
                 }
 
