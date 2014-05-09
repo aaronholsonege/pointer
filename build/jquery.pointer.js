@@ -21,7 +21,7 @@ var Util = require('./Util');
  * @type String[]
  * @static
  */
-var PointerEvents = PointerEvents;
+var PointerEvents = Events.POINTER;
 
 /**
  * Default properties to apply to newly created events
