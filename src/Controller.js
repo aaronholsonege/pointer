@@ -34,7 +34,7 @@ var PROPS = {
     height: 0,
     tiltX: 0,
     tiltY: 0,
-    pressure: 0
+    pressure: 0.5
 };
 
 /**
@@ -93,6 +93,10 @@ var _getProperties = function(type, originalEvent, touchIndex) {
     // add x/y properties aliased to pageX/Y
     properties.x = properties.pageX;
     properties.y = properties.pageY;
+
+    if (properties.pointerId == 0) {
+        properties.pressure = Tracker.isMouseActive ? 0.5 : 0;
+    }
 
     return properties;
 };

@@ -17,6 +17,16 @@ var EVENT_UP = Events[4];
 var EVENT_OUT = Events[5];
 
 /**
+ * Reset active mouse
+ *
+ * @type Function
+ * @private
+ */
+var _onWindowUp = function() {
+    Tracker.isMouseActive = false;
+};
+
+/**
  * @class Handler.Mouse
  * @static
  */
@@ -42,6 +52,12 @@ var MouseHandler = {
      */
     onEvent: function(event) {
         if (!Tracker.isEmulated(event)) {
+            if (event.type === EVENT_DOWN) {
+                Tracker.isMouseActive = true;
+            }
+            if (event.type === EVENT_UP) {
+                Tracker.isMouseActive = false;
+            }
             Controller.trigger(event);
         } else {
             // Add a simulated flag because hey, why not
@@ -52,5 +68,9 @@ var MouseHandler = {
     }
 
 };
+
+// Reset active mouse on mouseup
+// This capture if the user drags outside the window and releases the mouse
+Util.on(EVENT_UP, _onWindowUp, window);
 
 module.exports = MouseHandler;
