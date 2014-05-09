@@ -16,6 +16,14 @@ var Tracker = require('./event/Tracker');
 var Util = require('./Util');
 
 /**
+ * Pointer event names
+ *
+ * @type String[]
+ * @static
+ */
+var PointerEvents = PointerEvents;
+
+/**
  * Default properties to apply to newly created events
  *
  * These values are only used if values do not exists in the
@@ -177,7 +185,9 @@ var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, poin
         if (!relatedTarget || !Util.contains(target, relatedTarget)) {
             pointerEvent = Controller.create(eventName, event, pointerId);
             if (pointerEvent) {
-                Tracker.register(pointerEvent, eventName);
+                if (pointerEvent.pointerType === 'touch') {
+                    Tracker.register(pointerEvent, eventName);
+                }
                 Adapter.trigger(pointerEvent, target);
             }
         } else {
@@ -210,7 +220,7 @@ var Controller = {
             type,
             originalEvent,
             properties,
-            type !== Events.POINTER[0] && type !== Events.POINTER[6] // enter and leave events should not bubble
+            type !== PointerEvents[0] && type !== PointerEvents[6] // enter and leave events should not bubble
         );
     },
 
@@ -240,18 +250,20 @@ var Controller = {
         var target = _getTarget(originalEvent, overrideTarget);
 
         if (event) {
-            Tracker.register(event, eventName);
+            if (event.pointerType === 'touch') {
+                Tracker.register(event, eventName);
+            }
 
             // trigger pointerenter
-            if (type === Events.POINTER[1]) {
-                _detectEnterOrLeave(Events.POINTER[0], originalEvent, target, relatedTarget, pointerId);
+            if (type === PointerEvents[1]) {
+                _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
             }
 
             Adapter.trigger(event, target);
 
             // trigger pointerleave
-            if (type === Events.POINTER[5]) {
-                _detectEnterOrLeave(Events.POINTER[6], originalEvent, target, relatedTarget, pointerId);
+            if (type === PointerEvents[5]) {
+                _detectEnterOrLeave(PointerEvents[6], originalEvent, target, relatedTarget, pointerId);
             }
         }
     }

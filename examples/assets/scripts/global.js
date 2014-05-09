@@ -40,7 +40,7 @@ $(document).ready(function() {
          */
         enable: function() {
             $document
-                .on('mouseover mousedown mousemove mouseup mouseout', '.area_playground', this.onMouseEvent)
+                .on('mouseover mousedown mousemove mouseup mouseout click', '.area_playground', this.onMouseEvent)
                 .on('touchstart touchmove touchend touchcancel', '.area_playground', this.onTouchEvent)
                 .on('pointerenter pointerover pointerdown pointermove pointerup pointerout pointerleave pointercancel', '.area_playground', this.onPointerEvent)
                 .on('change', 'input', this.onInputChange)
