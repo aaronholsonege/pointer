@@ -1,7 +1,6 @@
 (function() {
 var require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var Pointer = require('./Pointer');
-var Util = require('./Util');
 
 // If the browser already supports pointer events, do not enable
 if (window.navigator.pointerEnabled === true) {
@@ -9,7 +8,7 @@ if (window.navigator.pointerEnabled === true) {
 }
 
 window.jQuery(document).ready(Pointer);
-},{"./Pointer":3,"./Util":4}],2:[function(require,module,exports){
+},{"./Pointer":3}],2:[function(require,module,exports){
 var Events = require('./event/Events');
 var Adapter = require('adapter/event');
 var Tracker = require('./event/Tracker');
