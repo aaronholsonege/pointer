@@ -49,14 +49,20 @@ var EventTracker = {
      * @method register
      * @param {Event} event
      * @param {String} event.type
-     * @param {String} overrideEventName
+     * @param {String} [overrideEventName]
+     * @param {Element} [target]
      * @chainable
      */
-    register: function(event, overrideEventName) {
+    register: function(event, overrideEventName, target) {
         var eventName = overrideEventName || event.type;
 
         if (LAST_EVENTS.hasOwnProperty(eventName)) {
-            LAST_EVENTS[eventName][event.pointerId] = event;
+            LAST_EVENTS[eventName][event.pointerId] = {
+                timeStamp: event.timeStamp,
+                x: event.clientX,
+                y: event.clientY,
+                target: target || event.target
+            };
         }
 
         return this;
@@ -103,7 +109,6 @@ var EventTracker = {
 
             // If too much time has passed since the last touch
             // event, remove it so we no longer test against it.
-            // Then continue to the next point - no use in comparing positions.
             if (Math.abs(event.timeStamp - pointer.timeStamp) > DELTA_TIME) {
                 LAST_EVENTS[eventName][pointerId] = null;
                 continue;
@@ -119,8 +124,8 @@ var EventTracker = {
 
             if (
                 pointer.target === target
-                && pointer.clientX === event.clientX
-                && pointer.clientX === event.clientX
+                && pointer.x === event.clientX
+                && pointer.y === event.clientY
             ) {
                 return true;
             }

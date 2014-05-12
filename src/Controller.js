@@ -174,7 +174,7 @@ var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, poin
             pointerEvent = Controller.create(eventName, event, pointerId);
             if (pointerEvent) {
                 if (pointerEvent.pointerType === 'touch') {
-                    Tracker.register(pointerEvent, eventName);
+                    Tracker.register(pointerEvent, eventName, target);
                 }
                 Adapter.trigger(pointerEvent, target);
             }
@@ -239,7 +239,7 @@ var Controller = {
 
         if (event) {
             if (event.pointerType === 'touch') {
-                Tracker.register(event, eventName);
+                Tracker.register(event, eventName, target);
             }
 
             // trigger pointerenter
