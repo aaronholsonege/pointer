@@ -67,6 +67,19 @@ module.exports = function (grunt) {
         uglify: {
             options: {
             },
+            clean: {
+                files: [{
+                    expand: true,
+                    cwd: 'build',
+                    src: '*pointer.js',
+                    dest: 'build'
+                }],
+                options: {
+                    mangle: false,
+                    beautify: true,
+                    compress: false
+                }
+            },
             build: {
                 files: [{
                     expand: true,
