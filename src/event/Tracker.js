@@ -27,6 +27,14 @@ var LAST_EVENTS = {
 };
 
 /**
+ * Pointer capture targets
+ *
+ * @type Object
+ * @static
+ */
+var TARGET_LOCKS = {};
+
+/**
  * Max time between touch and simulated mouse event (3 seconds)
  *
  * We only use this to expire a touch event - after 3 seconds,
@@ -42,6 +50,15 @@ var DELTA_TIME = 3000;
  * @static
  */
 var EventTracker = {
+
+    /**
+     * Flag for if the mouse button is currently active
+     *
+     * @property isMouseActive
+     * @type Boolean
+     * @default false
+     */
+    isMouseActive: false,
 
     /**
      * Register a touch event used to determine if mouse events are emulated
@@ -69,13 +86,17 @@ var EventTracker = {
     },
 
     /**
-     * Flag for if the mouse button is currently active
+     * Get captured target
      *
-     * @property isMouseActive
-     * @type Boolean
-     * @default false
+     * @method getTarget
+     * @param {Event} pointerEvent
+     * @param {String} pointerEvent.pointerId
+     * @param {Number} pointerEvent.pressure
+     * @returns {null|Element}
      */
-    isMouseActive: false,
+    getTarget: function(pointerEvent) {
+        return pointerEvent.pressure ? TARGET_LOCKS[pointerEvent.pointerId] : null;
+    },
 
     /**
      * Determine if a mouse event has been emulated
@@ -134,6 +155,14 @@ var EventTracker = {
         return false;
     }
 
+};
+
+Element.prototype.setPointerCapture = function(pointerId) {
+    TARGET_LOCKS[pointerId] = this;
+};
+
+Element.prototype.releasePointerCapture = function(pointerId) {
+    TARGET_LOCKS[pointerId] = null;
 };
 
 module.exports = EventTracker;

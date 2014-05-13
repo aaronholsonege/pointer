@@ -55,10 +55,10 @@ var MouseHandler = {
             if (event.type === EVENT_DOWN) {
                 Tracker.isMouseActive = true;
             }
+            Controller.trigger(event);
             if (event.type === EVENT_UP) {
                 Tracker.isMouseActive = false;
             }
-            Controller.trigger(event);
         } else {
             // Add a simulated flag because hey, why not
             try {
