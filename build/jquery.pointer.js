@@ -274,6 +274,7 @@ module.exports = Controller;
 var Util = require('./Util');
 var MouseHandler = require('./handlers/Mouse');
 var TouchHandler = require('./handlers/Touch');
+var EventTracker = require('./event/Tracker');
 
 /**
  * Bind mouse/touch events to convert to pointer events
@@ -282,13 +283,14 @@ var TouchHandler = require('./handlers/Touch');
  * @type Function
  */
 var Pointer =  function() {
+    EventTracker.init();
     Util
         .on(TouchHandler.events, TouchHandler.onEvent)
         .on(MouseHandler.events, MouseHandler.onEvent);
 };
 
 module.exports = Pointer;
-},{"./Util":4,"./handlers/Mouse":11,"./handlers/Touch":12}],4:[function(require,module,exports){
+},{"./Util":4,"./event/Tracker":10,"./handlers/Mouse":11,"./handlers/Touch":12}],4:[function(require,module,exports){
 /**
  * Attach or detach event callback from target
  *
@@ -672,6 +674,21 @@ var DELTA_TIME = 3000;
 var EventTracker = {
 
     /**
+     * Create capture and release methods on Element prototype
+     *
+     * @method init
+     */
+    init: function() {
+        Element.prototype.setPointerCapture = function(pointerId) {
+            TARGET_LOCKS[pointerId] = this;
+        };
+
+        Element.prototype.releasePointerCapture = function(pointerId) {
+            TARGET_LOCKS[pointerId] = null;
+        };
+    },
+
+    /**
      * Flag for if the mouse button is currently active
      *
      * @property isMouseActive
@@ -775,14 +792,6 @@ var EventTracker = {
         return false;
     }
 
-};
-
-Element.prototype.setPointerCapture = function(pointerId) {
-    TARGET_LOCKS[pointerId] = this;
-};
-
-Element.prototype.releasePointerCapture = function(pointerId) {
-    TARGET_LOCKS[pointerId] = null;
 };
 
 module.exports = EventTracker;

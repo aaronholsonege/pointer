@@ -52,6 +52,21 @@ var DELTA_TIME = 3000;
 var EventTracker = {
 
     /**
+     * Create capture and release methods on Element prototype
+     *
+     * @method init
+     */
+    init: function() {
+        Element.prototype.setPointerCapture = function(pointerId) {
+            TARGET_LOCKS[pointerId] = this;
+        };
+
+        Element.prototype.releasePointerCapture = function(pointerId) {
+            TARGET_LOCKS[pointerId] = null;
+        };
+    },
+
+    /**
      * Flag for if the mouse button is currently active
      *
      * @property isMouseActive
@@ -155,14 +170,6 @@ var EventTracker = {
         return false;
     }
 
-};
-
-Element.prototype.setPointerCapture = function(pointerId) {
-    TARGET_LOCKS[pointerId] = this;
-};
-
-Element.prototype.releasePointerCapture = function(pointerId) {
-    TARGET_LOCKS[pointerId] = null;
 };
 
 module.exports = EventTracker;
