@@ -171,7 +171,7 @@ var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, poin
     // on all applicable elements that have been entered/left.
     do {
         if (!relatedTarget || !Util.contains(target, relatedTarget)) {
-            pointerEvent = Controller.create(eventName, event, pointerId);
+            pointerEvent = _create(eventName, event, pointerId);
             if (pointerEvent) {
                 if (pointerEvent.pointerType === 'touch') {
                     Tracker.register(pointerEvent, eventName, target);
@@ -185,12 +185,76 @@ var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, poin
 };
 
 /**
+ * Create a new pointer event
+ *
+ * @type Function
+ * @param {String} type Pointer event name
+ * @param {MouseEvent|TouchEvent} originalEvent
+ * @param {Number} [touchIndex=0]
+ * @return {mixed} Event created from adapter
+ */
+var _create = function(type, originalEvent, touchIndex) {
+    var properties = _getProperties(type, originalEvent, touchIndex);
+
+    return Adapter.create(
+        type,
+        originalEvent,
+        properties,
+        type !== PointerEvents[0] && type !== PointerEvents[6] // enter and leave events should not bubble
+    );
+};
+
+/**
+ * Trigger a pointer event from a native mouse/touch event
+ *
+ * @type Function
+ * @param {MouseEvent|TouchEvent} originalEvent
+ * @param {String} originalEvent.type
+ * @param {Element} originalEvent.relatedTarget
+ * @param {Element} originalEvent.target
+ * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
+ * @param {Number} [touchIndex=0]
+ * @param {Element} [overrideTarget] target to dispatch event from
+ * @param {HTMLElement} [relatedTarget]
+ */
+var _trigger = function(originalEvent, overrideType, touchIndex, overrideTarget, relatedTarget) {
+    var eventName = overrideType || originalEvent.type;
+
+    if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
+        return;
+    }
+
+    var type = Events.MAP[eventName];
+    var pointerId = touchIndex || 0;
+    var event = _create(type, originalEvent, pointerId);
+    var target = _getTarget(originalEvent, overrideTarget);
+
+    if (event) {
+        if (event.pointerType === 'touch') {
+            Tracker.register(event, eventName, target);
+        }
+
+        // trigger pointerenter
+        if (type === PointerEvents[1]) {
+            _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
+        }
+
+        Adapter.trigger(event, target);
+
+        // trigger pointerleave
+        if (type === PointerEvents[5]) {
+            _detectEnterOrLeave(PointerEvents[6], originalEvent, target, relatedTarget, pointerId);
+        }
+    }
+};
+
+/**
  * Create and trigger pointer events
  *
  * @class Controller
  * @static
  */
-var Controller = {
+module.exports = {
 
     /**
      * Create a new pointer event
@@ -201,16 +265,7 @@ var Controller = {
      * @param {Number} [touchIndex=0]
      * @return {mixed} Event created from adapter
      */
-    create: function(type, originalEvent, touchIndex) {
-        var properties = _getProperties(type, originalEvent, touchIndex);
-
-        return Adapter.create(
-            type,
-            originalEvent,
-            properties,
-            type !== PointerEvents[0] && type !== PointerEvents[6] // enter and leave events should not bubble
-        );
-    },
+    create: _create,
 
     /**
      * Trigger a pointer event from a native mouse/touch event
@@ -221,41 +276,10 @@ var Controller = {
      * @param {Element} originalEvent.relatedTarget
      * @param {Element} originalEvent.target
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
-     * @param {Element} [overrideTarget] target to dispatch event from
      * @param {Number} [touchIndex=0]
+     * @param {Element} [overrideTarget] target to dispatch event from
      * @param {HTMLElement} [relatedTarget]
      */
-    trigger: function(originalEvent, overrideType, overrideTarget, touchIndex, relatedTarget) {
-        var eventName = overrideType || originalEvent.type;
-
-        if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
-            return;
-        }
-
-        var type = Events.MAP[eventName];
-        var pointerId = touchIndex || 0;
-        var event = Controller.create(type, originalEvent, pointerId);
-        var target = _getTarget(originalEvent, overrideTarget);
-
-        if (event) {
-            if (event.pointerType === 'touch') {
-                Tracker.register(event, eventName, target);
-            }
-
-            // trigger pointerenter
-            if (type === PointerEvents[1]) {
-                _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
-            }
-
-            Adapter.trigger(event, target);
-
-            // trigger pointerleave
-            if (type === PointerEvents[5]) {
-                _detectEnterOrLeave(PointerEvents[6], originalEvent, target, relatedTarget, pointerId);
-            }
-        }
-    }
+    trigger: _trigger
 
 };
-
-module.exports = Controller;

@@ -1,7 +1,8 @@
 var Util = require('../Util');
 var Events = require('../event/Events').TOUCH;
 var TouchAreaAdapter = require('adapter/toucharea');
-var Controller = require('../Controller');
+
+var trigger = require('../Controller').trigger;
 
 /**
  * Touch event names
@@ -38,7 +39,7 @@ var PREVIOUS_TARGETS = {};
 var PREVIOUS_POSITIONS = {};
 
 /**
- * Trigger cancel for each touch point
+ * trigger cancel for each touch point
  *
  * @type Function
  * @param {Touch} point
@@ -50,8 +51,8 @@ var PREVIOUS_POSITIONS = {};
  */
 var _onPointCancel = function(point, event, pointIndex) {
     PREVIOUS_TARGETS[point.identifier] = null;
-    Controller.trigger(event, event.type, event.target, pointIndex);
-    Controller.trigger(event, EVENT_OUT, event.target, pointIndex);
+    trigger(event, EVENT_CANCEL, pointIndex, event.target);
+    trigger(event, EVENT_OUT, pointIndex, event.target);
 };
 
 /**
@@ -72,15 +73,15 @@ var _onPointMove = function(point, event, pointIndex) {
 
     if (newTarget !== currentTarget) {
         if (currentTarget) {
-            Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex, newTarget);
+            trigger(event, EVENT_OUT, pointIndex, currentTarget, newTarget);
         }
 
         if (newTarget) {
-            Controller.trigger(event, EVENT_OVER, newTarget, pointIndex, currentTarget);
+            trigger(event, EVENT_OVER, pointIndex, newTarget, currentTarget);
         }
     }
 
-    Controller.trigger(event, EVENT_MOVE, newTarget, pointIndex);
+    trigger(event, EVENT_MOVE, pointIndex, newTarget);
 
     // If the target (or a parent node) has the touch-action attribute
     // set to "none", prevent the browser default action.
@@ -107,15 +108,15 @@ var _onPointStartEnd = function(point, event, pointIndex) {
 
     if (type === EVENT_START) {
         PREVIOUS_TARGETS[point.identifier] = target;
-        Controller.trigger(event, EVENT_OVER, target, pointIndex);
+        trigger(event, EVENT_OVER, pointIndex, target);
     }
 
     var currentTarget = PREVIOUS_TARGETS[point.identifier] || target;
-    Controller.trigger(event, type, currentTarget, pointIndex);
+    trigger(event, type, pointIndex, currentTarget);
 
     if (type === EVENT_END) {
         PREVIOUS_TARGETS[point.identifier] = null;
-        Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
+        trigger(event, EVENT_OUT, pointIndex, currentTarget);
     }
 };
 
@@ -123,7 +124,7 @@ var _onPointStartEnd = function(point, event, pointIndex) {
  * @class Handler.Touch
  * @static
  */
-var TouchHandler = {
+module.exports = {
 
     /**
      * Events to watch
@@ -145,34 +146,31 @@ var TouchHandler = {
     onEvent: function(event) {
         var i = -1;
         var touches = event.changedTouches;
+        var type = event.type;
 
         var id;
         var touch;
-        var previousTouch;
         var position;
 
         var method = _onPointCancel;
 
-        switch(event.type) {
-            case EVENT_START:
-            case EVENT_END:
-                method = _onPointStartEnd;
-                break;
-            case EVENT_MOVE:
-                method = _onPointMove;
-                break;
+        if (type === EVENT_START || type === EVENT_END) {
+            method = _onPointStartEnd;
+        } else if (type === EVENT_MOVE) {
+            method = _onPointMove;
         }
 
+        // Loop through each changed touch
+        // point and fire an event for it
         while (touch = touches[++i]) {
             id = touch.identifier;
 
             // The `touchmove` event triggers when ANY active point moves,
             // so we want to filter out the points that didn't move.
-            if (event.type === EVENT_MOVE) {
-                previousTouch = PREVIOUS_POSITIONS[id];
+            if (type === EVENT_MOVE) {
                 position = touch.pageX + '|' + touch.pageY;
 
-                if (previousTouch === position) {
+                if (PREVIOUS_POSITIONS[id] === position) {
                     continue;
                 }
 
@@ -184,5 +182,3 @@ var TouchHandler = {
     }
 
 };
-
-module.exports = TouchHandler;

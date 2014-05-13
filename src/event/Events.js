@@ -58,7 +58,7 @@ var MAP = {};
  * @static
  * @final
  */
-var Events = {
+module.exports = {
 
     /**
      * @property POINTER
@@ -105,5 +105,3 @@ for (; i < length; i++) {
         MAP[MouseEvents[i]] = PointerEvents[i];
     }
 }
-
-module.exports = Events;

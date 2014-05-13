@@ -3,7 +3,7 @@
  * @interface
  * @static
  */
-var HandlerInterface = {
+module.exports = {
 
     /**
      * Array of events to listen for
@@ -22,5 +22,3 @@ var HandlerInterface = {
     onEvent: function(event) {}
 
 };
-
-module.exports = HandlerInterface;

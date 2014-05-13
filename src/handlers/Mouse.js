@@ -1,7 +1,8 @@
 var Util = require('../Util');
 var Events = require('../event/Events').MOUSE;
-var Controller = require('../Controller');
 var Tracker = require('../event/Tracker');
+
+var trigger = require('../Controller').trigger;
 
 /**
  * Mouse event names
@@ -30,7 +31,7 @@ var _onWindowUp = function() {
  * @class Handler.Mouse
  * @static
  */
-var MouseHandler = {
+module.exports = {
 
     /**
      * Events to watch
@@ -51,26 +52,28 @@ var MouseHandler = {
      * @callback
      */
     onEvent: function(event) {
-        if (!Tracker.isEmulated(event)) {
-            if (event.type === EVENT_DOWN) {
-                Tracker.isMouseActive = true;
-            }
-            if (event.type === EVENT_UP) {
-                Tracker.isMouseActive = false;
-            }
-            Controller.trigger(event);
-        } else {
+        if (Tracker.isEmulated(event)) {
             // Add a simulated flag because hey, why not
             try {
                 event._isSimulated = true;
             } catch(e) {}
+
+            return;
         }
+
+        if (event.type === EVENT_DOWN) {
+            Tracker.isMouseActive = true;
+        }
+
+        if (event.type === EVENT_UP) {
+            Tracker.isMouseActive = false;
+        }
+
+        trigger(event);
     }
 
 };
 
 // Reset active mouse on mouseup
-// This capture if the user drags outside the window and releases the mouse
+// This captures if the user drags outside the window and releases the mouse
 Util.on(EVENT_UP, _onWindowUp, window);
-
-module.exports = MouseHandler;

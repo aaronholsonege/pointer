@@ -41,7 +41,7 @@ var DELTA_TIME = 3000;
  * @class Event.Tracker
  * @static
  */
-var EventTracker = {
+module.exports = {
 
     /**
      * Register a touch event used to determine if mouse events are emulated
@@ -135,5 +135,3 @@ var EventTracker = {
     }
 
 };
-
-module.exports = EventTracker;

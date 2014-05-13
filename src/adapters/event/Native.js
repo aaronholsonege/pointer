@@ -24,7 +24,7 @@ var _overrideMethod = function(method, event, originalEvent) {
  * @class Adapter.Event.Native
  * @static
  */
-var Native = {
+module.exports = {
 
     /**
      * Create a new Event object
@@ -68,5 +68,3 @@ var Native = {
     }
 
 };
-
-module.exports = Native;

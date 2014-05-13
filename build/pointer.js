@@ -199,7 +199,7 @@ var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, poin
     // on all applicable elements that have been entered/left.
     do {
         if (!relatedTarget || !Util.contains(target, relatedTarget)) {
-            pointerEvent = Controller.create(eventName, event, pointerId);
+            pointerEvent = _create(eventName, event, pointerId);
             if (pointerEvent) {
                 if (pointerEvent.pointerType === 'touch') {
                     Tracker.register(pointerEvent, eventName, target);
@@ -213,12 +213,76 @@ var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, poin
 };
 
 /**
+ * Create a new pointer event
+ *
+ * @type Function
+ * @param {String} type Pointer event name
+ * @param {MouseEvent|TouchEvent} originalEvent
+ * @param {Number} [touchIndex=0]
+ * @return {mixed} Event created from adapter
+ */
+var _create = function(type, originalEvent, touchIndex) {
+    var properties = _getProperties(type, originalEvent, touchIndex);
+
+    return Adapter.create(
+        type,
+        originalEvent,
+        properties,
+        type !== PointerEvents[0] && type !== PointerEvents[6] // enter and leave events should not bubble
+    );
+};
+
+/**
+ * Trigger a pointer event from a native mouse/touch event
+ *
+ * @type Function
+ * @param {MouseEvent|TouchEvent} originalEvent
+ * @param {String} originalEvent.type
+ * @param {Element} originalEvent.relatedTarget
+ * @param {Element} originalEvent.target
+ * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
+ * @param {Number} [touchIndex=0]
+ * @param {Element} [overrideTarget] target to dispatch event from
+ * @param {HTMLElement} [relatedTarget]
+ */
+var _trigger = function(originalEvent, overrideType, touchIndex, overrideTarget, relatedTarget) {
+    var eventName = overrideType || originalEvent.type;
+
+    if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
+        return;
+    }
+
+    var type = Events.MAP[eventName];
+    var pointerId = touchIndex || 0;
+    var event = _create(type, originalEvent, pointerId);
+    var target = _getTarget(originalEvent, overrideTarget);
+
+    if (event) {
+        if (event.pointerType === 'touch') {
+            Tracker.register(event, eventName, target);
+        }
+
+        // trigger pointerenter
+        if (type === PointerEvents[1]) {
+            _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
+        }
+
+        Adapter.trigger(event, target);
+
+        // trigger pointerleave
+        if (type === PointerEvents[5]) {
+            _detectEnterOrLeave(PointerEvents[6], originalEvent, target, relatedTarget, pointerId);
+        }
+    }
+};
+
+/**
  * Create and trigger pointer events
  *
  * @class Controller
  * @static
  */
-var Controller = {
+module.exports = {
 
     /**
      * Create a new pointer event
@@ -229,16 +293,7 @@ var Controller = {
      * @param {Number} [touchIndex=0]
      * @return {mixed} Event created from adapter
      */
-    create: function(type, originalEvent, touchIndex) {
-        var properties = _getProperties(type, originalEvent, touchIndex);
-
-        return Adapter.create(
-            type,
-            originalEvent,
-            properties,
-            type !== PointerEvents[0] && type !== PointerEvents[6] // enter and leave events should not bubble
-        );
-    },
+    create: _create,
 
     /**
      * Trigger a pointer event from a native mouse/touch event
@@ -249,48 +304,18 @@ var Controller = {
      * @param {Element} originalEvent.relatedTarget
      * @param {Element} originalEvent.target
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
-     * @param {Element} [overrideTarget] target to dispatch event from
      * @param {Number} [touchIndex=0]
+     * @param {Element} [overrideTarget] target to dispatch event from
      * @param {HTMLElement} [relatedTarget]
      */
-    trigger: function(originalEvent, overrideType, overrideTarget, touchIndex, relatedTarget) {
-        var eventName = overrideType || originalEvent.type;
-
-        if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
-            return;
-        }
-
-        var type = Events.MAP[eventName];
-        var pointerId = touchIndex || 0;
-        var event = Controller.create(type, originalEvent, pointerId);
-        var target = _getTarget(originalEvent, overrideTarget);
-
-        if (event) {
-            if (event.pointerType === 'touch') {
-                Tracker.register(event, eventName, target);
-            }
-
-            // trigger pointerenter
-            if (type === PointerEvents[1]) {
-                _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
-            }
-
-            Adapter.trigger(event, target);
-
-            // trigger pointerleave
-            if (type === PointerEvents[5]) {
-                _detectEnterOrLeave(PointerEvents[6], originalEvent, target, relatedTarget, pointerId);
-            }
-        }
-    }
+    trigger: _trigger
 
 };
-
-module.exports = Controller;
 },{"./Util":4,"./event/Events":9,"./event/Tracker":10,"adapter/event":"mbL6jR"}],3:[function(require,module,exports){
 var Util = require('./Util');
 var MouseHandler = require('./handlers/Mouse');
 var TouchHandler = require('./handlers/Touch');
+var navigator = window.navigator;
 
 /**
  * Bind mouse/touch events to convert to pointer events
@@ -298,13 +323,14 @@ var TouchHandler = require('./handlers/Touch');
  * @class Pointer
  * @type Function
  */
-var Pointer =  function() {
+module.exports =  function() {
+    navigator.pointerEnabled = true;
+    navigator.maxTouchPoints = 10;
+
     Util
         .on(TouchHandler.events, TouchHandler.onEvent)
         .on(MouseHandler.events, MouseHandler.onEvent);
 };
-
-module.exports = Pointer;
 },{"./Util":4,"./handlers/Mouse":11,"./handlers/Touch":12}],4:[function(require,module,exports){
 /**
  * Attach or detach event callback from target
@@ -346,7 +372,7 @@ var _addOrRemoveEvent = function(event, callback, target, add) {
  * @class Util
  * @static
  */
-var Util = {
+module.exports = {
 
     /**
      * Add event listener to target
@@ -413,6 +439,7 @@ var Util = {
      * @param {Element} target
      * @param {Function} [target.contains]
      * @param {Element} child
+     * @param {Element} child.parentNode
      * @return {Boolean}
      */
     contains: function(target, child) {
@@ -423,23 +450,17 @@ var Util = {
         if (target.contains) {
             return target.contains(child);
         } else {
-            var current = child;
-            var found = false;
-
-            while (current = current.parentNode) {
-                if (current === target) {
-                    found = true;
-                    break;
+            do {
+                if (child === target) {
+                    return true;
                 }
-            }
+            } while (child = child.parentNode);
 
-            return found;
+            return false;
         }
     }
 
 };
-
-module.exports = Util;
 },{}],"adapter/event":[function(require,module,exports){
 module.exports=require('mbL6jR');
 },{}],"mbL6jR":[function(require,module,exports){
@@ -469,7 +490,7 @@ var _overrideMethod = function(method, event, originalEvent) {
  * @class Adapter.Event.Native
  * @static
  */
-var Native = {
+module.exports = {
 
     /**
      * Create a new Event object
@@ -513,8 +534,6 @@ var Native = {
     }
 
 };
-
-module.exports = Native;
 },{}],"adapter/toucharea":[function(require,module,exports){
 module.exports=require('C84uZi');
 },{}],"C84uZi":[function(require,module,exports){
@@ -531,7 +550,7 @@ var ATTRIBUTE = 'touch-action';
  * @class Adapter.TouchArea.Attribute
  * @static
  */
-var TouchAreaAttribute = {
+module.exports = {
 
     /**
      * Determine if `target` or a parent node of `target` has
@@ -543,7 +562,7 @@ var TouchAreaAttribute = {
      * @returns {Boolean}
      */
     detect: function(target) {
-        while (target.getAttribute && !target.getAttribute(ATTRIBUTE)) {
+        while (target.hasAttribute && !target.hasAttribute(ATTRIBUTE)) {
             target = target.parentNode;
         }
 
@@ -551,8 +570,6 @@ var TouchAreaAttribute = {
     }
 
 };
-
-module.exports = TouchAreaAttribute;
 },{}],9:[function(require,module,exports){
 /**
  *
@@ -614,7 +631,7 @@ var MAP = {};
  * @static
  * @final
  */
-var Events = {
+module.exports = {
 
     /**
      * @property POINTER
@@ -661,8 +678,6 @@ for (; i < length; i++) {
         MAP[MouseEvents[i]] = PointerEvents[i];
     }
 }
-
-module.exports = Events;
 },{}],10:[function(require,module,exports){
 /**
  * Mouse > touch map
@@ -707,7 +722,7 @@ var DELTA_TIME = 3000;
  * @class Event.Tracker
  * @static
  */
-var EventTracker = {
+module.exports = {
 
     /**
      * Register a touch event used to determine if mouse events are emulated
@@ -801,13 +816,12 @@ var EventTracker = {
     }
 
 };
-
-module.exports = EventTracker;
 },{}],11:[function(require,module,exports){
 var Util = require('../Util');
 var Events = require('../event/Events').MOUSE;
-var Controller = require('../Controller');
 var Tracker = require('../event/Tracker');
+
+var trigger = require('../Controller').trigger;
 
 /**
  * Mouse event names
@@ -836,7 +850,7 @@ var _onWindowUp = function() {
  * @class Handler.Mouse
  * @static
  */
-var MouseHandler = {
+module.exports = {
 
     /**
      * Events to watch
@@ -857,34 +871,37 @@ var MouseHandler = {
      * @callback
      */
     onEvent: function(event) {
-        if (!Tracker.isEmulated(event)) {
-            if (event.type === EVENT_DOWN) {
-                Tracker.isMouseActive = true;
-            }
-            if (event.type === EVENT_UP) {
-                Tracker.isMouseActive = false;
-            }
-            Controller.trigger(event);
-        } else {
+        if (Tracker.isEmulated(event)) {
             // Add a simulated flag because hey, why not
             try {
                 event._isSimulated = true;
             } catch(e) {}
+
+            return;
         }
+
+        if (event.type === EVENT_DOWN) {
+            Tracker.isMouseActive = true;
+        }
+
+        if (event.type === EVENT_UP) {
+            Tracker.isMouseActive = false;
+        }
+
+        trigger(event);
     }
 
 };
 
 // Reset active mouse on mouseup
-// This capture if the user drags outside the window and releases the mouse
+// This captures if the user drags outside the window and releases the mouse
 Util.on(EVENT_UP, _onWindowUp, window);
-
-module.exports = MouseHandler;
 },{"../Controller":2,"../Util":4,"../event/Events":9,"../event/Tracker":10}],12:[function(require,module,exports){
 var Util = require('../Util');
 var Events = require('../event/Events').TOUCH;
 var TouchAreaAdapter = require('adapter/toucharea');
-var Controller = require('../Controller');
+
+var trigger = require('../Controller').trigger;
 
 /**
  * Touch event names
@@ -921,7 +938,7 @@ var PREVIOUS_TARGETS = {};
 var PREVIOUS_POSITIONS = {};
 
 /**
- * Trigger cancel for each touch point
+ * trigger cancel for each touch point
  *
  * @type Function
  * @param {Touch} point
@@ -933,8 +950,8 @@ var PREVIOUS_POSITIONS = {};
  */
 var _onPointCancel = function(point, event, pointIndex) {
     PREVIOUS_TARGETS[point.identifier] = null;
-    Controller.trigger(event, event.type, event.target, pointIndex);
-    Controller.trigger(event, EVENT_OUT, event.target, pointIndex);
+    trigger(event, EVENT_CANCEL, pointIndex, event.target);
+    trigger(event, EVENT_OUT, pointIndex, event.target);
 };
 
 /**
@@ -955,15 +972,15 @@ var _onPointMove = function(point, event, pointIndex) {
 
     if (newTarget !== currentTarget) {
         if (currentTarget) {
-            Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex, newTarget);
+            trigger(event, EVENT_OUT, pointIndex, currentTarget, newTarget);
         }
 
         if (newTarget) {
-            Controller.trigger(event, EVENT_OVER, newTarget, pointIndex, currentTarget);
+            trigger(event, EVENT_OVER, pointIndex, newTarget, currentTarget);
         }
     }
 
-    Controller.trigger(event, EVENT_MOVE, newTarget, pointIndex);
+    trigger(event, EVENT_MOVE, pointIndex, newTarget);
 
     // If the target (or a parent node) has the touch-action attribute
     // set to "none", prevent the browser default action.
@@ -990,15 +1007,15 @@ var _onPointStartEnd = function(point, event, pointIndex) {
 
     if (type === EVENT_START) {
         PREVIOUS_TARGETS[point.identifier] = target;
-        Controller.trigger(event, EVENT_OVER, target, pointIndex);
+        trigger(event, EVENT_OVER, pointIndex, target);
     }
 
     var currentTarget = PREVIOUS_TARGETS[point.identifier] || target;
-    Controller.trigger(event, type, currentTarget, pointIndex);
+    trigger(event, type, pointIndex, currentTarget);
 
     if (type === EVENT_END) {
         PREVIOUS_TARGETS[point.identifier] = null;
-        Controller.trigger(event, EVENT_OUT, currentTarget, pointIndex);
+        trigger(event, EVENT_OUT, pointIndex, currentTarget);
     }
 };
 
@@ -1006,7 +1023,7 @@ var _onPointStartEnd = function(point, event, pointIndex) {
  * @class Handler.Touch
  * @static
  */
-var TouchHandler = {
+module.exports = {
 
     /**
      * Events to watch
@@ -1028,34 +1045,31 @@ var TouchHandler = {
     onEvent: function(event) {
         var i = -1;
         var touches = event.changedTouches;
+        var type = event.type;
 
         var id;
         var touch;
-        var previousTouch;
         var position;
 
         var method = _onPointCancel;
 
-        switch(event.type) {
-            case EVENT_START:
-            case EVENT_END:
-                method = _onPointStartEnd;
-                break;
-            case EVENT_MOVE:
-                method = _onPointMove;
-                break;
+        if (type === EVENT_START || type === EVENT_END) {
+            method = _onPointStartEnd;
+        } else if (type === EVENT_MOVE) {
+            method = _onPointMove;
         }
 
+        // Loop through each changed touch
+        // point and fire an event for it
         while (touch = touches[++i]) {
             id = touch.identifier;
 
             // The `touchmove` event triggers when ANY active point moves,
             // so we want to filter out the points that didn't move.
-            if (event.type === EVENT_MOVE) {
-                previousTouch = PREVIOUS_POSITIONS[id];
+            if (type === EVENT_MOVE) {
                 position = touch.pageX + '|' + touch.pageY;
 
-                if (previousTouch === position) {
+                if (PREVIOUS_POSITIONS[id] === position) {
                     continue;
                 }
 
@@ -1067,7 +1081,5 @@ var TouchHandler = {
     }
 
 };
-
-module.exports = TouchHandler;
 },{"../Controller":2,"../Util":4,"../event/Events":9,"adapter/toucharea":"C84uZi"}]},{},[1])
 }());
