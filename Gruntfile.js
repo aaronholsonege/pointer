@@ -13,7 +13,7 @@ module.exports = function (grunt) {
                 livereload: true
             },
             scripts: {
-                files: ['src/**/*.js'],
+                files: ['src/**/*.js', 'Gruntfile.js'],
                 tasks: ['build']
             }
         },
