@@ -105,17 +105,18 @@ var _onPointMove = function(point, event, pointIndex) {
 var _onPointStartEnd = function(point, event, pointIndex) {
     var target = event.target;
     var type = event.type;
+    var identifier = point.identifier;
 
     if (type === EVENT_START) {
-        PREVIOUS_TARGETS[point.identifier] = target;
+        PREVIOUS_TARGETS[identifier] = target;
         trigger(event, EVENT_OVER, pointIndex, target);
     }
 
-    var currentTarget = PREVIOUS_TARGETS[point.identifier] || target;
+    var currentTarget = PREVIOUS_TARGETS[identifier] || target;
     trigger(event, type, pointIndex, currentTarget);
 
     if (type === EVENT_END) {
-        PREVIOUS_TARGETS[point.identifier] = null;
+        PREVIOUS_TARGETS[identifier] = null;
         trigger(event, EVENT_OUT, pointIndex, currentTarget);
     }
 };
@@ -145,7 +146,6 @@ module.exports = {
      */
     onEvent: function(event) {
         var i = -1;
-        var touches = event.changedTouches;
         var type = event.type;
 
         var id;
@@ -162,7 +162,7 @@ module.exports = {
 
         // Loop through each changed touch
         // point and fire an event for it
-        while (touch = touches[++i]) {
+        while (touch = event.changedTouches[++i]) {
             id = touch.identifier;
 
             // The `touchmove` event triggers when ANY active point moves,

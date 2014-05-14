@@ -423,14 +423,15 @@
             var _onPointStartEnd = function(point, event, pointIndex) {
                 var target = event.target;
                 var type = event.type;
+                var identifier = point.identifier;
                 if (type === EVENT_START) {
-                    PREVIOUS_TARGETS[point.identifier] = target;
+                    PREVIOUS_TARGETS[identifier] = target;
                     trigger(event, EVENT_OVER, pointIndex, target);
                 }
-                var currentTarget = PREVIOUS_TARGETS[point.identifier] || target;
+                var currentTarget = PREVIOUS_TARGETS[identifier] || target;
                 trigger(event, type, pointIndex, currentTarget);
                 if (type === EVENT_END) {
-                    PREVIOUS_TARGETS[point.identifier] = null;
+                    PREVIOUS_TARGETS[identifier] = null;
                     trigger(event, EVENT_OUT, pointIndex, currentTarget);
                 }
             };
@@ -438,7 +439,6 @@
                 events: [ EVENT_START, EVENT_MOVE, EVENT_END, EVENT_CANCEL ],
                 onEvent: function(event) {
                     var i = -1;
-                    var touches = event.changedTouches;
                     var type = event.type;
                     var id;
                     var touch;
@@ -449,7 +449,7 @@
                     } else if (type === EVENT_MOVE) {
                         method = _onPointMove;
                     }
-                    while (touch = touches[++i]) {
+                    while (touch = event.changedTouches[++i]) {
                         id = touch.identifier;
                         if (type === EVENT_MOVE) {
                             position = touch.pageX + "|" + touch.pageY;
