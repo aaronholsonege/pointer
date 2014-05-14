@@ -119,7 +119,7 @@
                             if (pointerEvent.pointerType === "touch") {
                                 Tracker.register(pointerEvent, eventName, target);
                             }
-                            Adapter.trigger(pointerEvent, Tracker.getTarget(pointerEvent) || target);
+                            Adapter.trigger(pointerEvent, target);
                         }
                     } else {
                         break;
@@ -146,7 +146,7 @@
                     if (type === PointerEvents[1]) {
                         _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
                     }
-                    Adapter.trigger(event, Tracker.getTarget(event) || target);
+                    Adapter.trigger(event, target);
                     if (event.type === PointerEvents[4] || event.type === PointerEvents[7]) {
                         Tracker.releasePointer(event.pointerId);
                     }
