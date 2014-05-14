@@ -25,7 +25,9 @@ var EVENT_OUT = Events[5];
  */
 var _onWindowUp = function(event) {
     Tracker.isMouseActive = false;
-    Tracker.releasePointer(0);
+    if (event.target === document.documentElement) {
+        Tracker.releasePointer(0);
+    }
 };
 
 /**
@@ -70,7 +72,7 @@ module.exports = {
             Tracker.isMouseActive = false;
         }
 
-        trigger(event);
+        trigger(event, Tracker.getTarget(0));
     }
 
 };

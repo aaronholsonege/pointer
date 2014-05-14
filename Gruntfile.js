@@ -96,6 +96,7 @@ module.exports = function (grunt) {
     // Tasks
     grunt.registerTask('default', ['build']);
 
+    grunt.registerTask('start', ['build', 'watch']);
     grunt.registerTask('docs', ['yuidoc']);
     grunt.registerTask('build', ['browserify', 'uglify', 'docs']);
 };

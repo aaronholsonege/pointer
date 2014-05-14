@@ -213,11 +213,11 @@ var _create = function(type, originalEvent, touchIndex) {
  * @param {Element} originalEvent.relatedTarget
  * @param {Element} originalEvent.target
  * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
+ * @param {Element} [target] target to dispatch event from
  * @param {Number} [touchIndex=0]
- * @param {Element} [overrideTarget] target to dispatch event from
  * @param {HTMLElement} [relatedTarget]
  */
-var _trigger = function(originalEvent, overrideType, touchIndex, overrideTarget, relatedTarget) {
+var _trigger = function(originalEvent, target, overrideType, touchIndex, relatedTarget) {
     var eventName = overrideType || originalEvent.type;
 
     if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
@@ -227,7 +227,8 @@ var _trigger = function(originalEvent, overrideType, touchIndex, overrideTarget,
     var type = Events.MAP[eventName];
     var pointerId = touchIndex || 0;
     var event = _create(type, originalEvent, pointerId);
-    var target = _getTarget(originalEvent, overrideTarget);
+
+    target = _getTarget(originalEvent, target);
 
     if (event) {
         if (event.pointerType === 'touch') {

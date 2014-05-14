@@ -1,6 +1,7 @@
 var Util = require('../Util');
 var Events = require('../event/Events').TOUCH;
 var TouchAreaAdapter = require('adapter/toucharea');
+var Tracker = require('../event/Tracker');
 
 var trigger = require('../Controller').trigger;
 
@@ -51,8 +52,8 @@ var PREVIOUS_POSITIONS = {};
  */
 var _onPointCancel = function(point, event, pointIndex) {
     PREVIOUS_TARGETS[point.identifier] = null;
-    trigger(event, EVENT_CANCEL, pointIndex, event.target);
-    trigger(event, EVENT_OUT, pointIndex, event.target);
+    trigger(event, event.target, EVENT_CANCEL, pointIndex);
+    trigger(event, event.target, EVENT_OUT, pointIndex);
 };
 
 /**
@@ -66,22 +67,23 @@ var _onPointCancel = function(point, event, pointIndex) {
  * @private
  */
 var _onPointMove = function(point, event, pointIndex) {
-    var newTarget = document.elementFromPoint(point.clientX, point.clientY);
-    var currentTarget = PREVIOUS_TARGETS[point.identifier];
+    var identifier = point.identifier;
+    var newTarget = Tracker.getTarget(identifier + 1) || document.elementFromPoint(point.clientX, point.clientY);
+    var currentTarget = PREVIOUS_TARGETS[identifier];
 
-    PREVIOUS_TARGETS[point.identifier] = newTarget;
+    PREVIOUS_TARGETS[identifier] = newTarget;
 
     if (newTarget !== currentTarget) {
         if (currentTarget) {
-            trigger(event, EVENT_OUT, pointIndex, currentTarget, newTarget);
+            trigger(event, currentTarget, EVENT_OUT, pointIndex, newTarget);
         }
 
         if (newTarget) {
-            trigger(event, EVENT_OVER, pointIndex, newTarget, currentTarget);
+            trigger(event, newTarget, EVENT_OVER, pointIndex, currentTarget);
         }
     }
 
-    trigger(event, EVENT_MOVE, pointIndex, newTarget);
+    trigger(event, newTarget, EVENT_MOVE, pointIndex);
 
     // If the target (or a parent node) has the touch-action attribute
     // set to "none", prevent the browser default action.
@@ -103,21 +105,21 @@ var _onPointMove = function(point, event, pointIndex) {
  * @private
  */
 var _onPointStartEnd = function(point, event, pointIndex) {
-    var target = event.target;
-    var type = event.type;
     var identifier = point.identifier;
+    var target = Tracker.getTarget(identifier + 1) || event.target;
+    var type = event.type;
 
     if (type === EVENT_START) {
         PREVIOUS_TARGETS[identifier] = target;
-        trigger(event, EVENT_OVER, pointIndex, target);
+        trigger(event, target, EVENT_OVER, pointIndex);
     }
 
     var currentTarget = PREVIOUS_TARGETS[identifier] || target;
-    trigger(event, type, pointIndex, currentTarget);
+    trigger(event, currentTarget, type, pointIndex);
 
     if (type === EVENT_END) {
         PREVIOUS_TARGETS[identifier] = null;
-        trigger(event, EVENT_OUT, pointIndex, currentTarget);
+        trigger(event, currentTarget, EVENT_OUT, pointIndex);
     }
 };
 

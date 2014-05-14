@@ -72,9 +72,8 @@ module.exports = {
     capturePointer: function(pointerId) {
         TARGET_LOCKS[pointerId] = this;
 
-        var event = Adapter.create('gotpointercapture', null, {cancelable: false});
+        var event = Adapter.create('gotpointercapture', null, { cancelable: false });
         Adapter.trigger(event, this);
-        console.log(event);
     },
 
     /**
@@ -86,9 +85,8 @@ module.exports = {
         TARGET_LOCKS[pointerId] = null;
 
         if (lastTarget) {
-            var event = Adapter.create('lostpointercapture', null, {cancelable: false});
+            var event = Adapter.create('lostpointercapture', null, { cancelable: false });
             Adapter.trigger(event, lastTarget);
-            console.log(event);
         }
     },
 
@@ -130,13 +128,12 @@ module.exports = {
      * Get captured target
      *
      * @method getTarget
-     * @param {Event} pointerEvent
-     * @param {String} pointerEvent.pointerId
-     * @param {Number} pointerEvent.pressure
+     * @param {Event|String} pointerEvent
+     * @param {String} [pointerEvent.pointerId]
      * @returns {null|Element}
      */
     getTarget: function(pointerEvent) {
-        return TARGET_LOCKS[pointerEvent.pointerId];
+        return TARGET_LOCKS[pointerEvent.pointerId || pointerEvent];
     },
 
     /**
