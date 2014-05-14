@@ -277,8 +277,11 @@ $(document).ready(function() {
     TrackerConsole.init();
 
     $('.js-spot')
-        .on('pointerenter', function() {
+        .on('pointerenter', function(e) {
             $(this).addClass('inside');
+            if (e.pressure) {
+                $(this).addClass('active');
+            }
         })
         .on('pointerleave pointercancel', function() {
             $(this).removeClass('inside').removeClass('active');
