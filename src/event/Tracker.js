@@ -49,7 +49,7 @@ var DELTA_TIME = 3000;
  * @class Event.Tracker
  * @static
  */
-var EventTracker = {
+module.exports = {
 
     /**
      * Create capture and release methods on Element prototype
@@ -171,5 +171,3 @@ var EventTracker = {
     }
 
 };
-
-module.exports = EventTracker;

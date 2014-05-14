@@ -11,7 +11,7 @@ var ATTRIBUTE = 'touch-action';
  * @class Adapter.TouchArea.Attribute
  * @static
  */
-var TouchAreaAttribute = {
+module.exports = {
 
     /**
      * Determine if `target` or a parent node of `target` has
@@ -23,7 +23,7 @@ var TouchAreaAttribute = {
      * @returns {Boolean}
      */
     detect: function(target) {
-        while (target.getAttribute && !target.getAttribute(ATTRIBUTE)) {
+        while (target.hasAttribute && !target.hasAttribute(ATTRIBUTE)) {
             target = target.parentNode;
         }
 
@@ -31,5 +31,3 @@ var TouchAreaAttribute = {
     }
 
 };
-
-module.exports = TouchAreaAttribute;

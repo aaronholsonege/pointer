@@ -3,7 +3,7 @@
  * @interface
  * @static
  */
-var AdapterInterface = {
+module.exports = {
 
     /**
      * Create a pointer event
@@ -27,5 +27,3 @@ var AdapterInterface = {
     trigger: function(event, target) {}
 
 };
-
-module.exports = AdapterInterface;

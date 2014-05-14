@@ -13,7 +13,7 @@ module.exports = function (grunt) {
                 livereload: true
             },
             scripts: {
-                files: ['src/**/*.js'],
+                files: ['src/**/*.js', 'Gruntfile.js'],
                 tasks: ['build']
             }
         },
@@ -66,6 +66,19 @@ module.exports = function (grunt) {
 
         uglify: {
             options: {
+            },
+            clean: {
+                files: [{
+                    expand: true,
+                    cwd: 'build',
+                    src: '*pointer.js',
+                    dest: 'build'
+                }],
+                options: {
+                    mangle: false,
+                    beautify: true,
+                    compress: false
+                }
             },
             build: {
                 files: [{

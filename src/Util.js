@@ -38,7 +38,7 @@ var _addOrRemoveEvent = function(event, callback, target, add) {
  * @class Util
  * @static
  */
-var Util = {
+module.exports = {
 
     /**
      * Add event listener to target
@@ -105,6 +105,7 @@ var Util = {
      * @param {Element} target
      * @param {Function} [target.contains]
      * @param {Element} child
+     * @param {Element} child.parentNode
      * @return {Boolean}
      */
     contains: function(target, child) {
@@ -115,20 +116,14 @@ var Util = {
         if (target.contains) {
             return target.contains(child);
         } else {
-            var current = child;
-            var found = false;
-
-            while (current = current.parentNode) {
-                if (current === target) {
-                    found = true;
-                    break;
+            do {
+                if (child === target) {
+                    return true;
                 }
-            }
+            } while (child = child.parentNode);
 
-            return found;
+            return false;
         }
     }
 
 };
-
-module.exports = Util;

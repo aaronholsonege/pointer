@@ -6,7 +6,7 @@ var $ = window.jQuery;
  * @class Adapter.EventjQuery
  * @static
  */
-var jQueryAdapter = {
+module.exports = {
 
     /**
      * Create a new jQuery Event object
@@ -39,5 +39,3 @@ var jQueryAdapter = {
     }
 
 };
-
-module.exports = jQueryAdapter;
