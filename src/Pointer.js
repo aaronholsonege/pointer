@@ -10,7 +10,7 @@ var navigator = window.navigator;
  * @class Pointer
  * @type Function
  */
-var Pointer =  function() {
+module.exports =  function() {
     EventTracker.init();
     navigator.pointerEnabled = true;
     navigator.maxTouchPoints = 10;

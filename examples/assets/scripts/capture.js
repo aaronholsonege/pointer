@@ -43,13 +43,6 @@ $(document).ready(function() {
              */
             this.offset = 0;
 
-            /**
-             * @property isTracking
-             * @type Boolean
-             * @default false
-             */
-            this.isTracking = false;
-
             this.enable();
         },
 
@@ -60,7 +53,8 @@ $(document).ready(function() {
             this.$element
                 .on('pointerdown', $.proxy(this.onDown, this))
                 .on('pointermove', $.proxy(this.onMove, this))
-                .on('pointerup', $.proxy(this.onUp, this));
+                .on('gotpointercapture', $.proxy(this.onCapture, this))
+                .on('lostpointercapture', $.proxy(this.onRelease, this));
         },
 
         /**
@@ -72,9 +66,10 @@ $(document).ready(function() {
          * @callback
          */
         onDown: function(event) {
+            // Pointer is automatically released on pointerup/pointercancel
+            // We don't need to manually release in a pointerup callback.
             event.target.setPointerCapture(event.pointerId);
 
-            this.isTracking = true;
             this.offset = event.pageX - parseInt(this.$element.css('left'), 10);
         },
 
@@ -86,7 +81,7 @@ $(document).ready(function() {
          * @callback
          */
         onMove: function(event) {
-            if (!event.pressure || !this.isTracking) {
+            if (!event.pressure) {
                 return;
             }
 
@@ -94,16 +89,12 @@ $(document).ready(function() {
             this.$element.css('left', position);
         },
 
-        /**
-         * @method onUp
-         * @param {jQuery.Event} event
-         * @param {HTMLElement} event.target
-         * @param {String} event.pointerId
-         * @callback
-         */
-        onUp: function(event) {
-            event.target.releasePointerCapture(event.pointerId);
-            this.isTracking = false;
+        onCapture: function(event) {
+            this.$element.addClass('captured');
+        },
+
+        onRelease: function(event) {
+            this.$element.removeClass('captured');
         }
 
     };

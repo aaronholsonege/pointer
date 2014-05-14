@@ -23,8 +23,9 @@ var EVENT_OUT = Events[5];
  * @type Function
  * @private
  */
-var _onWindowUp = function() {
+var _onWindowUp = function(event) {
     Tracker.isMouseActive = false;
+    Tracker.releasePointer(0);
 };
 
 /**

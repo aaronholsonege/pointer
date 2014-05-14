@@ -38,7 +38,7 @@ module.exports = {
      */
     create: function(type, originalEvent, properties, bubbles) {
         var event = document.createEvent('Event');
-        event.initEvent(type, bubbles !== false, true);
+        event.initEvent(type, bubbles !== false, properties.cancelable !== false);
 
         var prop;
 
@@ -49,9 +49,11 @@ module.exports = {
             }
         }
 
-        _overrideMethod('preventDefault', event, originalEvent);
-        _overrideMethod('stopPropagation', event, originalEvent);
-        _overrideMethod('stopImmediatePropagation', event, originalEvent);
+        if (originalEvent) {
+            _overrideMethod('preventDefault', event, originalEvent);
+            _overrideMethod('stopPropagation', event, originalEvent);
+            _overrideMethod('stopImmediatePropagation', event, originalEvent);
+        }
 
         return event;
     },

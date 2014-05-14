@@ -129,7 +129,7 @@
                             if (pointerEvent.pointerType === "touch") {
                                 Tracker.register(pointerEvent, eventName, target);
                             }
-                            Adapter.trigger(pointerEvent, target);
+                            Adapter.trigger(pointerEvent, Tracker.getTarget(pointerEvent) || target);
                         }
                     } else {
                         break;
@@ -156,7 +156,10 @@
                     if (type === PointerEvents[1]) {
                         _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
                     }
-                    Adapter.trigger(event, target);
+                    Adapter.trigger(event, Tracker.getTarget(event) || target);
+                    if (event.type === PointerEvents[4] || event.type === PointerEvents[7]) {
+                        Tracker.releasePointer(event.pointerId);
+                    }
                     if (type === PointerEvents[5]) {
                         _detectEnterOrLeave(PointerEvents[6], originalEvent, target, relatedTarget, pointerId);
                     }
@@ -176,14 +179,17 @@
             var Util = require("./Util");
             var MouseHandler = require("./handlers/Mouse");
             var TouchHandler = require("./handlers/Touch");
+            var EventTracker = require("./event/Tracker");
             var navigator = window.navigator;
             module.exports = function() {
+                EventTracker.init();
                 navigator.pointerEnabled = true;
                 navigator.maxTouchPoints = 10;
                 Util.on(TouchHandler.events, TouchHandler.onEvent).on(MouseHandler.events, MouseHandler.onEvent);
             };
         }, {
             "./Util": 4,
+            "./event/Tracker": 10,
             "./handlers/Mouse": 11,
             "./handlers/Touch": 12
         } ],
@@ -254,16 +260,18 @@
             module.exports = {
                 create: function(type, originalEvent, properties, bubbles) {
                     var event = document.createEvent("Event");
-                    event.initEvent(type, bubbles !== false, true);
+                    event.initEvent(type, bubbles !== false, properties.cancelable !== false);
                     var prop;
                     for (prop in properties) {
                         if (properties.hasOwnProperty(prop)) {
                             event[prop] = properties[prop];
                         }
                     }
-                    _overrideMethod("preventDefault", event, originalEvent);
-                    _overrideMethod("stopPropagation", event, originalEvent);
-                    _overrideMethod("stopImmediatePropagation", event, originalEvent);
+                    if (originalEvent) {
+                        _overrideMethod("preventDefault", event, originalEvent);
+                        _overrideMethod("stopPropagation", event, originalEvent);
+                        _overrideMethod("stopImmediatePropagation", event, originalEvent);
+                    }
                     return event;
                 },
                 trigger: function(event, target) {
@@ -311,6 +319,7 @@
             }
         }, {} ],
         10: [ function(require, module, exports) {
+            var Adapter = require("adapter/event");
             var MAP = {
                 mouseover: "touchover",
                 mousedown: "touchstart",
@@ -324,8 +333,33 @@
                 touchend: {},
                 touchout: {}
             };
+            var TARGET_LOCKS = {};
             var DELTA_TIME = 3e3;
             module.exports = {
+                init: function() {
+                    Element.prototype.setPointerCapture = this.capturePointer;
+                    Element.prototype.releasePointerCapture = this.releasePointer;
+                },
+                capturePointer: function(pointerId) {
+                    TARGET_LOCKS[pointerId] = this;
+                    var event = Adapter.create("gotpointercapture", null, {
+                        cancelable: false
+                    });
+                    Adapter.trigger(event, this);
+                    console.log(event);
+                },
+                releasePointer: function(pointerId) {
+                    var lastTarget = TARGET_LOCKS[pointerId];
+                    TARGET_LOCKS[pointerId] = null;
+                    if (lastTarget) {
+                        var event = Adapter.create("lostpointercapture", null, {
+                            cancelable: false
+                        });
+                        Adapter.trigger(event, lastTarget);
+                        console.log(event);
+                    }
+                },
+                isMouseActive: false,
                 register: function(event, overrideEventName, target) {
                     var eventName = overrideEventName || event.type;
                     if (LAST_EVENTS.hasOwnProperty(eventName)) {
@@ -338,7 +372,9 @@
                     }
                     return this;
                 },
-                isMouseActive: false,
+                getTarget: function(pointerEvent) {
+                    return TARGET_LOCKS[pointerEvent.pointerId];
+                },
                 isEmulated: function(event) {
                     if (!MAP.hasOwnProperty(event.type)) {
                         return false;
@@ -370,7 +406,9 @@
                     return false;
                 }
             };
-        }, {} ],
+        }, {
+            "adapter/event": "mbL6jR"
+        } ],
         11: [ function(require, module, exports) {
             var Util = require("../Util");
             var Events = require("../event/Events").MOUSE;
@@ -381,8 +419,9 @@
             var EVENT_MOVE = Events[3];
             var EVENT_UP = Events[4];
             var EVENT_OUT = Events[5];
-            var _onWindowUp = function() {
+            var _onWindowUp = function(event) {
                 Tracker.isMouseActive = false;
+                Tracker.releasePointer(0);
             };
             module.exports = {
                 events: [ EVENT_OVER, EVENT_DOWN, EVENT_MOVE, EVENT_UP, EVENT_OUT ],

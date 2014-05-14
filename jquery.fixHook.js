@@ -9,7 +9,9 @@
         'pointerup',
         'pointerout',
         'pointerleave',
-        'pointercancel'
+        'pointercancel',
+        'gotpointercapture',
+        'lostpointercapture'
     ];
 
     var fixHook = {

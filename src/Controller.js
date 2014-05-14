@@ -239,7 +239,12 @@ var _trigger = function(originalEvent, overrideType, touchIndex, overrideTarget,
             _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
         }
 
-        Adapter.trigger(event, target);
+        Adapter.trigger(event, Tracker.getTarget(event) || target);
+
+        // Release pointer if it has been captured
+        if (event.type === PointerEvents[4] || event.type === PointerEvents[7]) {
+            Tracker.releasePointer(event.pointerId);
+        }
 
         // trigger pointerleave
         if (type === PointerEvents[5]) {

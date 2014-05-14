@@ -1,3 +1,5 @@
+var Adapter = require('adapter/event');
+
 /**
  * Mouse > touch map
  *
@@ -57,13 +59,37 @@ module.exports = {
      * @method init
      */
     init: function() {
-        Element.prototype.setPointerCapture = function(pointerId) {
-            TARGET_LOCKS[pointerId] = this;
-        };
+        Element.prototype.setPointerCapture = this.capturePointer;
+        Element.prototype.releasePointerCapture = this.releasePointer;
+    },
 
-        Element.prototype.releasePointerCapture = function(pointerId) {
-            TARGET_LOCKS[pointerId] = null;
-        };
+    /**
+     * Capture pointer
+     *
+     * @method capturePointer
+     * @param {String} pointerId
+     */
+    capturePointer: function(pointerId) {
+        TARGET_LOCKS[pointerId] = this;
+
+        var event = Adapter.create('gotpointercapture', null, {cancelable: false});
+        Adapter.trigger(event, this);
+        console.log(event);
+    },
+
+    /**
+     * @method releasePointer
+     * @param {String} pointerId
+     */
+    releasePointer: function(pointerId) {
+        var lastTarget = TARGET_LOCKS[pointerId];
+        TARGET_LOCKS[pointerId] = null;
+
+        if (lastTarget) {
+            var event = Adapter.create('lostpointercapture', null, {cancelable: false});
+            Adapter.trigger(event, lastTarget);
+            console.log(event);
+        }
     },
 
     /**
@@ -110,7 +136,7 @@ module.exports = {
      * @returns {null|Element}
      */
     getTarget: function(pointerEvent) {
-        return pointerEvent.pressure ? TARGET_LOCKS[pointerEvent.pointerId] : null;
+        return TARGET_LOCKS[pointerEvent.pointerId];
     },
 
     /**
