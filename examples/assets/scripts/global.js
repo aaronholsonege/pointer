@@ -151,7 +151,7 @@ $(document).ready(function() {
          * @callback
          */
         onMouseEvent: function(event) {
-            EventConsole.render(event);
+            EventConsole.render(event, ': ' + event.pageX + ', ' + event.pageY);
         },
 
         /**
@@ -280,7 +280,7 @@ $(document).ready(function() {
         .on('pointerenter', function(e) {
             $(this).addClass('inside');
             if (e.pressure) {
-                $(this).addClass('active');
+                $(this)
             }
         })
         .on('pointerleave pointercancel', function() {

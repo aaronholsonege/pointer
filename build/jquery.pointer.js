@@ -316,22 +316,17 @@
                 touchend: {},
                 touchout: {}
             };
-            var TIMEOUTS = {};
             var DELTA_TIME = 3e3;
             module.exports = {
                 register: function(event, overrideEventName, target) {
                     var eventName = overrideEventName || event.type;
                     if (LAST_EVENTS.hasOwnProperty(eventName)) {
-                        clearTimeout(TIMEOUTS[eventName + event.pointerId]);
                         LAST_EVENTS[eventName][event.pointerId] = {
                             timeStamp: event.timeStamp,
                             x: event.clientX,
                             y: event.clientY,
                             target: target || event.target
                         };
-                        TIMEOUTS[eventName + event.pointerId] = setTimeout(function() {
-                            LAST_EVENTS[eventName][event.pointerId] = null;
-                        }, DELTA_TIME);
                     }
                     return this;
                 },
