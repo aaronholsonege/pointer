@@ -89,7 +89,8 @@
                 properties.x = properties.pageX;
                 properties.y = properties.pageY;
                 if (properties.pointerId == 0) {
-                    properties.pressure = Tracker.isMouseActive ? .5 : 0;
+                    var which = originalEvent.buttons || originalEvent.which || originalEvent.button;
+                    properties.pressure = which === 1 ? .5 : 0;
                 }
                 return properties;
             };
@@ -314,7 +315,6 @@
                     }
                     return this;
                 },
-                isMouseActive: false,
                 isEmulated: function(event) {
                     if (!MAP.hasOwnProperty(event.type)) {
                         return false;
@@ -348,7 +348,6 @@
             };
         }, {} ],
         11: [ function(require, module, exports) {
-            var Util = require("../Util");
             var Events = require("../event/Events").MOUSE;
             var Tracker = require("../event/Tracker");
             var trigger = require("../Controller").trigger;
@@ -357,9 +356,6 @@
             var EVENT_MOVE = Events[3];
             var EVENT_UP = Events[4];
             var EVENT_OUT = Events[5];
-            var _onWindowUp = function() {
-                Tracker.isMouseActive = false;
-            };
             module.exports = {
                 events: [ EVENT_OVER, EVENT_DOWN, EVENT_MOVE, EVENT_UP, EVENT_OUT ],
                 onEvent: function(event) {
@@ -369,19 +365,11 @@
                         } catch (e) {}
                         return;
                     }
-                    if (event.type === EVENT_DOWN) {
-                        Tracker.isMouseActive = true;
-                    }
-                    if (event.type === EVENT_UP) {
-                        Tracker.isMouseActive = false;
-                    }
                     trigger(event);
                 }
             };
-            Util.on(EVENT_UP, _onWindowUp, window);
         }, {
             "../Controller": 2,
-            "../Util": 4,
             "../event/Events": 9,
             "../event/Tracker": 10
         } ],

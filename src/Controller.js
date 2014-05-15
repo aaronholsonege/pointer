@@ -103,7 +103,8 @@ var _getProperties = function(type, originalEvent, touchIndex) {
     properties.y = properties.pageY;
 
     if (properties.pointerId == 0) {
-        properties.pressure = Tracker.isMouseActive ? 0.5 : 0;
+        var which = originalEvent.buttons || originalEvent.which || originalEvent.button;
+        properties.pressure = which === 1 ? 0.5 : 0;
     }
 
     return properties;

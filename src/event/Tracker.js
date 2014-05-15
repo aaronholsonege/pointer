@@ -69,15 +69,6 @@ module.exports = {
     },
 
     /**
-     * Flag for if the mouse button is currently active
-     *
-     * @property isMouseActive
-     * @type Boolean
-     * @default false
-     */
-    isMouseActive: false,
-
-    /**
      * Determine if a mouse event has been emulated
      *
      * @method isEmulated
