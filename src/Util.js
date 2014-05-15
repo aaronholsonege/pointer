@@ -124,6 +124,28 @@ module.exports = {
 
             return false;
         }
+    },
+
+    /**
+     * Get event target
+     *
+     * @method getTarget
+     * @param {Event} event
+     * @param {Element} event.target
+     * @param {Element} event.srcElement
+     * @param {Element} [target]
+     * @returns {Element}
+     * @private
+     */
+    getTarget: function(event, target) {
+        target = target || event.target || event.srcElement || document;
+
+        // Target should not be a text node
+        if (target.nodeType === 3) {
+            target = target.parentNode;
+        }
+
+        return target;
     }
 
 };

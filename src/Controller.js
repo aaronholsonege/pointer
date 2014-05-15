@@ -129,26 +129,6 @@ var _getPageOffset = function(prop) {
 };
 
 /**
- * Get event target
- *
- * @type Function
- * @param {Event} event
- * @param {Element} [target]
- * @returns {Element}
- * @private
- */
-var _getTarget = function(event, target) {
-    target = target || event.target || event.srcElement || document;
-
-    // Target should not be a text node
-    if (target.nodeType === 3) {
-        target = target.parentNode;
-    }
-
-    return target;
-};
-
-/**
  * Detect and trigger enter/leave events
  *
  * @type Function
@@ -228,7 +208,7 @@ var _trigger = function(originalEvent, overrideType, touchIndex, overrideTarget,
     var type = Events.MAP[eventName];
     var pointerId = touchIndex || 0;
     var event = _create(type, originalEvent, pointerId);
-    var target = _getTarget(originalEvent, overrideTarget);
+    var target = Util.getTarget(originalEvent, overrideTarget);
 
     if (event) {
         if (event.pointerType === 'touch') {

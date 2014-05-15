@@ -101,13 +101,6 @@
                 var client = "client" + prop;
                 return (doc[scroll] || body[scroll] || 0) - (doc[client] || body[client] || 0);
             };
-            var _getTarget = function(event, target) {
-                target = target || event.target || event.srcElement || document;
-                if (target.nodeType === 3) {
-                    target = target.parentNode;
-                }
-                return target;
-            };
             var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, pointerId) {
                 var pointerEvent;
                 if (!relatedTarget) {
@@ -139,7 +132,7 @@
                 var type = Events.MAP[eventName];
                 var pointerId = touchIndex || 0;
                 var event = _create(type, originalEvent, pointerId);
-                var target = _getTarget(originalEvent, overrideTarget);
+                var target = Util.getTarget(originalEvent, overrideTarget);
                 if (event) {
                     if (event.pointerType === "touch") {
                         Tracker.register(event, eventName, target);
@@ -228,6 +221,13 @@
                         } while (child = child.parentNode);
                         return false;
                     }
+                },
+                getTarget: function(event, target) {
+                    target = target || event.target || event.srcElement || document;
+                    if (target.nodeType === 3) {
+                        target = target.parentNode;
+                    }
+                    return target;
                 }
             };
         }, {} ],
@@ -288,6 +288,7 @@
             }
         }, {} ],
         10: [ function(require, module, exports) {
+            var getTarget = require("../Util").getTarget;
             var MAP = {
                 mouseover: "touchover",
                 mousedown: "touchstart",
@@ -326,6 +327,10 @@
                     }
                     var pointerId;
                     var pointer;
+                    var target = getTarget(event);
+                    if (event.type === "mouseout") {
+                        target = event.relatedTarget;
+                    }
                     for (pointerId in previousEvent) {
                         if (!previousEvent.hasOwnProperty(pointerId) || !previousEvent[pointerId]) {
                             continue;
@@ -335,10 +340,6 @@
                             LAST_EVENTS[eventName][pointerId] = null;
                             continue;
                         }
-                        var target = event.target;
-                        if (event.type === "mouseout") {
-                            target = event.relatedTarget;
-                        }
                         if (pointer.target === target && pointer.x === event.clientX && pointer.y === event.clientY) {
                             return true;
                         }
@@ -346,7 +347,9 @@
                     return false;
                 }
             };
-        }, {} ],
+        }, {
+            "../Util": 4
+        } ],
         11: [ function(require, module, exports) {
             var Events = require("../event/Events").MOUSE;
             var Tracker = require("../event/Tracker");
