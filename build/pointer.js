@@ -72,15 +72,12 @@
             };
             var MOUSE_WHICH_PROP = [ "buttons", "which", "button" ];
             var MOUSE_WHICH_LENTH = MOUSE_WHICH_PROP.length;
-            var _now = Date.now || function() {
-                return +new Date();
-            };
             var _getProperties = function(type, originalEvent, touchIndex) {
                 var source = originalEvent;
                 var pointerId = 0;
                 var pointerType = "mouse";
                 var properties = {
-                    timeStamp: originalEvent.timeStamp || _now()
+                    timeStamp: originalEvent.timeStamp || Util.now()
                 };
                 if (originalEvent.type.indexOf("touch") === 0) {
                     source = originalEvent.changedTouches[touchIndex || 0];
@@ -252,6 +249,9 @@
                         target = target.parentNode;
                     }
                     return target;
+                },
+                now: Date.now || function() {
+                    return +new Date();
                 }
             };
         }, {} ],
@@ -326,7 +326,7 @@
             }
         }, {} ],
         10: [ function(require, module, exports) {
-            var getTarget = require("../Util").getTarget;
+            var Util = require("../Util");
             var MAP = {
                 mouseover: "touchover",
                 mousedown: "touchstart",
@@ -346,7 +346,7 @@
                     var eventName = overrideEventName || event.type;
                     if (LAST_EVENTS.hasOwnProperty(eventName)) {
                         LAST_EVENTS[eventName][event.pointerId] = {
-                            timeStamp: event.timeStamp,
+                            timeStamp: Util.now(),
                             x: event.clientX,
                             y: event.clientY,
                             target: target || event.target
@@ -365,7 +365,8 @@
                     }
                     var pointerId;
                     var pointer;
-                    var target = getTarget(event);
+                    var now = Util.now();
+                    var target = Util.getTarget(event);
                     if (event.type === "mouseout") {
                         target = event.relatedTarget;
                     }
@@ -374,7 +375,7 @@
                             continue;
                         }
                         pointer = previousEvent[pointerId];
-                        if (Math.abs(event.timeStamp - pointer.timeStamp) > DELTA_TIME) {
+                        if (Math.abs(now - pointer.timeStamp) > DELTA_TIME) {
                             LAST_EVENTS[eventName][pointerId] = null;
                             continue;
                         }

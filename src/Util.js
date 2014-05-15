@@ -146,6 +146,16 @@ module.exports = {
         }
 
         return target;
+    },
+
+    /**
+     * Get current unix time
+     *
+     * @method now
+     * @return {Number}
+     */
+    now: Date.now || function() {
+        return +new Date();
     }
 
 };

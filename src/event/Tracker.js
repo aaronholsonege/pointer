@@ -1,4 +1,4 @@
-var getTarget = require('../Util').getTarget;
+var Util = require('../Util');
 
 /**
  * Mouse > touch map
@@ -60,7 +60,7 @@ module.exports = {
 
         if (LAST_EVENTS.hasOwnProperty(eventName)) {
             LAST_EVENTS[eventName][event.pointerId] = {
-                timeStamp: event.timeStamp,
+                timeStamp: Util.now(),
                 x: event.clientX,
                 y: event.clientY,
                 target: target || event.target
@@ -92,7 +92,8 @@ module.exports = {
 
         var pointerId;
         var pointer;
-        var target = getTarget(event);
+        var now = Util.now();
+        var target = Util.getTarget(event);
 
         // If this is a mouseout event, compare the related target
         // instead which is the element that previously had focus for touchstart
@@ -109,7 +110,7 @@ module.exports = {
 
             // If too much time has passed since the last touch
             // event, remove it so we no longer test against it.
-            if (Math.abs(event.timeStamp - pointer.timeStamp) > DELTA_TIME) {
+            if (Math.abs(now - pointer.timeStamp) > DELTA_TIME) {
                 LAST_EVENTS[eventName][pointerId] = null;
                 continue;
             }

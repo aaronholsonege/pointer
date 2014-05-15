@@ -58,17 +58,6 @@ var MOUSE_WHICH_PROP = ['buttons', 'which', 'button'];
 var MOUSE_WHICH_LENTH = MOUSE_WHICH_PROP.length;
 
 /**
- * Get current unix time
- *
- * @type Function
- * @return {Number}
- * @private
- */
-var _now = Date.now || function() {
-    return +new Date();
-};
-
-/**
  * Get proprties to set to event
  *
  * @type Function
@@ -85,9 +74,9 @@ var _getProperties = function(type, originalEvent, touchIndex) {
     var source = originalEvent;
     var pointerId = 0;
     var pointerType = 'mouse';
-    
+
     var properties = {
-        timeStamp: originalEvent.timeStamp || _now() // make sure we have a timestamp
+        timeStamp: originalEvent.timeStamp || Util.now() // make sure we have a timestamp
     };
 
     if (originalEvent.type.indexOf('touch') === 0) {
