@@ -70,22 +70,24 @@
                 tiltY: 0,
                 pressure: .5
             };
+            var MOUSE_WHICH_PROP = [ "buttons", "which", "button" ];
+            var MOUSE_WHICH_LENTH = MOUSE_WHICH_PROP.length;
             var _now = Date.now || function() {
                 return +new Date();
             };
             var _getProperties = function(type, originalEvent, touchIndex) {
                 var source = originalEvent;
+                var pointerId = 0;
+                var pointerType = "mouse";
                 var properties = {
-                    pointerId: 0,
-                    pointerType: "mouse",
                     timeStamp: originalEvent.timeStamp || _now()
                 };
                 if (originalEvent.type.indexOf("touch") === 0) {
                     source = originalEvent.changedTouches[touchIndex || 0];
-                    properties.pointerId = 1 + source.identifier;
-                    properties.pointerType = "touch";
+                    pointerId = 1 + source.identifier;
+                    pointerType = "touch";
                 }
-                properties.isPrimary = properties.pointerId <= 1;
+                properties.isPrimary = pointerId <= 1;
                 var name;
                 for (name in PROPS) {
                     if (PROPS.hasOwnProperty(name)) {
@@ -93,20 +95,32 @@
                     }
                 }
                 if (!properties.pageX && properties.clientX) {
-                    properties.pageX = properties.clientX + _getPageOffset("Left");
-                    properties.pageY = properties.clientY + _getPageOffset("Top");
+                    properties.pageX = properties.clientX + _getPageOffset(true);
+                    properties.pageY = properties.clientY + _getPageOffset();
                 }
                 properties.x = properties.pageX;
                 properties.y = properties.pageY;
-                if (properties.pointerId == 0) {
-                    var which = originalEvent.buttons || originalEvent.which || originalEvent.button;
+                if (pointerId == 0) {
+                    var which = 0;
+                    var i = 0;
+                    var prop;
+                    for (;i < MOUSE_WHICH_LENTH; i++) {
+                        prop = MOUSE_WHICH_PROP[i];
+                        if (originalEvent.hasOwnProperty(prop)) {
+                            which = originalEvent[prop];
+                            break;
+                        }
+                    }
                     properties.pressure = which === 1 ? .5 : 0;
                 }
+                properties.pointerId = pointerId;
+                properties.pointerType = pointerType;
                 return properties;
             };
-            var _getPageOffset = function(prop) {
+            var _getPageOffset = function(left) {
                 var doc = document;
                 var body = doc.body;
+                var prop = left ? "Left" : "Top";
                 var scroll = "scroll" + prop;
                 var client = "client" + prop;
                 return (doc[scroll] || body[scroll] || 0) - (doc[client] || body[client] || 0);
@@ -326,17 +340,22 @@
                 touchend: {},
                 touchout: {}
             };
+            var TIMEOUTS = {};
             var DELTA_TIME = 3e3;
             module.exports = {
                 register: function(event, overrideEventName, target) {
                     var eventName = overrideEventName || event.type;
                     if (LAST_EVENTS.hasOwnProperty(eventName)) {
+                        clearTimeout(TIMEOUTS[eventName + event.pointerId]);
                         LAST_EVENTS[eventName][event.pointerId] = {
                             timeStamp: event.timeStamp,
                             x: event.clientX,
                             y: event.clientY,
                             target: target || event.target
                         };
+                        TIMEOUTS[eventName + event.pointerId] = setTimeout(function() {
+                            LAST_EVENTS[eventName][event.pointerId] = null;
+                        }, DELTA_TIME);
                     }
                     return this;
                 },

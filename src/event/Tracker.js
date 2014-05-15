@@ -28,6 +28,8 @@ var LAST_EVENTS = {
     touchout: {}
 };
 
+var TIMEOUTS = {};
+
 /**
  * Max time between touch and simulated mouse event (3 seconds)
  *
@@ -59,12 +61,16 @@ module.exports = {
         var eventName = overrideEventName || event.type;
 
         if (LAST_EVENTS.hasOwnProperty(eventName)) {
+            clearTimeout(TIMEOUTS[eventName + event.pointerId]);
             LAST_EVENTS[eventName][event.pointerId] = {
                 timeStamp: event.timeStamp,
                 x: event.clientX,
                 y: event.clientY,
                 target: target || event.target
             };
+            TIMEOUTS[eventName + event.pointerId] = setTimeout(function() {
+                LAST_EVENTS[eventName][event.pointerId] = null;
+            }, DELTA_TIME)
         }
 
         return this;
@@ -106,13 +112,6 @@ module.exports = {
             }
 
             pointer = previousEvent[pointerId];
-
-            // If too much time has passed since the last touch
-            // event, remove it so we no longer test against it.
-            if (Math.abs(event.timeStamp - pointer.timeStamp) > DELTA_TIME) {
-                LAST_EVENTS[eventName][pointerId] = null;
-                continue;
-            }
 
             if (
                 pointer.target === target
