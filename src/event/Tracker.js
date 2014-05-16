@@ -1,4 +1,5 @@
 var Adapter = require('adapter/event');
+var Util = require('../Util');
 
 /**
  * Mouse > touch map
@@ -16,7 +17,7 @@ var MAP = {
 
 /**
  * The last triggered touch events to compare mouse
- * events to to determine if they are emulated.
+ * events with to determine if they are emulated.
  *
  * @type Object
  * @static
@@ -114,7 +115,7 @@ module.exports = {
 
         if (LAST_EVENTS.hasOwnProperty(eventName)) {
             LAST_EVENTS[eventName][event.pointerId] = {
-                timeStamp: event.timeStamp,
+                timeStamp: Util.now(),
                 x: event.clientX,
                 y: event.clientY,
                 target: target || event.target
@@ -158,6 +159,14 @@ module.exports = {
 
         var pointerId;
         var pointer;
+        var now = Util.now();
+        var target = Util.getTarget(event);
+
+        // If this is a mouseout event, compare the related target
+        // instead which is the element that previously had focus for touchstart
+        if (event.type === 'mouseout') {
+            target = event.relatedTarget;
+        }
 
         for (pointerId in previousEvent) {
             if (!previousEvent.hasOwnProperty(pointerId) || !previousEvent[pointerId]) {
@@ -168,17 +177,9 @@ module.exports = {
 
             // If too much time has passed since the last touch
             // event, remove it so we no longer test against it.
-            if (Math.abs(event.timeStamp - pointer.timeStamp) > DELTA_TIME) {
+            if (Math.abs(now - pointer.timeStamp) > DELTA_TIME) {
                 LAST_EVENTS[eventName][pointerId] = null;
                 continue;
-            }
-
-            var target = event.target;
-
-            // If this is a mouseout event, compare the related target
-            // instead which is the element that previously had focus for touchstart
-            if (event.type === 'mouseout') {
-                target = event.relatedTarget;
             }
 
             if (

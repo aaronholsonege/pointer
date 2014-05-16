@@ -24,7 +24,6 @@ var EVENT_OUT = Events[5];
  * @private
  */
 var _onWindowUp = function(event) {
-    Tracker.isMouseActive = false;
     if (event.target === document.documentElement) {
         Tracker.releasePointer(0);
     }
@@ -62,14 +61,6 @@ module.exports = {
             } catch(e) {}
 
             return;
-        }
-
-        if (event.type === EVENT_DOWN) {
-            Tracker.isMouseActive = true;
-        }
-
-        if (event.type === EVENT_UP) {
-            Tracker.isMouseActive = false;
         }
 
         trigger(event, Tracker.getTarget(0));

@@ -46,15 +46,16 @@ var PROPS = {
 };
 
 /**
- * Get current unix time
- *
- * @type Function
- * @return {Number}
- * @private
+ * @type String[]
+ * @static
  */
-var _now = Date.now || function() {
-    return +new Date();
-};
+var MOUSE_WHICH_PROP = ['buttons', 'which', 'button'];
+
+/**
+ * @type Number
+ * @static
+ */
+var MOUSE_WHICH_LENTH = MOUSE_WHICH_PROP.length;
 
 /**
  * Get proprties to set to event
@@ -71,19 +72,20 @@ var _now = Date.now || function() {
  */
 var _getProperties = function(type, originalEvent, touchIndex) {
     var source = originalEvent;
+    var pointerId = 0;
+    var pointerType = 'mouse';
+
     var properties = {
-        pointerId: 0,
-        pointerType: 'mouse',
-        timeStamp: originalEvent.timeStamp || _now() // make sure we have a timestamp
+        timeStamp: originalEvent.timeStamp || Util.now() // make sure we have a timestamp
     };
 
     if (originalEvent.type.indexOf('touch') === 0) {
         source = originalEvent.changedTouches[touchIndex || 0];
-        properties.pointerId = 1 + source.identifier;
-        properties.pointerType = 'touch';
+        pointerId = 1 + source.identifier;
+        pointerType = 'touch';
     }
 
-    properties.isPrimary = properties.pointerId <= 1;
+    properties.isPrimary = pointerId <= 1;
 
     var name;
 
@@ -94,17 +96,31 @@ var _getProperties = function(type, originalEvent, touchIndex) {
     }
 
     if (!properties.pageX && properties.clientX) {
-        properties.pageX = properties.clientX + _getPageOffset('Left');
-        properties.pageY = properties.clientY + _getPageOffset('Top');
+        properties.pageX = properties.clientX + _getPageOffset(true);
+        properties.pageY = properties.clientY + _getPageOffset();
     }
 
     // add x/y properties aliased to pageX/Y
     properties.x = properties.pageX;
     properties.y = properties.pageY;
 
-    if (properties.pointerId == 0) {
-        properties.pressure = Tracker.isMouseActive ? 0.5 : 0;
+    if (pointerId == 0) {
+        var which = 0;
+        var i = 0;
+        var prop;
+
+        for (; i < MOUSE_WHICH_LENTH; i++) {
+            prop = MOUSE_WHICH_PROP[i];
+            if (originalEvent.hasOwnProperty(prop)) {
+                which = originalEvent[prop];
+                break;
+            }
+        }
+        properties.pressure = which === 1 ? 0.5 : 0;
     }
+
+    properties.pointerId = pointerId;
+    properties.pointerType = pointerType;
 
     return properties;
 };
@@ -113,38 +129,19 @@ var _getProperties = function(type, originalEvent, touchIndex) {
  * Get the current page offset
  *
  * @type Function
- * @param {String} prop
+ * @param {Boolean} [left=false]
  * @returns {Number}
  * @private
  */
-var _getPageOffset = function(prop) {
+var _getPageOffset = function(left) {
     var doc = document;
     var body = doc.body;
+    var prop = left ? 'Left' : 'Top';
 
     var scroll = 'scroll' + prop;
     var client = 'client' + prop;
 
     return (doc[scroll] || body[scroll] || 0) - (doc[client] || body[client] || 0);
-};
-
-/**
- * Get event target
- *
- * @type Function
- * @param {Event} event
- * @param {Element} [target]
- * @returns {Element}
- * @private
- */
-var _getTarget = function(event, target) {
-    target = target || event.target || event.srcElement || document;
-
-    // Target should not be a text node
-    if (target.nodeType === 3) {
-        target = target.parentNode;
-    }
-
-    return target;
 };
 
 /**
@@ -227,7 +224,7 @@ var _trigger = function(originalEvent, target, overrideType, touchIndex, related
     var type = Events.MAP[eventName];
     var pointerId = touchIndex || 0;
     var event = _create(type, originalEvent, pointerId);
-
+    
     target = _getTarget(originalEvent, target);
 
     if (event) {

@@ -70,22 +70,21 @@
                 tiltY: 0,
                 pressure: .5
             };
-            var _now = Date.now || function() {
-                return +new Date();
-            };
+            var MOUSE_WHICH_PROP = [ "buttons", "which", "button" ];
+            var MOUSE_WHICH_LENTH = MOUSE_WHICH_PROP.length;
             var _getProperties = function(type, originalEvent, touchIndex) {
                 var source = originalEvent;
+                var pointerId = 0;
+                var pointerType = "mouse";
                 var properties = {
-                    pointerId: 0,
-                    pointerType: "mouse",
-                    timeStamp: originalEvent.timeStamp || _now()
+                    timeStamp: originalEvent.timeStamp || Util.now()
                 };
                 if (originalEvent.type.indexOf("touch") === 0) {
                     source = originalEvent.changedTouches[touchIndex || 0];
-                    properties.pointerId = 1 + source.identifier;
-                    properties.pointerType = "touch";
+                    pointerId = 1 + source.identifier;
+                    pointerType = "touch";
                 }
-                properties.isPrimary = properties.pointerId <= 1;
+                properties.isPrimary = pointerId <= 1;
                 var name;
                 for (name in PROPS) {
                     if (PROPS.hasOwnProperty(name)) {
@@ -93,29 +92,35 @@
                     }
                 }
                 if (!properties.pageX && properties.clientX) {
-                    properties.pageX = properties.clientX + _getPageOffset("Left");
-                    properties.pageY = properties.clientY + _getPageOffset("Top");
+                    properties.pageX = properties.clientX + _getPageOffset(true);
+                    properties.pageY = properties.clientY + _getPageOffset();
                 }
                 properties.x = properties.pageX;
                 properties.y = properties.pageY;
-                if (properties.pointerId == 0) {
-                    properties.pressure = Tracker.isMouseActive ? .5 : 0;
+                if (pointerId == 0) {
+                    var which = 0;
+                    var i = 0;
+                    var prop;
+                    for (;i < MOUSE_WHICH_LENTH; i++) {
+                        prop = MOUSE_WHICH_PROP[i];
+                        if (originalEvent.hasOwnProperty(prop)) {
+                            which = originalEvent[prop];
+                            break;
+                        }
+                    }
+                    properties.pressure = which === 1 ? .5 : 0;
                 }
+                properties.pointerId = pointerId;
+                properties.pointerType = pointerType;
                 return properties;
             };
-            var _getPageOffset = function(prop) {
+            var _getPageOffset = function(left) {
                 var doc = document;
                 var body = doc.body;
+                var prop = left ? "Left" : "Top";
                 var scroll = "scroll" + prop;
                 var client = "client" + prop;
                 return (doc[scroll] || body[scroll] || 0) - (doc[client] || body[client] || 0);
-            };
-            var _getTarget = function(event, target) {
-                target = target || event.target || event.srcElement || document;
-                if (target.nodeType === 3) {
-                    target = target.parentNode;
-                }
-                return target;
             };
             var _detectEnterOrLeave = function(eventName, event, target, relatedTarget, pointerId) {
                 var pointerEvent;
@@ -140,7 +145,7 @@
                 var properties = _getProperties(type, originalEvent, touchIndex);
                 return Adapter.create(type, originalEvent, properties, type !== PointerEvents[0] && type !== PointerEvents[6]);
             };
-            var _trigger = function(originalEvent, target, overrideType, touchIndex, relatedTarget) {
+            var _trigger = function(originalEvent, overrideType, touchIndex, overrideTarget, relatedTarget) {
                 var eventName = overrideType || originalEvent.type;
                 if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
                     return;
@@ -148,7 +153,7 @@
                 var type = Events.MAP[eventName];
                 var pointerId = touchIndex || 0;
                 var event = _create(type, originalEvent, pointerId);
-                target = _getTarget(originalEvent, target);
+                var target = Util.getTarget(originalEvent, overrideTarget);
                 if (event) {
                     if (event.pointerType === "touch") {
                         Tracker.register(event, eventName, target);
@@ -157,9 +162,6 @@
                         _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
                     }
                     Adapter.trigger(event, target);
-                    if (event.type === PointerEvents[4] || event.type === PointerEvents[7]) {
-                        Tracker.releasePointer(event.pointerId);
-                    }
                     if (type === PointerEvents[5]) {
                         _detectEnterOrLeave(PointerEvents[6], originalEvent, target, relatedTarget, pointerId);
                     }
@@ -179,17 +181,14 @@
             var Util = require("./Util");
             var MouseHandler = require("./handlers/Mouse");
             var TouchHandler = require("./handlers/Touch");
-            var EventTracker = require("./event/Tracker");
             var navigator = window.navigator;
             module.exports = function() {
-                EventTracker.init();
                 navigator.pointerEnabled = true;
                 navigator.maxTouchPoints = 10;
                 Util.on(TouchHandler.events, TouchHandler.onEvent).on(MouseHandler.events, MouseHandler.onEvent);
             };
         }, {
             "./Util": 4,
-            "./event/Tracker": 10,
             "./handlers/Mouse": 11,
             "./handlers/Touch": 12
         } ],
@@ -243,6 +242,16 @@
                         } while (child = child.parentNode);
                         return false;
                     }
+                },
+                getTarget: function(event, target) {
+                    target = target || event.target || event.srcElement || document;
+                    if (target.nodeType === 3) {
+                        target = target.parentNode;
+                    }
+                    return target;
+                },
+                now: Date.now || function() {
+                    return +new Date();
                 }
             };
         }, {} ],
@@ -260,18 +269,16 @@
             module.exports = {
                 create: function(type, originalEvent, properties, bubbles) {
                     var event = document.createEvent("Event");
-                    event.initEvent(type, bubbles !== false, properties.cancelable !== false);
+                    event.initEvent(type, bubbles !== false, true);
                     var prop;
                     for (prop in properties) {
                         if (properties.hasOwnProperty(prop)) {
                             event[prop] = properties[prop];
                         }
                     }
-                    if (originalEvent) {
-                        _overrideMethod("preventDefault", event, originalEvent);
-                        _overrideMethod("stopPropagation", event, originalEvent);
-                        _overrideMethod("stopImmediatePropagation", event, originalEvent);
-                    }
+                    _overrideMethod("preventDefault", event, originalEvent);
+                    _overrideMethod("stopPropagation", event, originalEvent);
+                    _overrideMethod("stopImmediatePropagation", event, originalEvent);
                     return event;
                 },
                 trigger: function(event, target) {
@@ -319,7 +326,7 @@
             }
         }, {} ],
         10: [ function(require, module, exports) {
-            var Adapter = require("adapter/event");
+            var Util = require("../Util");
             var MAP = {
                 mouseover: "touchover",
                 mousedown: "touchstart",
@@ -333,45 +340,19 @@
                 touchend: {},
                 touchout: {}
             };
-            var TARGET_LOCKS = {};
             var DELTA_TIME = 3e3;
             module.exports = {
-                init: function() {
-                    Element.prototype.setPointerCapture = this.capturePointer;
-                    Element.prototype.releasePointerCapture = this.releasePointer;
-                },
-                capturePointer: function(pointerId) {
-                    TARGET_LOCKS[pointerId] = this;
-                    var event = Adapter.create("gotpointercapture", null, {
-                        cancelable: false
-                    });
-                    Adapter.trigger(event, this);
-                },
-                releasePointer: function(pointerId) {
-                    var lastTarget = TARGET_LOCKS[pointerId];
-                    TARGET_LOCKS[pointerId] = null;
-                    if (lastTarget) {
-                        var event = Adapter.create("lostpointercapture", null, {
-                            cancelable: false
-                        });
-                        Adapter.trigger(event, lastTarget);
-                    }
-                },
-                isMouseActive: false,
                 register: function(event, overrideEventName, target) {
                     var eventName = overrideEventName || event.type;
                     if (LAST_EVENTS.hasOwnProperty(eventName)) {
                         LAST_EVENTS[eventName][event.pointerId] = {
-                            timeStamp: event.timeStamp,
+                            timeStamp: Util.now(),
                             x: event.clientX,
                             y: event.clientY,
                             target: target || event.target
                         };
                     }
                     return this;
-                },
-                getTarget: function(pointerEvent) {
-                    return TARGET_LOCKS[pointerEvent.pointerId || pointerEvent];
                 },
                 isEmulated: function(event) {
                     if (!MAP.hasOwnProperty(event.type)) {
@@ -384,18 +365,19 @@
                     }
                     var pointerId;
                     var pointer;
+                    var now = Util.now();
+                    var target = Util.getTarget(event);
+                    if (event.type === "mouseout") {
+                        target = event.relatedTarget;
+                    }
                     for (pointerId in previousEvent) {
                         if (!previousEvent.hasOwnProperty(pointerId) || !previousEvent[pointerId]) {
                             continue;
                         }
                         pointer = previousEvent[pointerId];
-                        if (Math.abs(event.timeStamp - pointer.timeStamp) > DELTA_TIME) {
+                        if (Math.abs(now - pointer.timeStamp) > DELTA_TIME) {
                             LAST_EVENTS[eventName][pointerId] = null;
                             continue;
-                        }
-                        var target = event.target;
-                        if (event.type === "mouseout") {
-                            target = event.relatedTarget;
                         }
                         if (pointer.target === target && pointer.x === event.clientX && pointer.y === event.clientY) {
                             return true;
@@ -405,10 +387,9 @@
                 }
             };
         }, {
-            "adapter/event": "mbL6jR"
+            "../Util": 4
         } ],
         11: [ function(require, module, exports) {
-            var Util = require("../Util");
             var Events = require("../event/Events").MOUSE;
             var Tracker = require("../event/Tracker");
             var trigger = require("../Controller").trigger;
@@ -417,12 +398,6 @@
             var EVENT_MOVE = Events[3];
             var EVENT_UP = Events[4];
             var EVENT_OUT = Events[5];
-            var _onWindowUp = function(event) {
-                Tracker.isMouseActive = false;
-                if (event.target === document.documentElement) {
-                    Tracker.releasePointer(0);
-                }
-            };
             module.exports = {
                 events: [ EVENT_OVER, EVENT_DOWN, EVENT_MOVE, EVENT_UP, EVENT_OUT ],
                 onEvent: function(event) {
@@ -432,19 +407,11 @@
                         } catch (e) {}
                         return;
                     }
-                    if (event.type === EVENT_DOWN) {
-                        Tracker.isMouseActive = true;
-                    }
-                    if (event.type === EVENT_UP) {
-                        Tracker.isMouseActive = false;
-                    }
-                    trigger(event, Tracker.getTarget(0));
+                    trigger(event);
                 }
             };
-            Util.on(EVENT_UP, _onWindowUp, window);
         }, {
             "../Controller": 2,
-            "../Util": 4,
             "../event/Events": 9,
             "../event/Tracker": 10
         } ],
@@ -452,7 +419,6 @@
             var Util = require("../Util");
             var Events = require("../event/Events").TOUCH;
             var TouchAreaAdapter = require("adapter/toucharea");
-            var Tracker = require("../event/Tracker");
             var trigger = require("../Controller").trigger;
             var EVENT_OVER = Events[1];
             var EVENT_START = Events[2];
@@ -464,40 +430,39 @@
             var PREVIOUS_POSITIONS = {};
             var _onPointCancel = function(point, event, pointIndex) {
                 PREVIOUS_TARGETS[point.identifier] = null;
-                trigger(event, event.target, EVENT_CANCEL, pointIndex);
-                trigger(event, event.target, EVENT_OUT, pointIndex);
+                trigger(event, EVENT_CANCEL, pointIndex, event.target);
+                trigger(event, EVENT_OUT, pointIndex, event.target);
             };
             var _onPointMove = function(point, event, pointIndex) {
-                var identifier = point.identifier;
-                var newTarget = Tracker.getTarget(identifier + 1) || document.elementFromPoint(point.clientX, point.clientY);
-                var currentTarget = PREVIOUS_TARGETS[identifier];
-                PREVIOUS_TARGETS[identifier] = newTarget;
+                var newTarget = document.elementFromPoint(point.clientX, point.clientY);
+                var currentTarget = PREVIOUS_TARGETS[point.identifier];
+                PREVIOUS_TARGETS[point.identifier] = newTarget;
                 if (newTarget !== currentTarget) {
                     if (currentTarget) {
-                        trigger(event, currentTarget, EVENT_OUT, pointIndex, newTarget);
+                        trigger(event, EVENT_OUT, pointIndex, currentTarget, newTarget);
                     }
                     if (newTarget) {
-                        trigger(event, newTarget, EVENT_OVER, pointIndex, currentTarget);
+                        trigger(event, EVENT_OVER, pointIndex, newTarget, currentTarget);
                     }
                 }
-                trigger(event, newTarget, EVENT_MOVE, pointIndex);
+                trigger(event, EVENT_MOVE, pointIndex, newTarget);
                 if (newTarget && TouchAreaAdapter.detect(newTarget)) {
                     event.preventDefault();
                 }
             };
             var _onPointStartEnd = function(point, event, pointIndex) {
-                var identifier = point.identifier;
-                var target = Tracker.getTarget(identifier + 1) || event.target;
+                var target = event.target;
                 var type = event.type;
+                var identifier = point.identifier;
                 if (type === EVENT_START) {
                     PREVIOUS_TARGETS[identifier] = target;
-                    trigger(event, target, EVENT_OVER, pointIndex);
+                    trigger(event, EVENT_OVER, pointIndex, target);
                 }
                 var currentTarget = PREVIOUS_TARGETS[identifier] || target;
-                trigger(event, currentTarget, type, pointIndex);
+                trigger(event, type, pointIndex, currentTarget);
                 if (type === EVENT_END) {
                     PREVIOUS_TARGETS[identifier] = null;
-                    trigger(event, currentTarget, EVENT_OUT, pointIndex);
+                    trigger(event, EVENT_OUT, pointIndex, currentTarget);
                 }
             };
             module.exports = {
@@ -531,7 +496,6 @@
             "../Controller": 2,
             "../Util": 4,
             "../event/Events": 9,
-            "../event/Tracker": 10,
             "adapter/toucharea": "C84uZi"
         } ]
     }, {}, [ 1 ]);
