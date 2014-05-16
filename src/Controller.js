@@ -111,7 +111,7 @@ var _getProperties = function(type, originalEvent, touchIndex) {
 
         for (; i < MOUSE_WHICH_LENTH; i++) {
             prop = MOUSE_WHICH_PROP[i];
-            if (originalEvent.hasOwnProperty(prop)) {
+            if (prop in originalEvent) {
                 which = originalEvent[prop];
                 break;
             }
