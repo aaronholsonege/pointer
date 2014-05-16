@@ -48,6 +48,8 @@ var TARGET_LOCKS = {};
  */
 var DELTA_TIME = 3000;
 
+var CAPTURE_DATA = { cancelable: false };
+
 /**
  * @class Event.Tracker
  * @static
@@ -60,12 +62,21 @@ module.exports = {
      * @method init
      */
     init: function() {
-        Element.prototype.setPointerCapture = this.capturePointer;
-        Element.prototype.releasePointerCapture = this.releasePointer;
+        var el = window.Element;
+        var proto;
+
+        if (!el) {
+            proto = window._IEEL = {};
+        } else {
+            proto = el.prototype;
+        }
+
+        proto.setPointerCapture = this.capturePointer;
+        proto.releasePointerCapture = this.releasePointer;
     },
 
     /**
-     * Capture pointer
+     * Capture pointer target
      *
      * @method capturePointer
      * @param {String} pointerId
@@ -73,11 +84,13 @@ module.exports = {
     capturePointer: function(pointerId) {
         TARGET_LOCKS[pointerId] = this;
 
-        var event = Adapter.create('gotpointercapture', null, { cancelable: false });
+        var event = Adapter.create('gotpointercapture', null, CAPTURE_DATA);
         Adapter.trigger(event, this);
     },
 
     /**
+     * Release pointer target
+     *
      * @method releasePointer
      * @param {String} pointerId
      */
@@ -86,7 +99,7 @@ module.exports = {
         TARGET_LOCKS[pointerId] = null;
 
         if (lastTarget) {
-            var event = Adapter.create('lostpointercapture', null, { cancelable: false });
+            var event = Adapter.create('lostpointercapture', null, CAPTURE_DATA);
             Adapter.trigger(event, lastTarget);
         }
     },
@@ -99,6 +112,16 @@ module.exports = {
      * @default false
      */
     isMouseActive: false,
+
+    /**
+     * Has the browser event dispatched a touch event yet?
+     * Used to determine if the Mouse Handler should event call isSimulated
+     *
+     * @property hasTouched
+     * @type Boolean
+     * @default false
+     */
+    hasTouched: false,
 
     /**
      * Register a touch event used to determine if mouse events are emulated
@@ -120,6 +143,7 @@ module.exports = {
                 y: event.clientY,
                 target: target || event.target
             };
+            this.hasTouched = true;
         }
 
         return this;
@@ -138,14 +162,14 @@ module.exports = {
     },
 
     /**
-     * Determine if a mouse event has been emulated
+     * Determine if a mouse event is simulated
      *
-     * @method isEmulated
+     * @method isSimulated
      * @param {MouseEvent} event
      * @param {String} event.type
      * @returns {Boolean}
      */
-    isEmulated: function(event) {
+    isSimulated: function(event) {
         if (!MAP.hasOwnProperty(event.type)) {
             return false;
         }

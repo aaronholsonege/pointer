@@ -1,0 +1,12 @@
+<PUBLIC:COMPONENT>
+    <PUBLIC:METHOD NAME="setPointerCapture" INTERNALNAME="_setPointerCapture" />
+        <script type="text/javascript">
+            _setPointerCapture = _IEEL.setPointerCapture;
+        </script>
+    </PUBLIC:METHOD>
+    <PUBLIC:METHOD NAME="releasePointerCapture" INTERNALNAME="_releasePointerCapture" />
+        <script type="text/javascript">
+            _releasePointerCapture = _IEEL.releasePointerCapture;
+        </script>
+    </PUBLIC:METHOD>
+</PUBLIC:COMPONENT>

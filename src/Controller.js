@@ -46,18 +46,6 @@ var PROPS = {
 };
 
 /**
- * @type String[]
- * @static
- */
-var MOUSE_WHICH_PROP = ['buttons', 'which', 'button'];
-
-/**
- * @type Number
- * @static
- */
-var MOUSE_WHICH_LENTH = MOUSE_WHICH_PROP.length;
-
-/**
  * Get proprties to set to event
  *
  * @type Function
@@ -72,7 +60,6 @@ var MOUSE_WHICH_LENTH = MOUSE_WHICH_PROP.length;
  */
 var _getProperties = function(type, originalEvent, touchIndex) {
     var source = originalEvent;
-    var pointerId = 0;
     var pointerType = 'mouse';
 
     var properties = {
@@ -81,10 +68,10 @@ var _getProperties = function(type, originalEvent, touchIndex) {
 
     if (originalEvent.type.indexOf('touch') === 0) {
         source = originalEvent.changedTouches[touchIndex || 0];
-        pointerId = 1 + source.identifier;
         pointerType = 'touch';
     }
 
+    var pointerId = Util.getId(source);
     properties.isPrimary = pointerId <= 1;
 
     var name;
@@ -105,18 +92,7 @@ var _getProperties = function(type, originalEvent, touchIndex) {
     properties.y = properties.pageY;
 
     if (pointerId == 0) {
-        var which = 0;
-        var i = 0;
-        var prop;
-
-        for (; i < MOUSE_WHICH_LENTH; i++) {
-            prop = MOUSE_WHICH_PROP[i];
-            if (originalEvent.hasOwnProperty(prop)) {
-                which = originalEvent[prop];
-                break;
-            }
-        }
-        properties.pressure = which === 1 ? 0.5 : 0;
+        properties.pressure = Tracker.isMouseActive ? 0.5 : 0;
     }
 
     properties.pointerId = pointerId;
@@ -225,7 +201,7 @@ var _trigger = function(originalEvent, target, overrideType, touchIndex, related
     var pointerId = touchIndex || 0;
     var event = _create(type, originalEvent, pointerId);
     
-    target = _getTarget(originalEvent, target);
+    target = Util.getTarget(originalEvent, target);
 
     if (event) {
         if (event.pointerType === 'touch') {

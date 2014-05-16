@@ -1,10 +1,13 @@
 var Pointer = require('./Pointer');
 var Util = require('./Util');
+var EventTracker = require('./event/Tracker');
 
 // If the browser already supports pointer events, do not enable
 if (window.navigator.pointerEnabled === true) {
     return;
 }
+
+EventTracker.init();
 
 // Initialize Pointer when the page is ready
 var _onReady = function() {

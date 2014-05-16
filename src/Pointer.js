@@ -1,7 +1,6 @@
 var Util = require('./Util');
 var MouseHandler = require('./handlers/Mouse');
 var TouchHandler = require('./handlers/Touch');
-var EventTracker = require('./event/Tracker');
 var navigator = window.navigator;
 
 /**
@@ -11,7 +10,6 @@ var navigator = window.navigator;
  * @type Function
  */
 module.exports =  function() {
-    EventTracker.init();
     navigator.pointerEnabled = true;
     navigator.maxTouchPoints = 10;
 

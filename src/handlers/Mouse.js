@@ -21,11 +21,14 @@ var EVENT_OUT = Events[5];
  * Reset active mouse
  *
  * @type Function
+ * @prop {Event} event
  * @private
  */
 var _onWindowUp = function(event) {
+    Tracker.isMouseActive = false;
+
     if (event.target === document.documentElement) {
-        Tracker.releasePointer(0);
+        Tracker.releasePointer(Util.getId(event));
     }
 };
 
@@ -54,7 +57,7 @@ module.exports = {
      * @callback
      */
     onEvent: function(event) {
-        if (Tracker.isEmulated(event)) {
+        if (Tracker.hasTouched && Tracker.isSimulated(event)) {
             // Add a simulated flag because hey, why not
             try {
                 event._isSimulated = true;
@@ -63,7 +66,15 @@ module.exports = {
             return;
         }
 
-        trigger(event, Tracker.getTarget(0));
+        if (event.type === EVENT_DOWN) {
+            Tracker.isMouseActive = true;
+        }
+
+        if (event.type === EVENT_UP) {
+            Tracker.isMouseActive = false;
+        }
+
+        trigger(event, Tracker.getTarget(Util.getId(event)));
     }
 
 };

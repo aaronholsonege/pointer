@@ -68,7 +68,7 @@ var _onPointCancel = function(point, event, pointIndex) {
  */
 var _onPointMove = function(point, event, pointIndex) {
     var identifier = point.identifier;
-    var newTarget = Tracker.getTarget(identifier + 1) || document.elementFromPoint(point.clientX, point.clientY);
+    var newTarget = Tracker.getTarget(Util.getId(point)) || document.elementFromPoint(point.clientX, point.clientY);
     var currentTarget = PREVIOUS_TARGETS[identifier];
 
     PREVIOUS_TARGETS[identifier] = newTarget;
@@ -106,7 +106,7 @@ var _onPointMove = function(point, event, pointIndex) {
  */
 var _onPointStartEnd = function(point, event, pointIndex) {
     var identifier = point.identifier;
-    var target = Tracker.getTarget(identifier + 1) || event.target;
+    var target = Tracker.getTarget(Util.getId(point)) || event.target;
     var type = event.type;
 
     if (type === EVENT_START) {
