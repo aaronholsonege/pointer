@@ -46,6 +46,16 @@ var DELTA_TIME = 3000;
 module.exports = {
 
     /**
+     * Flag to determine if an touch events have fired. Used to determine
+     * if the Mouse handler should event call `isSimulated`.
+     *
+     * @property hasTouched
+     * @type Boolean
+     * @default false
+     */
+    hasTouched: false,
+
+    /**
      * Register a touch event used to determine if mouse events are emulated
      *
      * @method register
@@ -65,6 +75,7 @@ module.exports = {
                 y: event.clientY,
                 target: target || event.target
             };
+            this.hasTouched = true;
         }
 
         return this;
@@ -73,12 +84,15 @@ module.exports = {
     /**
      * Determine if a mouse event has been emulated
      *
-     * @method isEmulated
+     * @method isSimulated
      * @param {MouseEvent} event
      * @param {String} event.type
+     * @param {HTMLElement|null} event.relatedTarget
+     * @param {Number} event.clientX
+     * @param {Number} event.clientY
      * @returns {Boolean}
      */
-    isEmulated: function(event) {
+    isSimulated: function(event) {
         if (!MAP.hasOwnProperty(event.type)) {
             return false;
         }

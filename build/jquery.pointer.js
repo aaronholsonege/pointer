@@ -318,6 +318,7 @@
             };
             var DELTA_TIME = 3e3;
             module.exports = {
+                hasTouched: false,
                 register: function(event, overrideEventName, target) {
                     var eventName = overrideEventName || event.type;
                     if (LAST_EVENTS.hasOwnProperty(eventName)) {
@@ -327,10 +328,11 @@
                             y: event.clientY,
                             target: target || event.target
                         };
+                        this.hasTouched = true;
                     }
                     return this;
                 },
-                isEmulated: function(event) {
+                isSimulated: function(event) {
                     if (!MAP.hasOwnProperty(event.type)) {
                         return false;
                     }
@@ -377,7 +379,7 @@
             module.exports = {
                 events: [ EVENT_OVER, EVENT_DOWN, EVENT_MOVE, EVENT_UP, EVENT_OUT ],
                 onEvent: function(event) {
-                    if (Tracker.isEmulated(event)) {
+                    if (Tracker.hasTouched && Tracker.isSimulated(event)) {
                         try {
                             event._isSimulated = true;
                         } catch (e) {}

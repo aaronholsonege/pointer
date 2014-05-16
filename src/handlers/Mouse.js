@@ -41,7 +41,7 @@ module.exports = {
      * @callback
      */
     onEvent: function(event) {
-        if (Tracker.isEmulated(event)) {
+        if (Tracker.hasTouched && Tracker.isSimulated(event)) {
             // Add a simulated flag because hey, why not
             try {
                 event._isSimulated = true;
