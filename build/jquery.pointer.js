@@ -60,8 +60,6 @@
                 tiltY: 0,
                 pressure: .5
             };
-            var MOUSE_WHICH_PROP = [ "buttons", "which", "button" ];
-            var MOUSE_WHICH_LENTH = MOUSE_WHICH_PROP.length;
             var _getProperties = function(type, originalEvent, touchIndex) {
                 var source = originalEvent;
                 var pointerId = 0;
@@ -88,17 +86,7 @@
                 properties.x = properties.pageX;
                 properties.y = properties.pageY;
                 if (pointerId == 0) {
-                    var which = 0;
-                    var i = 0;
-                    var prop;
-                    for (;i < MOUSE_WHICH_LENTH; i++) {
-                        prop = MOUSE_WHICH_PROP[i];
-                        if (prop in originalEvent) {
-                            which = originalEvent[prop];
-                            break;
-                        }
-                    }
-                    properties.pressure = which === 1 ? .5 : 0;
+                    properties.pressure = Tracker.isMouseDown ? .5 : 0;
                 }
                 properties.pointerId = pointerId;
                 properties.pointerType = pointerType;
@@ -319,6 +307,7 @@
             var DELTA_TIME = 3e3;
             module.exports = {
                 hasTouched: false,
+                isMouseDown: false,
                 register: function(event, overrideEventName, target) {
                     var eventName = overrideEventName || event.type;
                     if (LAST_EVENTS.hasOwnProperty(eventName)) {
@@ -370,12 +359,16 @@
         11: [ function(require, module, exports) {
             var Events = require("../event/Events").MOUSE;
             var Tracker = require("../event/Tracker");
+            var _on = require("../Util").on;
             var trigger = require("../Controller").trigger;
             var EVENT_OVER = Events[1];
             var EVENT_DOWN = Events[2];
             var EVENT_MOVE = Events[3];
             var EVENT_UP = Events[4];
             var EVENT_OUT = Events[5];
+            var _onMouseUp = function() {
+                Tracker.isMouseDown = false;
+            };
             module.exports = {
                 events: [ EVENT_OVER, EVENT_DOWN, EVENT_MOVE, EVENT_UP, EVENT_OUT ],
                 onEvent: function(event) {
@@ -383,13 +376,20 @@
                         try {
                             event._isSimulated = true;
                         } catch (e) {}
+                        if (event.type === EVENT_DOWN) {
+                            Tracker.isMouseDown = true;
+                        } else if (event.type === EVENT_UP) {
+                            Tracker.isMouseDown = false;
+                        }
                         return;
                     }
                     trigger(event);
                 }
             };
+            _on("mouseup", _onMouseUp, window);
         }, {
             "../Controller": 2,
+            "../Util": 4,
             "../event/Events": 9,
             "../event/Tracker": 10
         } ],

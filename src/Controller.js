@@ -46,18 +46,6 @@ var PROPS = {
 };
 
 /**
- * @type String[]
- * @static
- */
-var MOUSE_WHICH_PROP = ['buttons', 'which', 'button'];
-
-/**
- * @type Number
- * @static
- */
-var MOUSE_WHICH_LENTH = MOUSE_WHICH_PROP.length;
-
-/**
  * Get proprties to set to event
  *
  * @type Function
@@ -105,18 +93,7 @@ var _getProperties = function(type, originalEvent, touchIndex) {
     properties.y = properties.pageY;
 
     if (pointerId == 0) {
-        var which = 0;
-        var i = 0;
-        var prop;
-
-        for (; i < MOUSE_WHICH_LENTH; i++) {
-            prop = MOUSE_WHICH_PROP[i];
-            if (prop in originalEvent) {
-                which = originalEvent[prop];
-                break;
-            }
-        }
-        properties.pressure = which === 1 ? 0.5 : 0;
+        properties.pressure = Tracker.isMouseDown ? 0.5 : 0;
     }
 
     properties.pointerId = pointerId;

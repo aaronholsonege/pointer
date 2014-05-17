@@ -56,6 +56,13 @@ module.exports = {
     hasTouched: false,
 
     /**
+     * @property isMouseDown
+     * @type Boolean
+     * @default false
+     */
+    isMouseDown: false,
+
+    /**
      * Register a touch event used to determine if mouse events are emulated
      *
      * @method register
