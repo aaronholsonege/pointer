@@ -58,13 +58,13 @@ module.exports = {
                 event._isSimulated = true;
             } catch(e) {}
 
-            if (event.type === EVENT_DOWN) {
-                Tracker.isMouseDown = true;
-            } else if (event.type === EVENT_UP) {
-                Tracker.isMouseDown = false;
-            }
-
             return;
+        }
+
+        if (event.type === EVENT_DOWN) {
+            Tracker.isMouseDown = true;
+        } else if (event.type === EVENT_UP) {
+            Tracker.isMouseDown = false;
         }
 
         trigger(event);
@@ -73,3 +73,4 @@ module.exports = {
 };
 
 _on('mouseup', _onMouseUp, window);
+_on('contextmenu', _onMouseUp, window);

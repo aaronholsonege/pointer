@@ -280,7 +280,7 @@ $(document).ready(function() {
         .on('pointerenter', function(e) {
             $(this).addClass('inside');
             if (e.pressure) {
-                $(this)
+                $(this).addClass('active');
             }
         })
         .on('pointerleave pointercancel', function() {
