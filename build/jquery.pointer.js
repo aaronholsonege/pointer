@@ -245,6 +245,9 @@
                 }
             };
         }, {} ],
+        "adapter/event": [ function(require, module, exports) {
+            module.exports = require("Sy7Mtw");
+        }, {} ],
         Sy7Mtw: [ function(require, module, exports) {
             var $ = window.jQuery;
             module.exports = {
@@ -258,9 +261,6 @@
                     $.event.trigger(event, null, target, !event.bubbles);
                 }
             };
-        }, {} ],
-        "adapter/event": [ function(require, module, exports) {
-            module.exports = require("Sy7Mtw");
         }, {} ],
         "adapter/toucharea": [ function(require, module, exports) {
             module.exports = require("C84uZi");
