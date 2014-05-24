@@ -89,10 +89,24 @@ $(document).ready(function() {
             this.$element.css('left', position);
         },
 
+        /**
+         * Add class
+         *
+         * @method onCapture
+         * @param {jQuery.Event} event
+         * @callback
+         */
         onCapture: function(event) {
             this.$element.addClass('captured');
         },
 
+        /**
+         * Remove class
+         *
+         * @method onRelease
+         * @param {jQuery.Event} event
+         * @callback
+         */
         onRelease: function(event) {
             this.$element.removeClass('captured');
         }
