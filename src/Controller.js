@@ -92,7 +92,7 @@ var _getProperties = function(type, originalEvent, touchIndex) {
     properties.y = properties.pageY;
 
     if (pointerId == 0) {
-        properties.pressure = Tracker.isMouseActive ? 0.5 : 0;
+        properties.pressure = Tracker.isMouseDown ? 0.5 : 0;
     }
 
     properties.pointerId = pointerId;

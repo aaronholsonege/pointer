@@ -1,6 +1,10 @@
 var Util = require('./Util');
 var MouseHandler = require('./handlers/Mouse');
 var TouchHandler = require('./handlers/Touch');
+
+/**
+ * @type Navigator
+ */
 var navigator = window.navigator;
 
 /**

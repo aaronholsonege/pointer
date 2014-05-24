@@ -2,6 +2,7 @@ var Util = require('../Util');
 var Events = require('../event/Events').MOUSE;
 var Tracker = require('../event/Tracker');
 
+var _on = require('../Util').on;
 var trigger = require('../Controller').trigger;
 
 /**
@@ -24,7 +25,7 @@ var EVENT_OUT = Events[5];
  * @prop {Event} event
  * @private
  */
-var _onWindowUp = function(event) {
+var _onMouseUp = function(event) {
     Tracker.isMouseActive = false;
 
     if (event.target === document.documentElement) {
@@ -67,11 +68,9 @@ module.exports = {
         }
 
         if (event.type === EVENT_DOWN) {
-            Tracker.isMouseActive = true;
-        }
-
-        if (event.type === EVENT_UP) {
-            Tracker.isMouseActive = false;
+            Tracker.isMouseDown = true;
+        } else if (event.type === EVENT_UP) {
+            Tracker.isMouseDown = false;
         }
 
         trigger(event, Tracker.getTarget(Util.getId(event)));
@@ -81,4 +80,5 @@ module.exports = {
 
 // Reset active mouse on mouseup
 // This captures if the user drags outside the window and releases the mouse
-Util.on(EVENT_UP, _onWindowUp, window);
+_on('mouseup', _onMouseUp, window);
+_on('contextmenu', _onMouseUp, window);

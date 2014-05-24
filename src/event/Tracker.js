@@ -48,6 +48,12 @@ var TARGET_LOCKS = {};
  */
 var DELTA_TIME = 3000;
 
+/**
+ * Default capture event data
+ * 
+ * @type Object
+ * @static
+ */
 var CAPTURE_DATA = { cancelable: false };
 
 /**
@@ -55,6 +61,23 @@ var CAPTURE_DATA = { cancelable: false };
  * @static
  */
 module.exports = {
+
+    /**
+     * Flag to determine if an touch events have fired. Used to determine
+     * if the Mouse handler should event call `isSimulated`.
+     *
+     * @property hasTouched
+     * @type Boolean
+     * @default false
+     */
+    hasTouched: false,
+
+    /**
+     * @property isMouseDown
+     * @type Boolean
+     * @default false
+     */
+    isMouseDown: false,
 
     /**
      * Create capture and release methods on Element prototype
@@ -105,25 +128,6 @@ module.exports = {
     },
 
     /**
-     * Flag for if the mouse button is currently active
-     *
-     * @property isMouseActive
-     * @type Boolean
-     * @default false
-     */
-    isMouseActive: false,
-
-    /**
-     * Has the browser event dispatched a touch event yet?
-     * Used to determine if the Mouse Handler should event call isSimulated
-     *
-     * @property hasTouched
-     * @type Boolean
-     * @default false
-     */
-    hasTouched: false,
-
-    /**
      * Register a touch event used to determine if mouse events are emulated
      *
      * @method register
@@ -152,6 +156,7 @@ module.exports = {
     /**
      * Get captured target
      *
+     * @method isSimulated
      * @method getTarget
      * @param {Event|String} pointerEvent
      * @param {String} [pointerEvent.pointerId]
@@ -167,6 +172,9 @@ module.exports = {
      * @method isSimulated
      * @param {MouseEvent} event
      * @param {String} event.type
+     * @param {HTMLElement|null} event.relatedTarget
+     * @param {Number} event.clientX
+     * @param {Number} event.clientY
      * @returns {Boolean}
      */
     isSimulated: function(event) {
