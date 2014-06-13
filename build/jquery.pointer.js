@@ -69,7 +69,7 @@
                 };
                 if (originalEvent.type.indexOf("touch") === 0) {
                     source = originalEvent.changedTouches[touchIndex || 0];
-                    pointerId = 1 + source.identifier;
+                    pointerId = 1 + (touchIndex || 0);
                     pointerType = "touch";
                 }
                 properties.isPrimary = pointerId <= 1;
