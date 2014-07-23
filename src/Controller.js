@@ -60,6 +60,7 @@ var PROPS = {
  */
 var _getProperties = function(type, originalEvent, touchIndex) {
     var source = originalEvent;
+    var pointerId = 0;
     var pointerType = 'mouse';
 
     var properties = {
@@ -68,10 +69,10 @@ var _getProperties = function(type, originalEvent, touchIndex) {
 
     if (originalEvent.type.indexOf('touch') === 0) {
         source = originalEvent.changedTouches[touchIndex || 0];
+        pointerId = 1 + (touchIndex || 0);
         pointerType = 'touch';
     }
 
-    var pointerId = Util.getId(source);
     properties.isPrimary = pointerId <= 1;
 
     var name;
