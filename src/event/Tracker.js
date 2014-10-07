@@ -83,22 +83,25 @@ define(function(require) {
         isMouseDown: false,
 
         /**
-         * Create capture and release methods on Element prototype
+         * Create capture and release methods on Element prototype (if accessible)
          *
          * @method init
          */
         init: function() {
-            var el = window.Element;
-            var proto;
+            var element = window.Element;
 
-            if (!el) {
-                proto = window._IEEL = {};
-            } else {
-                proto = el.prototype;
+            if (element) {
+                this.setCaptureMethods(element.prototype);
             }
+        },
 
-            proto.setPointerCapture = this.capturePointer;
-            proto.releasePointerCapture = this.releasePointer;
+        /**
+         * @method setLegacyMethods
+         * @param {Element} target
+         */
+        setCaptureMethods: function(target) {
+            target.setPointerCapture = this.capturePointer;
+            target.releasePointerCapture = this.releasePointer;
         },
 
         /**
@@ -230,7 +233,5 @@ define(function(require) {
         }
 
     };
-
-
 
 });

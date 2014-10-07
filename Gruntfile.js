@@ -15,13 +15,16 @@ module.exports = function (grunt) {
                 livereload: true
             },
             scripts: {
-                files: ['src/**/*.js', 'Gruntfile.js'],
+                files: ['src/**/**', 'Gruntfile.js'],
                 tasks: ['build']
             }
         },
 
         requirejs: {
             options: {
+                pragmas: {
+                    jquery: false
+                },
                 baseUrl: 'src',
                 mainConfigFile: 'src/config.js',
                 useStrict: false,
@@ -46,6 +49,9 @@ module.exports = function (grunt) {
             },
             jquery: {
                 options: {
+                    pragmas: {
+                        jquery: true
+                    },
                     name: 'Bootstrap.jquery',
                     out: 'build/jquery.pointer.js',
                     paths: {

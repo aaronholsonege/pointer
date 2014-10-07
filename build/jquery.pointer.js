@@ -105,6 +105,9 @@
                 return event;
             },
             trigger: function(event, target) {
+                if (!target.setPointerCapture) {
+                    eventTracker.setCaptureMethods(target);
+                }
                 $.event.trigger(event, null, target, !event.bubbles);
             }
         };
@@ -134,15 +137,14 @@
             hasTouched: false,
             isMouseDown: false,
             init: function() {
-                var el = window.Element;
-                var proto;
-                if (!el) {
-                    proto = window._IEEL = {};
-                } else {
-                    proto = el.prototype;
+                var element = window.Element;
+                if (element) {
+                    this.setCaptureMethods(element.prototype);
                 }
-                proto.setPointerCapture = this.capturePointer;
-                proto.releasePointerCapture = this.releasePointer;
+            },
+            setCaptureMethods: function(target) {
+                target.setPointerCapture = this.capturePointer;
+                target.releasePointerCapture = this.releasePointer;
             },
             capturePointer: function(pointerId) {
                 TARGET_LOCKS[pointerId] = this;
