@@ -1,11 +1,12 @@
-var Pointer = require('./Pointer');
-var EventTracker = require('./event/Tracker');
+require(['Pointer', 'event/Tracker'], function(Pointer, EventTracker) {
+    'use strict';
 
-// If the browser already supports pointer events, do not enable
-if (window.navigator.pointerEnabled === true) {
-    return;
-}
+    // If the browser already supports pointer events, do not enable
+    if (window.navigator.pointerEnabled === true) {
+        return;
+    }
+    
+    EventTracker.init();
 
-EventTracker.init();
-
-window.jQuery(document).ready(Pointer);
+    window.jQuery(document).ready(Pointer);
+});

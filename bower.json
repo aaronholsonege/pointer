@@ -1,0 +1,20 @@
+{
+  "name": "pointer",
+  "version": "1.0.0",
+  "main": "build/pointer.js",
+  "homepage": "https://github.com/aarongloege/pointer",
+  "authors": [
+    "Aaron Gloege <aaron.gloege@gmail.com>"
+  ],
+  "description": "A lightweight Pointer Event polyfill.",
+  "license": "MIT",
+  "ignore": [
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "jquery.pointer-hook": "0.9.0"
+  }
+}

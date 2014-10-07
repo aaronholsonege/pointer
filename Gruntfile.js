@@ -1,4 +1,6 @@
 'use strict';
+var fs = require('fs');
+var amdclean = require('amdclean');
 
 module.exports = function (grunt) {
     require('load-grunt-tasks')(grunt);
@@ -18,34 +20,38 @@ module.exports = function (grunt) {
             }
         },
 
-        browserify: {
+        requirejs: {
             options: {
-                entry: 'src/Bootstrap.js',
-                postBundleCB: function(err, src, done) {
-                    done(err, '(function() {\nvar ' + src + '\n}());');
+                baseUrl: 'src',
+                mainConfigFile: 'src/config.js',
+                useStrict: false,
+                optimize: 'none',
+                // Strip AMD
+                onModuleBundleComplete: function(data) {
+                    fs.writeFileSync(data.path, amdclean.clean({
+                        filePath: data.path,
+                        prefixMode: 'camelCase'
+                    }));
                 }
             },
             native: {
-                files: {
-                    'build/pointer.js' : ['src/Bootstrap.js']
-                },
                 options: {
-                    alias: [
-                        'src/adapters/event/Native.js:adapter/event',
-                        'src/adapters/toucharea/Attribute.js:adapter/toucharea'
-                    ]
+                    name: 'Bootstrap',
+                    out: 'build/pointer.js',
+                    paths: {
+                        'adapter/event': 'adapters/event/Native',
+                        'adapter/toucharea': 'adapters/toucharea/Attribute'
+                    }
                 }
             },
             jquery: {
-                files: {
-                    'build/jquery.pointer.js' : ['src/Bootstrap.jquery.js']
-                },
                 options: {
-                    entry: 'src/Bootstrap.jquery.js',
-                    alias: [
-                        'src/adapters/event/jQuery.js:adapter/event',
-                        'src/adapters/toucharea/Attribute.js:adapter/toucharea'
-                    ]
+                    name: 'Bootstrap.jquery',
+                    out: 'build/jquery.pointer.js',
+                    paths: {
+                        'adapter/event': 'adapters/event/jQuery',
+                        'adapter/toucharea': 'adapters/toucharea/Attribute'
+                    }
                 }
             }
         },
@@ -65,8 +71,6 @@ module.exports = function (grunt) {
         },
 
         uglify: {
-            options: {
-            },
             clean: {
                 files: [{
                     expand: true,
@@ -81,6 +85,9 @@ module.exports = function (grunt) {
                 }
             },
             build: {
+                options: {
+                    wrap: true
+                },
                 files: [{
                     expand: true,
                     cwd: 'build',
@@ -98,5 +105,5 @@ module.exports = function (grunt) {
 
     grunt.registerTask('start', ['build', 'watch']);
     grunt.registerTask('docs', ['yuidoc']);
-    grunt.registerTask('build', ['browserify', 'uglify', 'docs']);
+    grunt.registerTask('build', ['requirejs', 'uglify', 'docs']);
 };

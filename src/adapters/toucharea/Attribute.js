@@ -1,33 +1,38 @@
-/**
- * Attribute name
- *
- * @type String
- * @static
- * @final
- */
-var ATTRIBUTE = 'touch-action';
-
-/**
- * @class Adapter.TouchArea.Attribute
- * @static
- */
-module.exports = {
+define(function(require) {
+    'use strict';
 
     /**
-     * Determine if `target` or a parent node of `target` has
-     * a `touch-action` attribute with a value of `none`.
+     * Attribute name
      *
-     * @method hasTouchAction
-     * @param {Element} target
-     * @param {Function} target.getAttribute
-     * @returns {Boolean}
+     * @type String
+     * @static
+     * @final
      */
-    detect: function(target) {
-        while (target.hasAttribute && !target.hasAttribute(ATTRIBUTE)) {
-            target = target.parentNode;
+    var ATTRIBUTE = 'touch-action';
+
+    /**
+     * @class Adapter.TouchArea.Attribute
+     * @static
+     */
+    return {
+
+        /**
+         * Determine if `target` or a parent node of `target` has
+         * a `touch-action` attribute with a value of `none`.
+         *
+         * @method hasTouchAction
+         * @param {Element} target
+         * @param {Function} target.getAttribute
+         * @returns {Boolean}
+         */
+        detect: function(target) {
+            while (target.hasAttribute && !target.hasAttribute(ATTRIBUTE)) {
+                target = target.parentNode;
+            }
+
+            return target.getAttribute && target.getAttribute(ATTRIBUTE) === 'none' || false;
         }
 
-        return target.getAttribute && target.getAttribute(ATTRIBUTE) === 'none' || false;
-    }
+    };
 
-};
+});
