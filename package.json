@@ -3,7 +3,7 @@
     "title": "Pointer",
     "description": "A lightweight Pointer Event polyfill.",
     "homepage": "https://github.com/aarongloege/pointer",
-    "version": "0.9.0",
+    "version": "1.0.0",
     "private": true,
     "devDependencies": {
         "grunt": "~0.4.1",
