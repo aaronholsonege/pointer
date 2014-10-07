@@ -1,41 +1,46 @@
-var $ = window.jQuery;
+define(function(require) {
+    'use strict';
 
-/**
- * jQuery event creating and dispatching.
- *
- * @class Adapter.EventjQuery
- * @static
- */
-module.exports = {
+    var $ = window.jQuery;
 
     /**
-     * Create a new jQuery Event object
+     * jQuery event creating and dispatching.
      *
-     * @method create
-     * @param {String} type
-     * @param {MouseEvent|TouchEvent} originalEvent
-     * @param {Object} properties
-     * @param {Boolean} [bubbles=true]
-     * @return {jQuery.Event} New Pointer Event
+     * @class Adapter.EventjQuery
+     * @static
      */
-    create: function(type, originalEvent, properties, bubbles) {
-        var event = $.Event(originalEvent, properties);
-        event.type = type;
-        event.bubbles = bubbles !== false;
+    return {
 
-        return event;
-    },
+        /**
+         * Create a new jQuery Event object
+         *
+         * @method create
+         * @param {String} type
+         * @param {MouseEvent|TouchEvent} originalEvent
+         * @param {Object} properties
+         * @param {Boolean} [bubbles=true]
+         * @return {jQuery.Event} New Pointer Event
+         */
+        create: function(type, originalEvent, properties, bubbles) {
+            var event = $.Event(originalEvent, properties);
+            event.type = type;
+            event.bubbles = bubbles !== false;
 
-    /**
-     * Trigger a jQuery Event
-     *
-     * @method trigger
-     * @param {jQuery.Event} event Pointer Event
-     * @param {Boolean} [event.bubbles=false]
-     * @param {HTMLElement} target
-     */
-    trigger: function(event, target) {
-        $.event.trigger(event, null, target, !event.bubbles);
-    }
+            return event;
+        },
 
-};
+        /**
+         * Trigger a jQuery Event
+         *
+         * @method trigger
+         * @param {jQuery.Event} event Pointer Event
+         * @param {Boolean} [event.bubbles=false]
+         * @param {HTMLElement} target
+         */
+        trigger: function(event, target) {
+            $.event.trigger(event, null, target, !event.bubbles);
+        }
+
+    };
+
+});

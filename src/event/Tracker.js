@@ -1,151 +1,157 @@
-var Util = require('../Util');
+define(function(require) {
+    'use strict';
 
-/**
- * Mouse > touch map
- *
- * @type Object
- * @static
- */
-var MAP = {
-    mouseover: 'touchover',
-    mousedown: 'touchstart',
-    mousemove: 'touchend',
-    mouseup: 'touchend',
-    mouseout: 'touchstart'
-};
-
-/**
- * The last triggered touch events to compare mouse
- * events with to determine if they are emulated.
- *
- * @type Object
- * @static
- */
-var LAST_EVENTS = {
-    touchover: {},
-    touchstart: {},
-    touchend: {},
-    touchout: {}
-};
-
-/**
- * Max time between touch and simulated mouse event (3 seconds)
- *
- * We only use this to expire a touch event - after 3 seconds,
- * no longer use this event when detecting simulated events.
- *
- * @type Number
- * @static
- */
-var DELTA_TIME = 3000;
-
-/**
- * @class Event.Tracker
- * @static
- */
-module.exports = {
+    var Util = require('../Util');
 
     /**
-     * Flag to determine if an touch events have fired. Used to determine
-     * if the Mouse handler should event call `isSimulated`.
+     * Mouse > touch map
      *
-     * @property hasTouched
-     * @type Boolean
-     * @default false
+     * @type Object
+     * @static
      */
-    hasTouched: false,
+    var MAP = {
+        mouseover: 'touchover',
+        mousedown: 'touchstart',
+        mousemove: 'touchend',
+        mouseup: 'touchend',
+        mouseout: 'touchstart'
+    };
 
     /**
-     * @property isMouseDown
-     * @type Boolean
-     * @default false
-     */
-    isMouseDown: false,
-
-    /**
-     * Register a touch event used to determine if mouse events are emulated
+     * The last triggered touch events to compare mouse
+     * events with to determine if they are emulated.
      *
-     * @method register
-     * @param {Event} event
-     * @param {String} event.type
-     * @param {String} [overrideEventName]
-     * @param {Element} [target]
-     * @chainable
+     * @type Object
+     * @static
      */
-    register: function(event, overrideEventName, target) {
-        var eventName = overrideEventName || event.type;
-
-        if (LAST_EVENTS.hasOwnProperty(eventName)) {
-            LAST_EVENTS[eventName][event.pointerId] = {
-                timeStamp: Util.now(),
-                x: event.clientX,
-                y: event.clientY,
-                target: target || event.target
-            };
-            this.hasTouched = true;
-        }
-
-        return this;
-    },
+    var LAST_EVENTS = {
+        touchover: {},
+        touchstart: {},
+        touchend: {},
+        touchout: {}
+    };
 
     /**
-     * Determine if a mouse event has been emulated
+     * Max time between touch and simulated mouse event (3 seconds)
      *
-     * @method isSimulated
-     * @param {MouseEvent} event
-     * @param {String} event.type
-     * @param {HTMLElement|null} event.relatedTarget
-     * @param {Number} event.clientX
-     * @param {Number} event.clientY
-     * @returns {Boolean}
+     * We only use this to expire a touch event - after 3 seconds,
+     * no longer use this event when detecting simulated events.
+     *
+     * @type Number
+     * @static
      */
-    isSimulated: function(event) {
-        if (!MAP.hasOwnProperty(event.type)) {
+    var DELTA_TIME = 3000;
+
+    /**
+     * @class Event.Tracker
+     * @static
+     */
+    return {
+
+        /**
+         * Flag to determine if an touch events have fired. Used to determine
+         * if the Mouse handler should event call `isSimulated`.
+         *
+         * @property hasTouched
+         * @type Boolean
+         * @default false
+         */
+        hasTouched: false,
+
+        /**
+         * @property isMouseDown
+         * @type Boolean
+         * @default false
+         */
+        isMouseDown: false,
+
+        /**
+         * Register a touch event used to determine if mouse events are emulated
+         *
+         * @method register
+         * @param {Event} event
+         * @param {String} event.type
+         * @param {String} [overrideEventName]
+         * @param {Element} [target]
+         * @chainable
+         */
+        register: function(event, overrideEventName, target) {
+            var eventName = overrideEventName || event.type;
+
+            if (LAST_EVENTS.hasOwnProperty(eventName)) {
+                LAST_EVENTS[eventName][event.pointerId] = {
+                    timeStamp: Util.now(),
+                    x: event.clientX,
+                    y: event.clientY,
+                    target: target || event.target
+                };
+                this.hasTouched = true;
+            }
+
+            return this;
+        },
+
+        /**
+         * Determine if a mouse event has been emulated
+         *
+         * @method isSimulated
+         * @param {MouseEvent} event
+         * @param {String} event.type
+         * @param {HTMLElement|null} event.relatedTarget
+         * @param {Number} event.clientX
+         * @param {Number} event.clientY
+         * @returns {Boolean}
+         */
+        isSimulated: function(event) {
+            if (!MAP.hasOwnProperty(event.type)) {
+                return false;
+            }
+
+            var eventName = MAP[event.type];
+            var previousEvent = LAST_EVENTS[eventName];
+
+            if (!previousEvent) {
+                return false;
+            }
+
+            var pointerId;
+            var pointer;
+            var now = Util.now();
+            var target = Util.getTarget(event);
+
+            // If this is a mouseout event, compare the related target
+            // instead which is the element that previously had focus for touchstart
+            if (event.type === 'mouseout') {
+                target = event.relatedTarget;
+            }
+
+            for (pointerId in previousEvent) {
+                if (!previousEvent.hasOwnProperty(pointerId) || !previousEvent[pointerId]) {
+                    continue;
+                }
+
+                pointer = previousEvent[pointerId];
+
+                // If too much time has passed since the last touch
+                // event, remove it so we no longer test against it.
+                if (Math.abs(now - pointer.timeStamp) > DELTA_TIME) {
+                    LAST_EVENTS[eventName][pointerId] = null;
+                    continue;
+                }
+
+                if (
+                    pointer.target === target
+                    && pointer.x === event.clientX
+                    && pointer.y === event.clientY
+                ) {
+                    return true;
+                }
+            }
+
             return false;
         }
 
-        var eventName = MAP[event.type];
-        var previousEvent = LAST_EVENTS[eventName];
+    };
 
-        if (!previousEvent) {
-            return false;
-        }
 
-        var pointerId;
-        var pointer;
-        var now = Util.now();
-        var target = Util.getTarget(event);
-
-        // If this is a mouseout event, compare the related target
-        // instead which is the element that previously had focus for touchstart
-        if (event.type === 'mouseout') {
-            target = event.relatedTarget;
-        }
-
-        for (pointerId in previousEvent) {
-            if (!previousEvent.hasOwnProperty(pointerId) || !previousEvent[pointerId]) {
-                continue;
-            }
-
-            pointer = previousEvent[pointerId];
-
-            // If too much time has passed since the last touch
-            // event, remove it so we no longer test against it.
-            if (Math.abs(now - pointer.timeStamp) > DELTA_TIME) {
-                LAST_EVENTS[eventName][pointerId] = null;
-                continue;
-            }
-
-            if (
-                pointer.target === target
-                && pointer.x === event.clientX
-                && pointer.y === event.clientY
-            ) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-};
+});
