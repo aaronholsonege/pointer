@@ -78,7 +78,7 @@ The `touch-action` CSS property is not supported with this polyfill. I wanted th
 
 If a `pointermove` event is dispatched from an element (or a child element of) that has the `touch-action` attribute with a value of `none`, the browser's default browser behavior (scrolling) will be prevented.
 
-Currently, only the `none` value is supported in this library (I have yet to find a lightweight solution to support `pan-x` and `pan-y`).
+Currently, only the `none` value is supported in this library (I have yet to find a lightweight solution to support `pan-x`, `pan-y`, and `manipulation`).
 
 ### Recommendation
 
@@ -86,7 +86,7 @@ It is recommended to apply both the CSS property and the `touch-action` attribut
 
 ## Legacy IE
 
-IE8 and below do not support this library without jQuery. Legacy IE does not use the `addEventListener()` event model, but instead the proprietary `attachEvent()` model which does not allow for dispatching custom events.
+IE8 and below does not support this library without jQuery. Legacy IE does not use the `addEventListener()` event model, but instead the proprietary `attachEvent()` model which does not allow for dispatching custom events.
 
 Instead of creating and dispatching the custom pointer events through the native DOM API, jQuery is used to create and dispatch the events. This requires all event handlers be bound through jQuery.
 
