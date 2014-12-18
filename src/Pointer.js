@@ -17,7 +17,6 @@ define(function(require) {
      * @type Function
      */
     return function() {
-        navigator.pointerEnabled = true;
         navigator.maxTouchPoints = 10;
 
         Util

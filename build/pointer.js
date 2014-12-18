@@ -428,13 +428,12 @@
         var TouchHandler = handlersTouch;
         var navigator = window.navigator;
         return function() {
-            navigator.pointerEnabled = true;
             navigator.maxTouchPoints = 10;
             Util.on(TouchHandler.events, TouchHandler.onEvent).on(MouseHandler.events, MouseHandler.onEvent);
         };
     }({});
     (function(Pointer, Util) {
-        if (window.navigator.pointerEnabled === true) {
+        if (window.navigator.maxTouchPoints > 1) {
             return;
         }
         var _onReady = function() {
