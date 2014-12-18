@@ -49,6 +49,22 @@ See the [W3C PointerEvent](http://www.w3.org/TR/pointerevents/#pointerevent-inte
 * `pointerout`
 * `pointerleave`
 
+## `setPointerCapture` and `releasePointerCapture`
+
+The `Element.setPointerCatpure` and `Element.releasePointerCapture` methods allow the events for a particular pointer to be retargeted to a particular element other than the normal hit test result of the pointer's location. This is useful in scenarios like a custom slider control. Pointer capture can be set on the slider thumb element, allowing the user to slide the control back and forth even if the pointer slides off of the thumb.
+
+```
+// Usage
+var onPointerDown = function(event) {
+    event.target.setPointerCapture(event.pointerId);
+};
+
+element.addEventListener('pointerdown', onPointerDown, false);
+```
+
+The pointer capture can either be released manually (`event.target.releasePointerCapture(event.pointerId)`) or automatically when `pointerend` or `pointercancel` is fired.
+
+
 ## Click event?
 
 The `click` event does not fall under the PointerEvent spec. Therefore, this library does nothing with it.
@@ -66,9 +82,7 @@ What does this mean? The `click` event will be dispatched as it normally would. 
 
 This is not a 1-for-1 polyfill for the PointerEvents API (yet). There are a few features missing:
 
-* The `touch-action` CSS attribute is not supported (this polyfill uses a `touch-action` attribute instead).
-* The `gotpointercapture` and `lostpointercapture` events are not supported (yet).
-* `Element.prototype.setPointerCapture` and `Element.prototype.releasePointerCapture` methods are not supported (yet).
+* The `touch-action` CSS attribute is not supported (this polyfill uses a `touch-action` attribute instead, and only `none` and `auto`).
 
 ## Touch Action
 
@@ -97,8 +111,8 @@ Instead of creating and dispatching the custom pointer events through the native
 
 There is a separate build file to use when legacy IE support is needed (`jquery.pointer.js` and `jquery.pointer.min.js`). Note that jQuery in *not* included in the build, so you must include it on your page.
 
-## Roadmap
+### `setPointerCapture` and `releasePointerCapture`
 
-* `Element.prototype.setPointerCapture()` and `Element.prototype.releasePointerCapture()` support.
-    * This may be tricky as IE7 and below do not expose `Element` for modification.
-* The `gotpointercapture` and `lostpointercapture` events. These fire when `setPointerCapture` and `releasePointerCapture` methods are called. Their support is reliant on these methods.
+In IE7 and below, using the `Element.setPointerCapture` and `Element.releasePointerCapture` methods are supported, but only with the `target` element of a pointer event. IE7 and below does not support global access to `Element.prototype`, so there is no way for the polyfill to add these methods. Instead, before any pointer event is dispatched, `setPointerCapture` and `releasePointerCapture` are dynamically added to the `event.target` element.
+
+What this means is in IE7 and below is you can not use the `setPointerCapture` and `releasePointerCapture` methods on any DOM Element, only the element assigned to the `target` property of a pointer event.
