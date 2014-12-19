@@ -1,0 +1,3 @@
+[submodule "src/jquery.pointerHooks"]
+	path = src/jquery.pointerHooks
+	url = https://github.com/aarongloege/jquery.pointerHooks

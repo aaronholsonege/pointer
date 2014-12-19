@@ -1,5 +1,5 @@
 (function() {
-    var eventEvents, adapterEvent, eventTracker, Controller, handlersMouse, adapterToucharea, handlersTouch, Pointer, Bootstrapjquery, _Util_;
+    var eventEvents, adapterEvent, eventTracker, Controller, handlersMouse, adapterToucharea, handlersTouch, Pointer, jquerypointerHooks, Bootstrapjquery, _Util_;
     _Util_ = function(require) {
         var _addOrRemoveEvent = function(event, callback, target, add) {
             if (!target) {
@@ -469,6 +469,18 @@
             Util.on(TouchHandler.events, TouchHandler.onEvent).on(MouseHandler.events, MouseHandler.onEvent);
         };
     }({});
+    (function($) {
+        var events = [ "pointerenter", "pointerover", "pointerdown", "pointermove", "pointerup", "pointerout", "pointerleave", "pointercancel" ];
+        var fixHook = {
+            props: [ "pageX", "pageY", "clientX", "clientY", "screenX", "screenY", "relatedTarget", "pointerId", "pointerType", "x", "y", "isPrimary", "width", "height", "tiltX", "tiltY", "pressure" ]
+        };
+        var i = 0;
+        var length = events.length;
+        for (;i < length; i++) {
+            $.event.fixHooks[events[i]] = fixHook;
+        }
+    })(jQuery);
+    jquerypointerHooks = undefined;
     (function(Pointer, EventTracker) {
         if (window.navigator.pointerEnabled === true) {
             return;

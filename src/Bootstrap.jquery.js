@@ -1,4 +1,4 @@
-require(['Pointer', 'event/Tracker'], function(Pointer, EventTracker) {
+require(['Pointer', 'event/Tracker', 'jquery.pointerHooks'], function(Pointer, EventTracker) {
     'use strict';
 
     // If the browser already supports pointer events, do not enable
