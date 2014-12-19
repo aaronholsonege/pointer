@@ -1,10 +1,10 @@
 define(function(require) {
     'use strict';
 
-    var Events = require('event/Events');
+    var Events = require('./event/Events');
     var Adapter = require('adapter/event');
-    var Tracker = require('event/Tracker');
-    var Util = require('Util');
+    var Tracker = require('./event/Tracker');
+    var Util = require('./Util');
 
     /**
      * Pointer event names
@@ -190,11 +190,11 @@ define(function(require) {
      * @param {Element} originalEvent.relatedTarget
      * @param {Element} originalEvent.target
      * @param {String} [overrideType] Use this event instead of `originalEvent.type` when mapping to a pointer event
+     * @param {Element} [target] target to dispatch event from
      * @param {Number} [touchIndex=0]
-     * @param {Element} [overrideTarget] target to dispatch event from
      * @param {HTMLElement} [relatedTarget]
      */
-    var _trigger = function(originalEvent, overrideType, touchIndex, overrideTarget, relatedTarget) {
+    var _trigger = function(originalEvent, target, overrideType, touchIndex, relatedTarget) {
         var eventName = overrideType || originalEvent.type;
 
         if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
@@ -204,7 +204,8 @@ define(function(require) {
         var type = Events.MAP[eventName];
         var pointerId = touchIndex || 0;
         var event = _create(type, originalEvent, pointerId);
-        var target = Util.getTarget(originalEvent, overrideTarget);
+
+        target = Util.getTarget(originalEvent, target);
 
         if (event) {
             if (event.pointerType === 'touch') {
@@ -217,6 +218,11 @@ define(function(require) {
             }
 
             Adapter.trigger(event, target);
+
+            // Release pointer if it has been captured
+            if (event.type === PointerEvents[4] || event.type === PointerEvents[7]) {
+                Tracker.releasePointer(event.pointerId);
+            }
 
             // trigger pointerleave
             if (type === PointerEvents[5]) {

@@ -1,5 +1,5 @@
 (function() {
-    var eventEvents, eventTracker, adapterEvent, Controller, handlersMouse, adapterToucharea, handlersTouch, Pointer, Bootstrap, _Util_;
+    var eventEvents, adapterEvent, eventTracker, Controller, handlersMouse, adapterToucharea, handlersTouch, Pointer, Bootstrap, _Util_;
     _Util_ = function(require) {
         var _addOrRemoveEvent = function(event, callback, target, add) {
             if (!target) {
@@ -60,6 +60,13 @@
             },
             now: Date.now || function() {
                 return +new Date();
+            },
+            getId: function(event) {
+                var point = 0;
+                if ("identifier" in event) {
+                    point = event.identifier + 1;
+                }
+                return point;
             }
         };
     }({});
@@ -88,7 +95,38 @@
             MAP: MAP
         };
     }({});
+    adapterEvent = function(require) {
+        var _overrideMethod = function(method, event, originalEvent) {
+            var originalMethod = event[method];
+            event[method] = function() {
+                originalEvent[method]();
+                originalMethod.call(this);
+            };
+        };
+        return {
+            create: function(type, originalEvent, properties, bubbles) {
+                var event = document.createEvent("Event");
+                event.initEvent(type, bubbles !== false, properties.cancelable !== false);
+                var prop;
+                for (prop in properties) {
+                    if (properties.hasOwnProperty(prop)) {
+                        event[prop] = properties[prop];
+                    }
+                }
+                if (originalEvent) {
+                    _overrideMethod("preventDefault", event, originalEvent);
+                    _overrideMethod("stopPropagation", event, originalEvent);
+                    _overrideMethod("stopImmediatePropagation", event, originalEvent);
+                }
+                return event;
+            },
+            trigger: function(event, target) {
+                target.dispatchEvent(event);
+            }
+        };
+    }({});
     eventTracker = function(require) {
+        var Adapter = adapterEvent;
         var Util = _Util_;
         var MAP = {
             mouseover: "touchover",
@@ -103,10 +141,37 @@
             touchend: {},
             touchout: {}
         };
+        var TARGET_LOCKS = {};
         var DELTA_TIME = 3e3;
+        var CAPTURE_DATA = {
+            cancelable: false
+        };
         return {
             hasTouched: false,
             isMouseDown: false,
+            init: function() {
+                var element = window.Element;
+                if (element) {
+                    this.setCaptureMethods(element.prototype);
+                }
+            },
+            setCaptureMethods: function(target) {
+                target.setPointerCapture = this.capturePointer;
+                target.releasePointerCapture = this.releasePointer;
+            },
+            capturePointer: function(pointerId) {
+                TARGET_LOCKS[pointerId] = this;
+                var event = Adapter.create("gotpointercapture", null, CAPTURE_DATA);
+                Adapter.trigger(event, this);
+            },
+            releasePointer: function(pointerId) {
+                var lastTarget = TARGET_LOCKS[pointerId];
+                TARGET_LOCKS[pointerId] = null;
+                if (lastTarget) {
+                    var event = Adapter.create("lostpointercapture", null, CAPTURE_DATA);
+                    Adapter.trigger(event, lastTarget);
+                }
+            },
             register: function(event, overrideEventName, target) {
                 var eventName = overrideEventName || event.type;
                 if (LAST_EVENTS.hasOwnProperty(eventName)) {
@@ -119,6 +184,9 @@
                     this.hasTouched = true;
                 }
                 return this;
+            },
+            getTarget: function(pointerEvent) {
+                return TARGET_LOCKS[pointerEvent.pointerId || pointerEvent];
             },
             isSimulated: function(event) {
                 if (!MAP.hasOwnProperty(event.type)) {
@@ -150,34 +218,6 @@
                     }
                 }
                 return false;
-            }
-        };
-    }({});
-    adapterEvent = function(require) {
-        var _overrideMethod = function(method, event, originalEvent) {
-            var originalMethod = event[method];
-            event[method] = function() {
-                originalEvent[method]();
-                originalMethod.call(this);
-            };
-        };
-        return {
-            create: function(type, originalEvent, properties, bubbles) {
-                var event = document.createEvent("Event");
-                event.initEvent(type, bubbles !== false, true);
-                var prop;
-                for (prop in properties) {
-                    if (properties.hasOwnProperty(prop)) {
-                        event[prop] = properties[prop];
-                    }
-                }
-                _overrideMethod("preventDefault", event, originalEvent);
-                _overrideMethod("stopPropagation", event, originalEvent);
-                _overrideMethod("stopImmediatePropagation", event, originalEvent);
-                return event;
-            },
-            trigger: function(event, target) {
-                target.dispatchEvent(event);
             }
         };
     }({});
@@ -273,7 +313,7 @@
             var properties = _getProperties(type, originalEvent, touchIndex);
             return Adapter.create(type, originalEvent, properties, type !== PointerEvents[0] && type !== PointerEvents[6]);
         };
-        var _trigger = function(originalEvent, overrideType, touchIndex, overrideTarget, relatedTarget) {
+        var _trigger = function(originalEvent, target, overrideType, touchIndex, relatedTarget) {
             var eventName = overrideType || originalEvent.type;
             if (!originalEvent || !Events.MAP.hasOwnProperty(eventName)) {
                 return;
@@ -281,7 +321,7 @@
             var type = Events.MAP[eventName];
             var pointerId = touchIndex || 0;
             var event = _create(type, originalEvent, pointerId);
-            var target = Util.getTarget(originalEvent, overrideTarget);
+            target = Util.getTarget(originalEvent, target);
             if (event) {
                 if (event.pointerType === "touch") {
                     Tracker.register(event, eventName, target);
@@ -290,6 +330,9 @@
                     _detectEnterOrLeave(PointerEvents[0], originalEvent, target, relatedTarget, pointerId);
                 }
                 Adapter.trigger(event, target);
+                if (event.type === PointerEvents[4] || event.type === PointerEvents[7]) {
+                    Tracker.releasePointer(event.pointerId);
+                }
                 if (type === PointerEvents[5]) {
                     _detectEnterOrLeave(PointerEvents[6], originalEvent, target, relatedTarget, pointerId);
                 }
@@ -301,6 +344,7 @@
         };
     }({});
     handlersMouse = function(require) {
+        var Util = _Util_;
         var Events = eventEvents.MOUSE;
         var Tracker = eventTracker;
         var _on = _Util_.on;
@@ -310,8 +354,11 @@
         var EVENT_MOVE = Events[3];
         var EVENT_UP = Events[4];
         var EVENT_OUT = Events[5];
-        var _onMouseUp = function() {
-            Tracker.isMouseDown = false;
+        var _onMouseUp = function(event) {
+            Tracker.isMouseActive = false;
+            if (event.target === document.documentElement) {
+                Tracker.releasePointer(Util.getId(event));
+            }
         };
         _on("mouseup", _onMouseUp, window);
         _on("contextmenu", _onMouseUp, window);
@@ -329,7 +376,7 @@
                 } else if (event.type === EVENT_UP) {
                     Tracker.isMouseDown = false;
                 }
-                trigger(event);
+                trigger(event, Tracker.getTarget(Util.getId(event)));
             }
         };
     }({});
@@ -348,6 +395,7 @@
         var Util = _Util_;
         var Events = eventEvents.TOUCH;
         var TouchAreaAdapter = adapterToucharea;
+        var Tracker = eventTracker;
         var trigger = Controller.trigger;
         var EVENT_OVER = Events[1];
         var EVENT_START = Events[2];
@@ -359,39 +407,40 @@
         var PREVIOUS_POSITIONS = {};
         var _onPointCancel = function(point, event, pointIndex) {
             PREVIOUS_TARGETS[point.identifier] = null;
-            trigger(event, EVENT_CANCEL, pointIndex, event.target);
-            trigger(event, EVENT_OUT, pointIndex, event.target);
+            trigger(event, event.target, EVENT_CANCEL, pointIndex);
+            trigger(event, event.target, EVENT_OUT, pointIndex);
         };
         var _onPointMove = function(point, event, pointIndex) {
-            var newTarget = document.elementFromPoint(point.clientX, point.clientY);
-            var currentTarget = PREVIOUS_TARGETS[point.identifier];
-            PREVIOUS_TARGETS[point.identifier] = newTarget;
+            var identifier = point.identifier;
+            var newTarget = Tracker.getTarget(Util.getId(point)) || document.elementFromPoint(point.clientX, point.clientY);
+            var currentTarget = PREVIOUS_TARGETS[identifier];
+            PREVIOUS_TARGETS[identifier] = newTarget;
             if (newTarget !== currentTarget) {
                 if (currentTarget) {
-                    trigger(event, EVENT_OUT, pointIndex, currentTarget, newTarget);
+                    trigger(event, currentTarget, EVENT_OUT, pointIndex, newTarget);
                 }
                 if (newTarget) {
-                    trigger(event, EVENT_OVER, pointIndex, newTarget, currentTarget);
+                    trigger(event, newTarget, EVENT_OVER, pointIndex, currentTarget);
                 }
             }
-            trigger(event, EVENT_MOVE, pointIndex, newTarget);
+            trigger(event, newTarget, EVENT_MOVE, pointIndex);
             if (newTarget && TouchAreaAdapter.detect(newTarget)) {
                 event.preventDefault();
             }
         };
         var _onPointStartEnd = function(point, event, pointIndex) {
-            var target = event.target;
-            var type = event.type;
             var identifier = point.identifier;
+            var target = Tracker.getTarget(Util.getId(point)) || event.target;
+            var type = event.type;
             if (type === EVENT_START) {
                 PREVIOUS_TARGETS[identifier] = target;
-                trigger(event, EVENT_OVER, pointIndex, target);
+                trigger(event, target, EVENT_OVER, pointIndex);
             }
             var currentTarget = PREVIOUS_TARGETS[identifier] || target;
-            trigger(event, type, pointIndex, currentTarget);
+            trigger(event, currentTarget, type, pointIndex);
             if (type === EVENT_END) {
                 PREVIOUS_TARGETS[identifier] = null;
-                trigger(event, EVENT_OUT, pointIndex, currentTarget);
+                trigger(event, currentTarget, EVENT_OUT, pointIndex);
             }
         };
         return {
@@ -433,10 +482,11 @@
             Util.on(TouchHandler.events, TouchHandler.onEvent).on(MouseHandler.events, MouseHandler.onEvent);
         };
     }({});
-    (function(Pointer, Util) {
+    (function(Pointer, Util, EventTracker) {
         if (window.navigator.pointerEnabled === true) {
             return;
         }
+        EventTracker.init();
         var _onReady = function() {
             Util.off("DOMContentLoaded", _onReady, document).off("load", _onReady, window);
             Pointer();
@@ -446,6 +496,6 @@
         } else {
             Util.on("DOMContentLoaded", _onReady, document).on("load", _onReady, window);
         }
-    })(Pointer, _Util_);
+    })(Pointer, _Util_, eventTracker);
     Bootstrap = undefined;
 })();

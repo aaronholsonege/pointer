@@ -1,10 +1,12 @@
-require(['Pointer', 'Util'], function(Pointer, Util) {
+require(['Pointer', 'Util', 'event/Tracker'], function(Pointer, Util, EventTracker) {
     'use strict';
 
     // If the browser already supports pointer events, do not enable
     if (window.navigator.pointerEnabled === true) {
         return;
     }
+    
+    EventTracker.init();
 
     // Initialize Pointer when the page is ready
     var _onReady = function() {

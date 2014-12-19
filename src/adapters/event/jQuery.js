@@ -38,6 +38,13 @@ define(function(require) {
          * @param {HTMLElement} target
          */
         trigger: function(event, target) {
+            // if target element does not have capture methods already defined (Legacy IE),
+            // then manually define them so the `setPointerCapture` and `releasePointerCapture`
+            // methods can be used.
+            if (!target.setPointerCapture) {
+                require('event/Tracker').setCaptureMethods(target);
+            }
+
             $.event.trigger(event, null, target, !event.bubbles);
         }
 

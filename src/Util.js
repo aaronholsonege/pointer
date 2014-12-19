@@ -159,6 +159,23 @@ define(function(require) {
          */
         now: Date.now || function() {
             return +new Date();
+        },
+
+        /**
+         * Get pointer ID
+         *
+         * @method getId
+         * @param {Event|Touch} event
+         * @returns {Number}
+         */
+        getId: function(event) {
+            var point = 0;
+
+            if ('identifier' in event) {
+                point = event.identifier + 1;
+            }
+
+            return point;
         }
 
     };
