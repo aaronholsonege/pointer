@@ -1,4 +1,4 @@
-require(['Pointer'], function(Pointer) {
+require(['Pointer', 'jquery.pointerHooks'], function(Pointer) {
     'use strict';
 
     // If the browser already supports pointer events, do not enable
