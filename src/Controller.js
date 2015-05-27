@@ -49,7 +49,7 @@ define(function(require) {
     };
 
     /**
-     * Get proprties to set to event
+     * Get properties to set to event
      *
      * @type Function
      * @param {String} type Pointer event name

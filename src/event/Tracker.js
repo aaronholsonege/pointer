@@ -222,9 +222,9 @@ define(function(require) {
 
                 if (
                     pointer.target === target
-                        && pointer.x === event.clientX
-                        && pointer.y === event.clientY
-                    ) {
+                    && pointer.x === event.clientX
+                    && pointer.y === event.clientY
+                ) {
                     return true;
                 }
             }

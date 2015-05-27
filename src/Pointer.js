@@ -1,7 +1,6 @@
 define(function(require) {
     'use strict';
 
-    var Util = require('./Util');
     var MouseHandler = require('./handlers/Mouse');
     var TouchHandler = require('./handlers/Touch');
 
@@ -18,9 +17,11 @@ define(function(require) {
      */
     return function() {
         navigator.pointerEnabled = true;
-        navigator.maxTouchPoints = 10;
+        try {
+            navigator.maxTouchPoints = 10;
+        } catch(e) {}
 
-        Util
+        require('./Util')
             .on(TouchHandler.events, TouchHandler.onEvent)
             .on(MouseHandler.events, MouseHandler.onEvent);
     };

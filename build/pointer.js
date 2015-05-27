@@ -1,6 +1,40 @@
 (function() {
-    var eventEvents, adapterEvent, eventTracker, Controller, handlersMouse, adapterToucharea, handlersTouch, Pointer, Bootstrap, _Util_;
+    var adapterEvent, eventTracker, eventEvents, Controller, handlersMouse, adapterToucharea, handlersTouch, Pointer, Bootstrap, _Util_;
+    adapterEvent = function(require) {
+        "use strict";
+        var _overrideMethod = function(method, event, originalEvent) {
+            var originalMethod = event[method];
+            event[method] = function() {
+                originalEvent[method]();
+                originalMethod.call(this);
+            };
+        };
+        return {
+            create: function(type, originalEvent, properties, bubbles) {
+                var event = document.createEvent("Event");
+                event.initEvent(type, bubbles !== false, properties.cancelable !== false);
+                var prop;
+                for (prop in properties) {
+                    if (properties.hasOwnProperty(prop)) {
+                        try {
+                            event[prop] = properties[prop];
+                        } catch (e) {}
+                    }
+                }
+                if (originalEvent) {
+                    _overrideMethod("preventDefault", event, originalEvent);
+                    _overrideMethod("stopPropagation", event, originalEvent);
+                    _overrideMethod("stopImmediatePropagation", event, originalEvent);
+                }
+                return event;
+            },
+            trigger: function(event, target) {
+                target.dispatchEvent(event);
+            }
+        };
+    }({});
     _Util_ = function(require) {
+        "use strict";
         var _addOrRemoveEvent = function(event, callback, target, add) {
             if (!target) {
                 target = document.body;
@@ -70,62 +104,8 @@
             }
         };
     }({});
-    eventEvents = function(require) {
-        var _defineEvents = function(namespace, isTouch) {
-            return [ namespace + "enter", namespace + "over", namespace + (isTouch ? "start" : "down"), namespace + "move", namespace + (isTouch ? "end" : "up"), namespace + "out", namespace + "leave", namespace + "cancel" ];
-        };
-        var PointerEvents = _defineEvents("pointer");
-        var MouseEvents = _defineEvents("mouse");
-        var TouchEvents = _defineEvents("touch", true);
-        var MAP = {};
-        var i = 0;
-        var length = PointerEvents.length;
-        for (;i < length; i++) {
-            if (TouchEvents[i]) {
-                MAP[TouchEvents[i]] = PointerEvents[i];
-            }
-            if (MouseEvents[i]) {
-                MAP[MouseEvents[i]] = PointerEvents[i];
-            }
-        }
-        return {
-            POINTER: PointerEvents,
-            MOUSE: MouseEvents,
-            TOUCH: TouchEvents,
-            MAP: MAP
-        };
-    }({});
-    adapterEvent = function(require) {
-        var _overrideMethod = function(method, event, originalEvent) {
-            var originalMethod = event[method];
-            event[method] = function() {
-                originalEvent[method]();
-                originalMethod.call(this);
-            };
-        };
-        return {
-            create: function(type, originalEvent, properties, bubbles) {
-                var event = document.createEvent("Event");
-                event.initEvent(type, bubbles !== false, properties.cancelable !== false);
-                var prop;
-                for (prop in properties) {
-                    if (properties.hasOwnProperty(prop)) {
-                        event[prop] = properties[prop];
-                    }
-                }
-                if (originalEvent) {
-                    _overrideMethod("preventDefault", event, originalEvent);
-                    _overrideMethod("stopPropagation", event, originalEvent);
-                    _overrideMethod("stopImmediatePropagation", event, originalEvent);
-                }
-                return event;
-            },
-            trigger: function(event, target) {
-                target.dispatchEvent(event);
-            }
-        };
-    }({});
     eventTracker = function(require) {
+        "use strict";
         var Adapter = adapterEvent;
         var Util = _Util_;
         var MAP = {
@@ -221,7 +201,34 @@
             }
         };
     }({});
+    eventEvents = function(require) {
+        "use strict";
+        var _defineEvents = function(namespace, isTouch) {
+            return [ namespace + "enter", namespace + "over", namespace + (isTouch ? "start" : "down"), namespace + "move", namespace + (isTouch ? "end" : "up"), namespace + "out", namespace + "leave", namespace + "cancel" ];
+        };
+        var PointerEvents = _defineEvents("pointer");
+        var MouseEvents = _defineEvents("mouse");
+        var TouchEvents = _defineEvents("touch", true);
+        var MAP = {};
+        var i = 0;
+        var length = PointerEvents.length;
+        for (;i < length; i++) {
+            if (TouchEvents[i]) {
+                MAP[TouchEvents[i]] = PointerEvents[i];
+            }
+            if (MouseEvents[i]) {
+                MAP[MouseEvents[i]] = PointerEvents[i];
+            }
+        }
+        return {
+            POINTER: PointerEvents,
+            MOUSE: MouseEvents,
+            TOUCH: TouchEvents,
+            MAP: MAP
+        };
+    }({});
     Controller = function(require) {
+        "use strict";
         var Events = eventEvents;
         var Adapter = adapterEvent;
         var Tracker = eventTracker;
@@ -344,6 +351,7 @@
         };
     }({});
     handlersMouse = function(require) {
+        "use strict";
         var Util = _Util_;
         var Events = eventEvents.MOUSE;
         var Tracker = eventTracker;
@@ -381,6 +389,7 @@
         };
     }({});
     adapterToucharea = function(require) {
+        "use strict";
         var ATTRIBUTE = "touch-action";
         return {
             detect: function(target) {
@@ -392,6 +401,7 @@
         };
     }({});
     handlersTouch = function(require) {
+        "use strict";
         var Util = _Util_;
         var Events = eventEvents.TOUCH;
         var TouchAreaAdapter = adapterToucharea;
@@ -472,30 +482,32 @@
         };
     }({});
     Pointer = function(require) {
-        var Util = _Util_;
+        "use strict";
         var MouseHandler = handlersMouse;
         var TouchHandler = handlersTouch;
         var navigator = window.navigator;
         return function() {
             navigator.pointerEnabled = true;
-            navigator.maxTouchPoints = 10;
-            Util.on(TouchHandler.events, TouchHandler.onEvent).on(MouseHandler.events, MouseHandler.onEvent);
+            try {
+                navigator.maxTouchPoints = 10;
+            } catch (e) {}
+            _Util_.on(TouchHandler.events, TouchHandler.onEvent).on(MouseHandler.events, MouseHandler.onEvent);
         };
     }({});
-    (function(Pointer, Util, EventTracker) {
+    Bootstrap = function(require) {
+        "use strict";
         if (window.navigator.pointerEnabled === true) {
             return;
         }
-        EventTracker.init();
+        eventTracker.init();
         var _onReady = function() {
-            Util.off("DOMContentLoaded", _onReady, document).off("load", _onReady, window);
+            _Util_.off("DOMContentLoaded", _onReady, document).off("load", _onReady, window);
             Pointer();
         };
         if (document.readyState === "complete") {
-            setTimeout(Pointer);
+            window.setTimeout(Pointer);
         } else {
-            Util.on("DOMContentLoaded", _onReady, document).on("load", _onReady, window);
+            _Util_.on("DOMContentLoaded", _onReady, document).on("load", _onReady, window);
         }
-    })(Pointer, _Util_, eventTracker);
-    Bootstrap = undefined;
+    }({});
 })();

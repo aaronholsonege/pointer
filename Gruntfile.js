@@ -26,6 +26,7 @@ module.exports = function (grunt) {
                     jquery: false
                 },
                 baseUrl: 'src',
+                insertRequire: ['Bootstrap', 'Bootstrap.jquery'],
                 mainConfigFile: 'src/config.js',
                 useStrict: false,
                 optimize: 'none',

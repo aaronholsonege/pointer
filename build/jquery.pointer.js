@@ -1,6 +1,38 @@
 (function() {
-    var eventEvents, adapterEvent, eventTracker, Controller, handlersMouse, adapterToucharea, handlersTouch, Pointer, jquerypointerHooks, Bootstrapjquery, _Util_;
+    var jquerypointerHooks, adapterEvent, eventTracker, eventEvents, Controller, handlersMouse, adapterToucharea, handlersTouch, Pointer, Bootstrapjquery, _Util_;
+    (function($) {
+        "use strict";
+        var events = [ "pointerenter", "pointerover", "pointerdown", "pointermove", "pointerup", "pointerout", "pointerleave", "pointercancel" ];
+        var fixHook = {
+            props: [ "pageX", "pageY", "clientX", "clientY", "screenX", "screenY", "relatedTarget", "pointerId", "pointerType", "x", "y", "isPrimary", "width", "height", "tiltX", "tiltY", "pressure" ]
+        };
+        var i = 0;
+        var length = events.length;
+        for (;i < length; i++) {
+            $.event.fixHooks[events[i]] = fixHook;
+        }
+    })(jQuery);
+    jquerypointerHooks = undefined;
+    adapterEvent = function(require) {
+        "use strict";
+        var $ = window.jQuery;
+        return {
+            create: function(type, originalEvent, properties, bubbles) {
+                var event = $.Event(originalEvent, properties);
+                event.type = type;
+                event.bubbles = bubbles !== false;
+                return event;
+            },
+            trigger: function(event, target) {
+                if (!target.setPointerCapture) {
+                    eventTracker.setCaptureMethods(target);
+                }
+                $.event.trigger(event, null, target, !event.bubbles);
+            }
+        };
+    }({});
     _Util_ = function(require) {
+        "use strict";
         var _addOrRemoveEvent = function(event, callback, target, add) {
             if (!target) {
                 target = document.body;
@@ -70,49 +102,8 @@
             }
         };
     }({});
-    eventEvents = function(require) {
-        var _defineEvents = function(namespace, isTouch) {
-            return [ namespace + "enter", namespace + "over", namespace + (isTouch ? "start" : "down"), namespace + "move", namespace + (isTouch ? "end" : "up"), namespace + "out", namespace + "leave", namespace + "cancel" ];
-        };
-        var PointerEvents = _defineEvents("pointer");
-        var MouseEvents = _defineEvents("mouse");
-        var TouchEvents = _defineEvents("touch", true);
-        var MAP = {};
-        var i = 0;
-        var length = PointerEvents.length;
-        for (;i < length; i++) {
-            if (TouchEvents[i]) {
-                MAP[TouchEvents[i]] = PointerEvents[i];
-            }
-            if (MouseEvents[i]) {
-                MAP[MouseEvents[i]] = PointerEvents[i];
-            }
-        }
-        return {
-            POINTER: PointerEvents,
-            MOUSE: MouseEvents,
-            TOUCH: TouchEvents,
-            MAP: MAP
-        };
-    }({});
-    adapterEvent = function(require) {
-        var $ = window.jQuery;
-        return {
-            create: function(type, originalEvent, properties, bubbles) {
-                var event = $.Event(originalEvent, properties);
-                event.type = type;
-                event.bubbles = bubbles !== false;
-                return event;
-            },
-            trigger: function(event, target) {
-                if (!target.setPointerCapture) {
-                    eventTracker.setCaptureMethods(target);
-                }
-                $.event.trigger(event, null, target, !event.bubbles);
-            }
-        };
-    }({});
     eventTracker = function(require) {
+        "use strict";
         var Adapter = adapterEvent;
         var Util = _Util_;
         var MAP = {
@@ -208,7 +199,34 @@
             }
         };
     }({});
+    eventEvents = function(require) {
+        "use strict";
+        var _defineEvents = function(namespace, isTouch) {
+            return [ namespace + "enter", namespace + "over", namespace + (isTouch ? "start" : "down"), namespace + "move", namespace + (isTouch ? "end" : "up"), namespace + "out", namespace + "leave", namespace + "cancel" ];
+        };
+        var PointerEvents = _defineEvents("pointer");
+        var MouseEvents = _defineEvents("mouse");
+        var TouchEvents = _defineEvents("touch", true);
+        var MAP = {};
+        var i = 0;
+        var length = PointerEvents.length;
+        for (;i < length; i++) {
+            if (TouchEvents[i]) {
+                MAP[TouchEvents[i]] = PointerEvents[i];
+            }
+            if (MouseEvents[i]) {
+                MAP[MouseEvents[i]] = PointerEvents[i];
+            }
+        }
+        return {
+            POINTER: PointerEvents,
+            MOUSE: MouseEvents,
+            TOUCH: TouchEvents,
+            MAP: MAP
+        };
+    }({});
     Controller = function(require) {
+        "use strict";
         var Events = eventEvents;
         var Adapter = adapterEvent;
         var Tracker = eventTracker;
@@ -331,6 +349,7 @@
         };
     }({});
     handlersMouse = function(require) {
+        "use strict";
         var Util = _Util_;
         var Events = eventEvents.MOUSE;
         var Tracker = eventTracker;
@@ -368,6 +387,7 @@
         };
     }({});
     adapterToucharea = function(require) {
+        "use strict";
         var ATTRIBUTE = "touch-action";
         return {
             detect: function(target) {
@@ -379,6 +399,7 @@
         };
     }({});
     handlersTouch = function(require) {
+        "use strict";
         var Util = _Util_;
         var Events = eventEvents.TOUCH;
         var TouchAreaAdapter = adapterToucharea;
@@ -459,34 +480,25 @@
         };
     }({});
     Pointer = function(require) {
-        var Util = _Util_;
+        "use strict";
         var MouseHandler = handlersMouse;
         var TouchHandler = handlersTouch;
         var navigator = window.navigator;
         return function() {
             navigator.pointerEnabled = true;
-            navigator.maxTouchPoints = 10;
-            Util.on(TouchHandler.events, TouchHandler.onEvent).on(MouseHandler.events, MouseHandler.onEvent);
+            try {
+                navigator.maxTouchPoints = 10;
+            } catch (e) {}
+            _Util_.on(TouchHandler.events, TouchHandler.onEvent).on(MouseHandler.events, MouseHandler.onEvent);
         };
     }({});
-    (function($) {
-        var events = [ "pointerenter", "pointerover", "pointerdown", "pointermove", "pointerup", "pointerout", "pointerleave", "pointercancel" ];
-        var fixHook = {
-            props: [ "pageX", "pageY", "clientX", "clientY", "screenX", "screenY", "relatedTarget", "pointerId", "pointerType", "x", "y", "isPrimary", "width", "height", "tiltX", "tiltY", "pressure" ]
-        };
-        var i = 0;
-        var length = events.length;
-        for (;i < length; i++) {
-            $.event.fixHooks[events[i]] = fixHook;
-        }
-    })(jQuery);
-    jquerypointerHooks = undefined;
-    (function(Pointer, EventTracker) {
+    Bootstrapjquery = function(require) {
+        "use strict";
+        jquerypointerHooks;
         if (window.navigator.pointerEnabled === true) {
             return;
         }
-        EventTracker.init();
+        eventTracker.init();
         window.jQuery(document).ready(Pointer);
-    })(Pointer, eventTracker);
-    Bootstrapjquery = undefined;
+    }({});
 })();

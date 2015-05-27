@@ -48,7 +48,9 @@ define(function(require) {
             // Add event properties
             for (prop in properties) {
                 if (properties.hasOwnProperty(prop)) {
-                    event[prop] = properties[prop];
+                    try {
+                        event[prop] = properties[prop];
+                    } catch(e) {}
                 }
             }
 
